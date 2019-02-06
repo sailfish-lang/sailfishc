@@ -1,0 +1,107 @@
+Start  := Source
+Source := SourcePart*
+
+SourcePart := FunctionDefinition |
+              ListDefinition |
+              DictionaryDefinition |
+              UserDefinedTypeDefinition |
+              VariableDefinition |
+              ExecutionBody | 
+              Import |
+
+FunctionDefinition := ['exp'] FunctionName FunctionInput FunctionOutput FunctionBody
+FunctionName := 'fun' Identifier
+FunctionInput := '<-' InputList 
+FunctionOutput := '->' OutputList
+FunctionBody := '{' Block '}'
+
+InputList := Input (',' Input)*
+Input := Typename Identifier
+OutputList := Output (',' Output)*
+Output := Typename
+
+ListDefinition := ['exp'] 'dec' 'list' Identifier ['=' Expression]
+
+DictionaryDefinition := ['exp'] 'dec' 'dictionary' Identifier ['=' Expression]
+
+UserDefinedTypeDefinition := UserDefinedTypeAttributes [UserDefinedTypeMethods]
+UserDefinedTypeAttributes := 'Cat' Identifier '{' VariableDecleration* '}'
+UserDefinedTypeMethods := 'Cfn' Identifier '{' FunctionDefinition* '}'
+
+VariableDefinition := VariableDecleration | 'dec' VariableDecleration '=' Expression | Identifier ':=' Expression
+VariableDecleration := ['exp'] TypeName Identifier
+
+ExecutionBody := 'start' '{' Block '}'
+
+Import := import Location | include FilePath
+Location := TBD
+FilePath := identifier/FilePath | ./FilePath | Identifier 
+
+Block := Statement*
+
+Statement := IfStatement | LoopStatement | '{' Block '}' |  PlaceholderStatement | SimpleStatement | Expression | 'continue' | 'break' | 'return' 
+IfStatement := 'if' Expression '{' Statement '}' ('else if' Expression '{' Statement '}')* ['else' '{' Statement '}']
+LoopStatement := 'for' Expression { Statement } | 'for' SimpleStatement ';' Expression ';' Expression { Statement }
+PlaceholderStatement := '_' 
+SimpleStatement := VariableDefinition | Expression
+
+Expression := Expression ('++' | '--') |
+              IndexAccess |
+              MemberAccess |
+              FunctionCall |
+              '(' Expression ')' |
+              ('!' | '~' | '++' | '--' | '+' | '-') Expression |
+              Expression '**' Expression |
+              Expression ('*' | '/' | '%') Expression |
+              Expression ('+' | '-') Expression|
+              Expression ('>' | '<' | '>=' | '<=') Expression |
+              Expression ('==' | '!=') Expression|
+              Expression '&&' Expression |
+              Expression '||' Expression |
+              Expression ('=' | '+=' | '-=' | '*=' | '/=' | '%=') Expression | 
+              Primary Expression
+
+PrimaryExpression := BooleanLiteral |
+                     DictionaryLiteral |
+                     ListLiteral |
+                     NumberLiteral |
+                     StringLiteral |
+                     Identifier |
+                     TypenameExpression
+TypenameExpression := Typename
+MemberAccess := Expression '.' Identifier
+IndexAccess := Expression '[' [Expression] ']'
+ExpressionList := Expression (',' Expression)*
+NameValueList := Identifier (',' Identifier)*
+
+FunctionCall := '(' FunctionCallArguments ')'
+FunctionCallArguments := [NameValueList] | ExpressionList
+
+Typename := 'bool' | 'str' | 'int' | 'flt'
+
+DictionaryLiteral := '[' [DictionaryItem (',' DictionaryItem)] ']'
+DictionaryItem := Identifier ':' Identifier
+ListLiteral := '[' [ListItem (',' ListItem)] ']'
+ListItem := Identifier
+BooleanLiteral := 'true' | 'false'
+NumberLiteral := Decimal
+StringLiteral := "' ([^"\r\n\\] | '\\' .)* '"'
+Identifier := [a-zA-Z] [a-zA-Z_0-9]*
+Decimal  := [0-9]+
+
+***
+
+## Keywords
+* Fun
+* Cat
+* Cfn
+* loop
+* dec
+* exp
+* if
+* else
+* return
+* include
+* import
+* break
+* continue

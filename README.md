@@ -34,7 +34,7 @@ The intention is for this language to be simple and usable by the end of the sem
 ```
 // start is like a main function in C
 start {
-    display ("Hello World");foo();
+    display ("Hello World");
 }
 ```
 
