@@ -27,3 +27,58 @@ The intention is for this language to be simple and usable by the end of the sem
 **Model Languages:** Python with some fun stuff from Rust, Haskell and Go
 
 ***
+
+## Code Snippets
+
+**Hello World**
+```
+// start is like a main function in C
+start {
+    display ("Hello World");foo();
+}
+```
+
+**Fizz Buzz**
+```
+start {
+    /* 
+        starts with 1, ends with 100; both sides are inclusive
+        since we are using the common mathematical bracketing
+        syntax. Thus (1,100) is exclusize on both sides
+    */ 
+    loop i := [1,100] {
+        if   (i % 3 == 0)  { display ("Fizz") }
+        elif (i % 5 == 0)  { display ("Buzz") }
+        elif (i % 15 == 0) { display ("FizzBuzz") }
+        else               { display (i) }
+    }
+}
+```
+
+**Example of Multiple Files**
+*foo.fish*
+```
+// notes to export since functions within a file are unexported by default
+exp fun foo {
+    display ("Hello from another file");
+}
+```
+
+*sail.fish*
+```
+// denotes find in relative file path
+include ./foo
+
+start {
+    // utilizing the rust syntax here
+    foo::foo();
+}
+```
+
+***
+
+## Wishlist
+
+* Standard documentation tools
+* Standard library
+* Standard formatting like Go
