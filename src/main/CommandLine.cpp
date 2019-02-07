@@ -2,7 +2,7 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "../sailfishc/Scanner.h"
+#include "../sailfish/Scanner.h"
 #include <iostream>
 #include <string>
 
