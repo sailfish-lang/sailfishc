@@ -6,8 +6,8 @@ SourcePart := FunctionDefinition |
               DictionaryDefinition |
               UserDefinedTypeDefinition |
               VariableDefinition |
-              ExecutionBody | 
-              Import |
+              InitialExecutionBody | 
+              Import
 
 FunctionDefinition := ['exp'] FunctionName FunctionInput FunctionOutput FunctionBody
 FunctionName := 'fun' Identifier
@@ -31,7 +31,7 @@ UserDefinedTypeMethods := 'Cfn' Identifier '{' FunctionDefinition* '}'
 VariableDefinition := VariableDecleration | 'dec' VariableDecleration '=' Expression | Identifier ':=' Expression
 VariableDecleration := ['exp'] TypeName Identifier
 
-ExecutionBody := 'start' '{' Block '}'
+InitialExecutionBody := 'start' '{' Block '}'
 
 Import := import Location | include FilePath
 Location := TBD
@@ -39,10 +39,9 @@ FilePath := identifier/FilePath | ./FilePath | Identifier
 
 Block := Statement*
 
-Statement := IfStatement | LoopStatement | '{' Block '}' |  PlaceholderStatement | SimpleStatement | Expression | 'continue' | 'break' | 'return' 
-IfStatement := 'if' Expression '{' Statement '}' ('else if' Expression '{' Statement '}')* ['else' '{' Statement '}']
-LoopStatement := 'for' Expression { Statement } | 'for' SimpleStatement ';' Expression ';' Expression { Statement }
-PlaceholderStatement := '_' 
+Statement := IfStatement | LoopStatement | '{' Block '}' | SimpleStatement | Expression | 'continue' | 'break' | 'return' 
+IfStatement := 'if' Expression '{' Statement '}' ('elif' Expression '{' Statement '}')* ['else' '{' Statement '}']
+LoopStatement := 'loop' Identifier := Expression { Statement }
 SimpleStatement := VariableDefinition | Expression
 
 Expression := Expression ('++' | '--') |
@@ -77,7 +76,7 @@ NameValueList := Identifier (',' Identifier)*
 FunctionCall := '(' FunctionCallArguments ')'
 FunctionCallArguments := [NameValueList] | ExpressionList
 
-Typename := 'bool' | 'str' | 'int' | 'flt'
+Typename := 'bool' | 'str' | 'int' | 'flt' | 'void'
 
 DictionaryLiteral := '[' [DictionaryItem (',' DictionaryItem)] ']'
 DictionaryItem := Identifier ':' Identifier
