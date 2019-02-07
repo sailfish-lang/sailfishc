@@ -44,12 +44,11 @@ IfStatement := 'if' Expression '{' Statement '}' ('elif' Expression '{' Statemen
 LoopStatement := 'loop' Identifier := Expression { Statement }
 SimpleStatement := VariableDefinition | Expression
 
-Expression := Expression ('++' | '--') |
-              IndexAccess |
+Expression := IndexAccess |
               MemberAccess |
               FunctionCall |
               '(' Expression ')' |
-              ('!' | '~' | '++' | '--' | '+' | '-') Expression |
+              ('!' | '++' | '--' | '+' | '-') Expression |
               Expression '**' Expression |
               Expression ('*' | '/' | '%') Expression |
               Expression ('+' | '-') Expression|
@@ -57,7 +56,7 @@ Expression := Expression ('++' | '--') |
               Expression ('==' | '!=') Expression|
               Expression '&&' Expression |
               Expression '||' Expression |
-              Expression ('=' | '+=' | '-=' | '*=' | '/=' | '%=') Expression | 
+              Expression ('=') Expression | 
               Primary Expression
 
 PrimaryExpression := BooleanLiteral |
