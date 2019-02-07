@@ -248,12 +248,6 @@ DFA::DFA()
                 }
             }
             break;
-        case UNARY_ADDITION:
-            for (char c = 0; c < 126; c++)
-            {
-                dfa.insert({{state, c}, DONE});
-            }
-            break;
         case SUBTRACTION:
             for (char c = 0; c < 126; c++)
             {
@@ -271,12 +265,6 @@ DFA::DFA()
                 }
             }
             break;
-        case UNARY_SUBTRACTION:
-            for (char c = 0; c < 126; c++)
-            {
-                dfa.insert({{state, c}, DONE});
-            }
-            break;
         case ASSIGNMENT:
             for (char c = 0; c < 126; c++)
             {
@@ -288,19 +276,6 @@ DFA::DFA()
                 {
                     dfa.insert({{state, c}, DONE});
                 }
-            }
-            break;
-        case EQUIVALENCE:
-            for (char c = 0; c < 126; c++)
-            {
-                dfa.insert({{state, c}, DONE});
-            }
-            break;
-        case CHAR:
-            // TODO: catch errors
-            for (char c = 0; c < 126; c++)
-            {
-                dfa.insert({{state, c}, DONE});
             }
             break;
         case NEGATION:
@@ -316,12 +291,6 @@ DFA::DFA()
                 }
             }
             break;
-        case NON_EQUIVALENCE:
-            for (char c = 0; c < 126; c++)
-            {
-                dfa.insert({{state, c}, DONE});
-            }
-            break;
         case MULTIPLICATION:
             for (char c = 0; c < 126; c++)
             {
@@ -333,12 +302,6 @@ DFA::DFA()
                 {
                     dfa.insert({{state, c}, DONE});
                 }
-            }
-            break;
-        case EXPONENTIATION:
-            for (char c = 0; c < 126; c++)
-            {
-                dfa.insert({{state, c}, DONE});
             }
             break;
         case AND_PRESTATE:
@@ -356,12 +319,6 @@ DFA::DFA()
                 }
             }
             break;
-        case AND:
-            for (char c = 0; c < 126; c++)
-            {
-                dfa.insert({{state, c}, DONE});
-            }
-            break;
         case OR_PRESTATE:
             for (char c = 0; c < 126; c++)
             {
@@ -375,12 +332,6 @@ DFA::DFA()
                     // binary ops right now
                     dfa.insert({{state, c}, ERROR});
                 }
-            }
-            break;
-        case OR:
-            for (char c = 0; c < 126; c++)
-            {
-                dfa.insert({{state, c}, DONE});
             }
             break;
         case LESS_THAN:
@@ -417,6 +368,13 @@ DFA::DFA()
                 }
             }
             break;
+        case UNARY_ADDITION:
+        case UNARY_SUBTRACTION:
+        case CHAR:
+        case NON_EQUIVALENCE:
+        case EQUIVALENCE:
+        case EXPONENTIATION:
+        case OR:
         case LESS_THAN_EQUAL:
         case LARROW:
         case GREATER_THAN_EQUAL:
