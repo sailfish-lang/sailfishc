@@ -2,7 +2,7 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "../sailfish/Scanner.h"
+#include "../sailfish/Lexar.h"
 #include <iostream>
 #include <string>
 
@@ -22,13 +22,8 @@ handleCommandLine(int argc, char* const* argv)
         std::string filename = argv[1];
         std::cout << "Compiling " << filename << ".\n\n";
 
-        Scanner* scanner = new Scanner(filename);
-        char c = scanner->getChar();
-        while (c != EOF)
-        {
-            putchar(c);
-            c = scanner->getChar();
-        }
+        Lexar* lexar = new Lexar(filename);
+        lexar->getToken();
 
         return 1;
     }

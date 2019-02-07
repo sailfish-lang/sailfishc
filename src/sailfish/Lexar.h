@@ -4,19 +4,22 @@
  */
 #pragma once
 
+#include "DFA.h"
 #include "Scanner.h"
 #include <string>
-
-#include <iostream>
 
 class Lexar
 {
   private:
     Scanner* scanner;
+    DFA* dfa;
+    int currentState;
+    std::string buffer;
 
   public:
     // constructor
     Lexar(std::string filename);
     // will return EOF_TOKEN indefinitely once done parsing
     // Token* getToken();
+    void getToken();
 };
