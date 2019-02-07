@@ -4,6 +4,7 @@
  */
 #include "Lexar.h"
 #include "DFA.h"
+#include "Token.h"
 #include <iostream>
 #include <string>
 
@@ -11,10 +12,10 @@ Lexar::Lexar(std::string filename)
 {
     scanner = new Scanner(filename);
     dfa = new DFA();
-    currentState = dfa->START;
+    currentState = State::START;
 }
 
-void
+Token*
 Lexar::getToken()
 {
     char c;
@@ -22,189 +23,109 @@ Lexar::getToken()
     {
         if (c == EOF)
         {
-            std::cout << "EOF" << '\n';
-            break;
+            return new Token(Kind::EOF_TOKEN, "EOF");
         }
         else
         {
             int nextState = dfa->getNextState(currentState, c);
 
-            if (currentState == dfa->START)
+            if (currentState == State::START)
             {
                 if (!isspace(c))
                 {
                     buffer += c;
                 }
             }
-            else if (nextState == dfa->DONE)
+            else if (nextState == State::DONE)
             {
-                if (currentState == dfa->IDENTIFIER)
-                {
-                    std::cout << "IDENTIFIER" << buffer << '\n';
-                }
-                else if (currentState == dfa->INTEGER)
-                {
-                    std::cout << "INTEGER" << buffer << '\n';
-                }
-                else if (currentState == dfa->FLOAT)
-                {
-                    std::cout << "FLOAT" << buffer << '\n';
-                }
-                else if (currentState == dfa->DIVISION_OR_COMMENT)
-                {
-                    std::cout << "DIVISION" << buffer << '\n';
-                }
-                else if (currentState == dfa->SINGLE_LINE_COMMENT)
-                {
-                    std::cout << "SINGLE LINE COMMENT" << buffer << '\n';
-                }
-                else if (currentState == dfa->MULTIPLE_LINE_COMMENT)
-                {
-                    std::cout << "MULTIPLE LINE COMMENT" << buffer << '\n';
-                }
-                else if (currentState == dfa->BYTE)
-                {
-                    std::cout << "BYTE" << buffer << '\n';
-                }
-                else if (currentState == dfa->STRING)
-                {
-                    std::cout << "STRING" << buffer << '\n';
-                }
-                else if (currentState == dfa->ADDITION)
-                {
-                    std::cout << "ADDITION" << buffer << '\n';
-                }
-                else if (currentState == dfa->UNARY_ADDITION)
-                {
-                    std::cout << "UNARY ADDITION" << buffer << '\n';
-                }
-                else if (currentState == dfa->SUBTRACTION)
-                {
-                    std::cout << "SUBTRACTION" << buffer << '\n';
-                }
-                else if (currentState == dfa->UNARY_SUBTRACTION)
-                {
-                    std::cout << "UNARY SUBTRACTION" << buffer << '\n';
-                }
-                else if (currentState == dfa->ASSIGNMENT)
-                {
-                    std::cout << "ASSIGNMENT" << buffer << '\n';
-                }
-                else if (currentState == dfa->EQUIVALENCE)
-                {
-                    std::cout << "EQUIVALENCE" << buffer << '\n';
-                }
-                else if (currentState == dfa->CHAR)
-                {
-                    std::cout << "CHAR" << buffer << '\n';
-                }
-                else if (currentState == dfa->NEGATION)
-                {
-                    std::cout << "NEGATION" << buffer << '\n';
-                }
-                else if (currentState == dfa->NON_EQUIVALENCE)
-                {
-                    std::cout << "NON EQUIVALENCE" << buffer << '\n';
-                }
-                else if (currentState == dfa->MULTIPLICATION)
-                {
-                    std::cout << "MULTIPLICATION" << buffer << '\n';
-                }
-                else if (currentState == dfa->EXPONENTIATION)
-                {
-                    std::cout << "EXPONENTIATION" << buffer << '\n';
-                }
-                else if (currentState == dfa->AND)
-                {
-                    std::cout << "AND" << buffer << '\n';
-                }
-                else if (currentState == dfa->OR)
-                {
-                    std::cout << "OR" << buffer << '\n';
-                }
-                else if (currentState == dfa->LESS_THAN)
-                {
-                    std::cout << "LESS THAN" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->LESS_THAN_EQUAL)
-                {
-                    std::cout << "LESS THAN EQUAL" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->LARROW)
-                {
-                    std::cout << "LEFT ARROW" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->GREATER_THAN)
-                {
-                    std::cout << "GREATER THAN" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->GREATER_THAN_EQUAL)
-                {
-                    std::cout << "GREATER THAN EQUAL" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->RARROW)
-                {
-                    std::cout << "RARROW" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->UNDERSCORE)
-                {
-                    std::cout << "UNDERSCORE" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->COMMA)
-                {
-                    std::cout << "COMMA" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->LBRACKET)
-                {
-                    std::cout << "LBRACKET" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->RBRACKET)
-                {
-                    std::cout << "RBRACKET" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->LCURLEY)
-                {
-                    std::cout << "LCURLEY" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->LPAREN)
-                {
-                    std::cout << "LPAREN" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->RPAREN)
-                {
-                    std::cout << "RPAREN" << buffer << '\n';
-                }
-
-                else if (currentState == dfa->MODULO)
-                {
-                    std::cout << "MODULO" << buffer << '\n';
-                }
-
+                auto tempBuffer = buffer;
                 buffer = "";
-                nextState = dfa->START;
-
-                if (currentState != dfa->STRING &&
-                    currentState != dfa->MULTIPLE_LINE_COMMENT)
+                auto tempState = currentState;
+                if (currentState != State::STRING &&
+                    currentState != State::MULTIPLE_LINE_COMMENT)
                 {
                     scanner->putBackChar(c);
                 }
+                currentState = State::START;
+
+                switch (tempState)
+                {
+                case State::IDENTIFIER:
+                    return new Token(Kind::IDENTIFIER_TOKEN, tempBuffer);
+                case State::INTEGER:
+                    return new Token(Kind::INTEGER_TOKEN, tempBuffer);
+                case State::FLOAT:
+                    return new Token(Kind::FLOAT_TOKEN, tempBuffer);
+                case State::DIVISION_OR_COMMENT:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::SINGLE_LINE_COMMENT:
+                    return new Token(Kind::COMMENT_TOKEN, tempBuffer);
+                case State::MULTIPLE_LINE_COMMENT:
+                    return new Token(Kind::COMMENT_TOKEN, tempBuffer);
+                case State::BYTE:
+                    return new Token(Kind::BYTE_TOKEN, tempBuffer);
+                case State::STRING:
+                    return new Token(Kind::STRING_TOKEN, tempBuffer);
+                case State::ADDITION:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::UNARY_ADDITION:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::SUBTRACTION:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::UNARY_SUBTRACTION:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::ASSIGNMENT:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::EQUIVALENCE:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::CHAR:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::NEGATION:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::NON_EQUIVALENCE:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::MULTIPLICATION:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::EXPONENTIATION:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::AND:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::OR:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::LESS_THAN:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::LESS_THAN_EQUAL:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::LARROW:
+                    return new Token(Kind::ARROW_TOKEN, tempBuffer);
+                case State::GREATER_THAN:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::GREATER_THAN_EQUAL:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                case State::RARROW:
+                    return new Token(Kind::ARROW_TOKEN, tempBuffer);
+                case State::UNDERSCORE:
+                    return new Token(Kind::UNDERSCORE_TOKEN, tempBuffer);
+                case State::COMMA:
+                    return new Token(Kind::COMMA_TOKEN, tempBuffer);
+                case State::LBRACKET:
+                    return new Token(Kind::LBRACKET_TOKEN, tempBuffer);
+                case State::RBRACKET:
+                    return new Token(Kind::RBRACKET_TOKEN, tempBuffer);
+                case State::LCURLEY:
+                    return new Token(Kind::LCURLEY_TOKEN, tempBuffer);
+                case State::LPAREN:
+                    return new Token(Kind::LPAREN_TOKEN, tempBuffer);
+                case State::RPAREN:
+                    return new Token(Kind::RPAREN_TOKEN, tempBuffer);
+                case State::MODULO:
+                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                }
             }
-            else if (nextState == dfa->ERROR)
+            else if (nextState == State::ERROR)
             {
-                std::cout << "ERROR" << '\n';
-                currentState = dfa->START;
+                auto tempBuffer = buffer;
+                return new Token(Kind::ERROR_TOKEN, tempBuffer);
             }
             else
             {

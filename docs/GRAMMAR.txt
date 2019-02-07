@@ -90,7 +90,7 @@ Decimal  := [0-9]+
 ***
 
 ## Keywords
-* Fun
+* fun
 * Cat
 * Cfn
 * loop

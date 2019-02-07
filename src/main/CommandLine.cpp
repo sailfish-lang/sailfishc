@@ -23,7 +23,14 @@ handleCommandLine(int argc, char* const* argv)
         std::cout << "Compiling " << filename << ".\n\n";
 
         Lexar* lexar = new Lexar(filename);
-        lexar->getToken();
+
+        Token* t;
+        t = lexar->getToken();
+        while (!t->isEOF())
+        {
+            t->display();
+            t = lexar->getToken();
+        }
 
         return 1;
     }

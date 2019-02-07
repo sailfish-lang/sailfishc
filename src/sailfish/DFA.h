@@ -6,6 +6,53 @@
 #include <map>
 #include <tuple>
 
+enum State
+{
+    START,
+    IDENTIFIER,
+    INTEGER,
+    FLOAT,
+    DIVISION_OR_COMMENT,
+    SINGLE_LINE_COMMENT,
+    MULTIPLE_LINE_COMMENT_PRESTATE,
+    MULTIPLE_LINE_COMMENT,
+    BYTE,
+    STRING,
+    STRING_ESCAPE,
+    ADDITION,
+    UNARY_ADDITION,
+    SUBTRACTION,
+    UNARY_SUBTRACTION,
+    ASSIGNMENT,
+    EQUIVALENCE,
+    CHAR,
+    NEGATION,
+    NON_EQUIVALENCE,
+    MULTIPLICATION,
+    EXPONENTIATION,
+    AND_PRESTATE,
+    AND,
+    OR_PRESTATE,
+    OR,
+    LESS_THAN,
+    LESS_THAN_EQUAL,
+    LARROW,
+    GREATER_THAN,
+    GREATER_THAN_EQUAL,
+    RARROW,
+    UNDERSCORE,
+    COMMA,
+    LBRACKET,
+    RBRACKET,
+    LCURLEY,
+    RCURLEY,
+    LPAREN,
+    RPAREN,
+    MODULO,
+    DONE,
+    ERROR
+};
+
 class DFA
 {
   private:
@@ -14,52 +61,7 @@ class DFA
 
   public:
     // all the possible states
-    enum state
-    {
-        START,
-        IDENTIFIER,
-        INTEGER,
-        FLOAT,
-        DIVISION_OR_COMMENT,
-        SINGLE_LINE_COMMENT,
-        MULTIPLE_LINE_COMMENT_PRESTATE,
-        MULTIPLE_LINE_COMMENT,
-        BYTE,
-        STRING,
-        STRING_ESCAPE,
-        ADDITION,
-        UNARY_ADDITION,
-        SUBTRACTION,
-        UNARY_SUBTRACTION,
-        ASSIGNMENT,
-        EQUIVALENCE,
-        CHAR,
-        NEGATION,
-        NON_EQUIVALENCE,
-        MULTIPLICATION,
-        EXPONENTIATION,
-        AND_PRESTATE,
-        AND,
-        OR_PRESTATE,
-        OR,
-        LESS_THAN,
-        LESS_THAN_EQUAL,
-        LARROW,
-        GREATER_THAN,
-        GREATER_THAN_EQUAL,
-        RARROW,
-        UNDERSCORE,
-        COMMA,
-        LBRACKET,
-        RBRACKET,
-        LCURLEY,
-        RCURLEY,
-        LPAREN,
-        RPAREN,
-        MODULO,
-        DONE,
-        ERROR
-    };
+
     // constructor
     DFA();
     // since we want to keep the dfa immutable, we'll keep it encapsulated here

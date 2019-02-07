@@ -9,90 +9,90 @@
 
 DFA::DFA()
 {
-    for (int state = START; state < ERROR; state++)
+    for (int state = State::START; state < State::ERROR; state++)
     {
         switch (state)
         {
-        case START:
+        case State::START:
             for (char c = 0; c < 126; c++)
             {
                 if (isalpha(c))
                 {
-                    dfa.insert({{state, c}, IDENTIFIER});
+                    dfa.insert({{state, c}, State::IDENTIFIER});
                 }
                 else if (isdigit(c))
                 {
-                    dfa.insert({{state, c}, INTEGER});
+                    dfa.insert({{state, c}, State::INTEGER});
                 }
                 else
                 {
                     switch (c)
                     {
                     case '/':
-                        dfa.insert({{state, c}, DIVISION_OR_COMMENT});
+                        dfa.insert({{state, c}, State::DIVISION_OR_COMMENT});
                         break;
                     case '\'':
-                        dfa.insert({{state, c}, BYTE});
+                        dfa.insert({{state, c}, State::BYTE});
                         break;
                     case '\"':
-                        dfa.insert({{state, c}, STRING});
+                        dfa.insert({{state, c}, State::STRING});
                         break;
                     case '+':
-                        dfa.insert({{state, c}, ADDITION});
+                        dfa.insert({{state, c}, State::ADDITION});
                         break;
                     case '-':
-                        dfa.insert({{state, c}, SUBTRACTION});
+                        dfa.insert({{state, c}, State::SUBTRACTION});
                         break;
                     case '=':
-                        dfa.insert({{state, c}, ASSIGNMENT});
+                        dfa.insert({{state, c}, State::ASSIGNMENT});
                         break;
                     case '\\':
-                        dfa.insert({{state, c}, CHAR});
+                        dfa.insert({{state, c}, State::CHAR});
                         break;
                     case '!':
-                        dfa.insert({{state, c}, NEGATION});
+                        dfa.insert({{state, c}, State::NEGATION});
                         break;
                     case '*':
-                        dfa.insert({{state, c}, MULTIPLICATION});
+                        dfa.insert({{state, c}, State::MULTIPLICATION});
                         break;
                     case '&':
-                        dfa.insert({{state, c}, AND_PRESTATE});
+                        dfa.insert({{state, c}, State::AND_PRESTATE});
                         break;
                     case '|':
-                        dfa.insert({{state, c}, OR_PRESTATE});
+                        dfa.insert({{state, c}, State::OR_PRESTATE});
                         break;
                     case '<':
-                        dfa.insert({{state, c}, LESS_THAN});
+                        dfa.insert({{state, c}, State::LESS_THAN});
                         break;
                     case '>':
-                        dfa.insert({{state, c}, GREATER_THAN});
+                        dfa.insert({{state, c}, State::GREATER_THAN});
                         break;
                     case '_':
-                        dfa.insert({{state, c}, UNDERSCORE});
+                        dfa.insert({{state, c}, State::UNDERSCORE});
                         break;
                     case ',':
-                        dfa.insert({{state, c}, COMMA});
+                        dfa.insert({{state, c}, State::COMMA});
                         break;
                     case '[':
-                        dfa.insert({{state, c}, LBRACKET});
+                        dfa.insert({{state, c}, State::LBRACKET});
                         break;
                     case ']':
-                        dfa.insert({{state, c}, RBRACKET});
+                        dfa.insert({{state, c}, State::RBRACKET});
                         break;
                     case '{':
-                        dfa.insert({{state, c}, LCURLEY});
+                        dfa.insert({{state, c}, State::LCURLEY});
                         break;
                     case '}':
-                        dfa.insert({{state, c}, RCURLEY});
+                        dfa.insert({{state, c}, State::RCURLEY});
                         break;
                     case '(':
-                        dfa.insert({{state, c}, LPAREN});
+                        dfa.insert({{state, c}, State::LPAREN});
                         break;
                     case ')':
-                        dfa.insert({{state, c}, RPAREN});
+                        dfa.insert({{state, c}, State::RPAREN});
                         break;
                     case '%':
-                        dfa.insert({{state, c}, MODULO});
+                        dfa.insert({{state, c}, State::MODULO});
                         break;
                     default:
                         dfa.insert({{state, c}, state});
@@ -100,7 +100,7 @@ DFA::DFA()
                 }
             }
             break;
-        case IDENTIFIER:
+        case State::IDENTIFIER:
             for (char c = 0; c < 126; c++)
             {
                 if (isalnum(c) || c == '_')
@@ -109,11 +109,11 @@ DFA::DFA()
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case INTEGER:
+        case State::INTEGER:
             for (char c = 0; c < 126; c++)
             {
                 if (isdigit(c))
@@ -122,15 +122,15 @@ DFA::DFA()
                 }
                 else if (c == '.')
                 {
-                    dfa.insert({{state, c}, FLOAT});
+                    dfa.insert({{state, c}, State::FLOAT});
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case FLOAT:
+        case State::FLOAT:
             for (char c = 0; c < 126; c++)
             {
                 if (isdigit(c))
@@ -139,33 +139,34 @@ DFA::DFA()
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case DIVISION_OR_COMMENT:
+        case State::DIVISION_OR_COMMENT:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '/')
                 {
-                    dfa.insert({{state, c}, SINGLE_LINE_COMMENT});
+                    dfa.insert({{state, c}, State::SINGLE_LINE_COMMENT});
                 }
                 else if (c == '*')
                 {
-                    dfa.insert({{state, c}, MULTIPLE_LINE_COMMENT_PRESTATE});
+                    dfa.insert(
+                        {{state, c}, State::MULTIPLE_LINE_COMMENT_PRESTATE});
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case SINGLE_LINE_COMMENT:
+        case State::SINGLE_LINE_COMMENT:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '\n')
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
                 else
                 {
@@ -173,12 +174,12 @@ DFA::DFA()
                 }
             }
             break;
-        case MULTIPLE_LINE_COMMENT_PRESTATE:
+        case State::MULTIPLE_LINE_COMMENT_PRESTATE:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '*')
                 {
-                    dfa.insert({{state, c}, MULTIPLE_LINE_COMMENT});
+                    dfa.insert({{state, c}, State::MULTIPLE_LINE_COMMENT});
                 }
                 else
                 {
@@ -186,25 +187,26 @@ DFA::DFA()
                 }
             }
             break;
-        case MULTIPLE_LINE_COMMENT:
+        case State::MULTIPLE_LINE_COMMENT:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '/')
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
                 else
                 {
-                    dfa.insert({{state, c}, MULTIPLE_LINE_COMMENT_PRESTATE});
+                    dfa.insert(
+                        {{state, c}, State::MULTIPLE_LINE_COMMENT_PRESTATE});
                 }
             }
             break;
-        case BYTE:
+        case State::BYTE:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '\'')
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
                 else
                 {
@@ -212,16 +214,16 @@ DFA::DFA()
                 }
             }
             break;
-        case STRING:
+        case State::STRING:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '\\')
                 {
-                    dfa.insert({{state, c}, STRING_ESCAPE});
+                    dfa.insert({{state, c}, State::STRING_ESCAPE});
                 }
                 else if (c == '"')
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
                 else
                 {
@@ -229,171 +231,171 @@ DFA::DFA()
                 }
             }
             break;
-        case STRING_ESCAPE:
+        case State::STRING_ESCAPE:
             for (char c = 0; c < 126; c++)
             {
-                dfa.insert({{state, c}, STRING});
+                dfa.insert({{state, c}, State::STRING});
             }
             break;
-        case ADDITION:
+        case State::ADDITION:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '+')
                 {
-                    dfa.insert({{state, c}, UNARY_ADDITION});
+                    dfa.insert({{state, c}, State::UNARY_ADDITION});
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case SUBTRACTION:
+        case State::SUBTRACTION:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '-')
                 {
-                    dfa.insert({{state, c}, UNARY_SUBTRACTION});
+                    dfa.insert({{state, c}, State::UNARY_SUBTRACTION});
                 }
                 else if (c == '>')
                 {
-                    dfa.insert({{state, c}, RARROW});
+                    dfa.insert({{state, c}, State::RARROW});
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case ASSIGNMENT:
+        case State::ASSIGNMENT:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '=')
                 {
-                    dfa.insert({{state, c}, EQUIVALENCE});
+                    dfa.insert({{state, c}, State::EQUIVALENCE});
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case NEGATION:
+        case State::NEGATION:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '=')
                 {
-                    dfa.insert({{state, c}, EQUIVALENCE});
+                    dfa.insert({{state, c}, State::EQUIVALENCE});
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case MULTIPLICATION:
+        case State::MULTIPLICATION:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '*')
                 {
-                    dfa.insert({{state, c}, EXPONENTIATION});
+                    dfa.insert({{state, c}, State::EXPONENTIATION});
                 }
                 else
                 {
-                    dfa.insert({{state, c}, DONE});
+                    dfa.insert({{state, c}, State::DONE});
                 }
             }
             break;
-        case AND_PRESTATE:
+        case State::AND_PRESTATE:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '&')
                 {
-                    dfa.insert({{state, c}, AND});
+                    dfa.insert({{state, c}, State::AND});
                 }
                 else
                 {
                     // in real life this is a binary op, but I don't need
                     // binary ops right now
-                    dfa.insert({{state, c}, ERROR});
+                    dfa.insert({{state, c}, State::ERROR});
                 }
             }
             break;
-        case OR_PRESTATE:
+        case State::OR_PRESTATE:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '|')
                 {
-                    dfa.insert({{state, c}, OR});
+                    dfa.insert({{state, c}, State::OR});
                 }
                 else
                 {
                     // in real life this is a binary op, but I don't need
                     // binary ops right now
-                    dfa.insert({{state, c}, ERROR});
+                    dfa.insert({{state, c}, State::ERROR});
                 }
             }
             break;
-        case LESS_THAN:
+        case State::LESS_THAN:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '=')
                 {
-                    dfa.insert({{state, c}, LESS_THAN_EQUAL});
+                    dfa.insert({{state, c}, State::LESS_THAN_EQUAL});
                 }
                 else if (c == '-')
                 {
-                    dfa.insert({{state, c}, LARROW});
+                    dfa.insert({{state, c}, State::LARROW});
                 }
                 else
                 {
                     // in real life this is a binary op, but I don't need
                     // binary ops right now
-                    dfa.insert({{state, c}, ERROR});
+                    dfa.insert({{state, c}, State::ERROR});
                 }
             }
             break;
-        case GREATER_THAN:
+        case State::GREATER_THAN:
             for (char c = 0; c < 126; c++)
             {
                 if (c == '=')
                 {
-                    dfa.insert({{state, c}, GREATER_THAN_EQUAL});
+                    dfa.insert({{state, c}, State::GREATER_THAN_EQUAL});
                 }
                 else
                 {
                     // in real life this is a binary op, but I don't need
                     // binary ops right now
-                    dfa.insert({{state, c}, ERROR});
+                    dfa.insert({{state, c}, State::ERROR});
                 }
             }
             break;
-        case UNARY_ADDITION:
-        case UNARY_SUBTRACTION:
-        case CHAR:
-        case NON_EQUIVALENCE:
-        case EQUIVALENCE:
-        case EXPONENTIATION:
-        case OR:
-        case LESS_THAN_EQUAL:
-        case LARROW:
-        case GREATER_THAN_EQUAL:
-        case RARROW:
-        case UNDERSCORE:
-        case COMMA:
-        case LBRACKET:
-        case RBRACKET:
-        case LCURLEY:
-        case RCURLEY:
-        case LPAREN:
-        case RPAREN:
-        case MODULO:
+        case State::UNARY_ADDITION:
+        case State::UNARY_SUBTRACTION:
+        case State::CHAR:
+        case State::NON_EQUIVALENCE:
+        case State::EQUIVALENCE:
+        case State::EXPONENTIATION:
+        case State::OR:
+        case State::LESS_THAN_EQUAL:
+        case State::LARROW:
+        case State::GREATER_THAN_EQUAL:
+        case State::RARROW:
+        case State::UNDERSCORE:
+        case State::COMMA:
+        case State::LBRACKET:
+        case State::RBRACKET:
+        case State::LCURLEY:
+        case State::RCURLEY:
+        case State::LPAREN:
+        case State::RPAREN:
+        case State::MODULO:
             for (char c = 0; c < 126; c++)
             {
-                dfa.insert({{state, c}, DONE});
+                dfa.insert({{state, c}, State::DONE});
             }
             break;
-        case ERROR:
+        case State::ERROR:
             // not quite sure what to do here yet as the state reset may
             // happen in the lexar.
             // TODO: figure this out
@@ -418,6 +420,6 @@ DFA::getNextState(int state, char c)
     }
     else
     {
-        return START;
+        return State::START;
     }
 }

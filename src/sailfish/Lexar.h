@@ -6,6 +6,7 @@
 
 #include "DFA.h"
 #include "Scanner.h"
+#include "Token.h"
 #include <string>
 
 class Lexar
@@ -21,5 +22,5 @@ class Lexar
     Lexar(std::string filename);
     // will return EOF_TOKEN indefinitely once done parsing
     // Token* getToken();
-    void getToken();
+    Token* getToken();
 };
