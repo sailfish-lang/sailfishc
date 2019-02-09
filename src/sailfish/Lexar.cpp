@@ -198,118 +198,73 @@ Lexar::getToken()
                 break;
             case State::STRING:
                 if (c == '\\')
-                {
                     state = State::STRING_ESCAPE;
-                }
                 else if (c == '"')
-                {
                     return new Token(Kind::STRING_TOKEN, buffer);
-                }
                 break;
             case State::STRING_ESCAPE:
                 state = State::STRING;
                 break;
             case State::ADDITION:
                 if (c == '+')
-                {
                     return new Token(Kind::OPERATION_TOKEN, buffer);
-                }
                 else
-                {
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
                                               scanner);
-                }
             case State::SUBTRACTION:
                 if (c == '-')
-                {
                     return new Token(Kind::OPERATION_TOKEN, buffer);
-                }
                 else if (c == '>')
-                {
                     return new Token(Kind::ARROW_TOKEN, buffer);
-                }
                 else
-                {
                     return new Token(Kind::OPERATION_TOKEN, buffer);
-                }
-                break;
             case State::ASSIGNMENT:
                 if (c == '=')
-                {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
-                }
                 else
-                {
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
                                               scanner);
-                }
             case State::CHAR:
                 return new Token(Kind::CHAR_TOKEN, buffer);
             case State::NEGATION:
                 if (c == '=')
-                {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
-                }
                 else
-                {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
-                }
             case State::MULTIPLICATION:
                 if (c == '*')
-                {
                     return new Token(Kind::OPERATION_TOKEN, buffer);
-                }
                 else
-                {
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
                                               scanner);
-                }
             case State::AND_PRESTATE:
                 if (c != '&')
-                {
                     return createTokenPutback(Kind::ERROR_TOKEN, c,
                                               "& is not a valid token",
                                               scanner);
-                }
                 else
-                {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
-                }
             case State::OR_PRESTATE:
                 if (c != '|')
-                {
                     return createTokenPutback(Kind::INTEGER_TOKEN, c,
                                               "| is not a valid token",
                                               scanner);
-                }
                 else
-                {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
-                }
             case State::LESS_THAN:
                 if (c == '=')
-                {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
-                }
                 else if (c == '-')
-                {
                     return new Token(Kind::ARROW_TOKEN, buffer);
-                }
                 else
-                {
                     return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
                                               scanner);
-                }
             case State::GREATER_THAN:
                 if (c == '=')
-                {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
-                }
                 else
-                {
                     return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
                                               scanner);
-                }
             }
         }
     }
