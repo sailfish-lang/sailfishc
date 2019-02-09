@@ -34,7 +34,7 @@ The intention is for this language to be simple and usable by the end of the sem
 ```
 // start is like a main function in C
 start {
-    display ("Hello World");
+    display ("Hello World")
 }
 ```
 
@@ -47,10 +47,10 @@ start {
         syntax. Thus (1,100) is exclusize on both sides
     */ 
     loop i := [1,100] {
-        if   (i % 3 == 0)  { display ("Fizz"); }
-        elif (i % 5 == 0)  { display ("Buzz"); }
-        elif (i % 15 == 0) { display ("FizzBuzz"); }
-        else               { display (i); }
+        if   (i % 3 == 0)  { display ("Fizz") }
+        elif (i % 5 == 0)  { display ("Buzz") }
+        elif (i % 15 == 0) { display ("FizzBuzz") }
+        else               { display (i) }
     }
 }
 ```
@@ -60,7 +60,7 @@ start {
 ```
 // notes to export since functions within a file are unexported by default
 exp fun foo {
-    display ("Hello from another file");
+    display ("Hello from another file")
 }
 ```
 
@@ -71,7 +71,7 @@ include ./foo
 
 start {
     // utilizing the rust syntax here
-    foo::foo();
+    foo::foo()
 }
 ```
 

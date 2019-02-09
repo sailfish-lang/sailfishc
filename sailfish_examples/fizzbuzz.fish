@@ -2,10 +2,10 @@ fun fizzbuzz
 <- int num
 -> void
 {
-        if   (i % 3 == 0)  { display ("Fizz"); }
-        elif (i % 5 == 0)  { display ("Buzz"); }
-        elif (i % 15 == 0) { display ("FizzBuzz"); }
-        else               { display (i); }
+        if   (i % 3 == 0)  { display ("Fizz") }
+        elif (i % 5 == 0)  { display ("Buzz") }
+        elif (i % 15 == 0) { display ("FizzBuzz") }
+        else               { display (i) }
 }
 
 start {
@@ -15,6 +15,6 @@ start {
         syntax. Thus (1,100) is exclusize on both sides
     */ 
     loop i := [1,100] {
-        fizzbuzz(i);
+        fizzbuzz(i)
     }
 }

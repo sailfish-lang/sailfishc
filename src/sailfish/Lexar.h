@@ -4,18 +4,40 @@
  */
 #pragma once
 
-#include "DFA.h"
 #include "Scanner.h"
 #include "Token.h"
 #include <string>
+
+enum State
+{
+    START,
+    IDENTIFIER,
+    INTEGER,
+    FLOAT,
+    DIVISION_OR_COMMENT,
+    SINGLE_LINE_COMMENT,
+    MULTIPLE_LINE_COMMENT_PRESTATE,
+    MULTIPLE_LINE_COMMENT,
+    BYTE,
+    STRING,
+    STRING_ESCAPE,
+    ADDITION,
+    SUBTRACTION,
+    ASSIGNMENT,
+    CHAR,
+    NEGATION,
+    MULTIPLICATION,
+    AND_PRESTATE,
+    OR_PRESTATE,
+    LESS_THAN,
+    GREATER_THAN,
+    ERROR
+};
 
 class Lexar
 {
   private:
     Scanner* scanner;
-    DFA* dfa;
-    int currentState;
-    std::string buffer;
 
   public:
     // constructor

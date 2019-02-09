@@ -3,139 +3,335 @@
  * Sailfish Programming Language
  */
 #include "Lexar.h"
-#include "DFA.h"
 #include "Token.h"
 #include <iostream>
 #include <string>
 
+Token*
+createTokenPutback(Kind k, char c, std::string buffer, Scanner* scanner)
+{
+    if (!isspace(c))
+    {
+        buffer.pop_back();
+    }
+    scanner->putBackChar(c);
+    return new Token(Kind::OPERATION_TOKEN, buffer);
+}
+
 Lexar::Lexar(std::string filename)
 {
     scanner = new Scanner(filename);
-    dfa = new DFA();
-    currentState = State::START;
 }
 
 Token*
 Lexar::getToken()
 {
+    // something to hold the current token
     char c;
+    // something to hold the current state
+    int state = State::START;
+    // something to hold the current buffer
+    std::string buffer = "";
+
+    // loop until no more chars in file to read
     while ((c = scanner->getChar()))
     {
         if (c == EOF)
         {
-            return new Token(Kind::EOF_TOKEN, "EOF");
+            return new Token(Kind::EOF_TOKEN, buffer);
         }
         else
         {
-            int nextState = dfa->getNextState(currentState, c);
+            if (!isspace(c))
+            {
+                buffer += c;
+            }
+            switch (state)
+            {
+            case State::START:
+                if (isalpha(c))
+                {
+                    // go to the identifier state
+                    state = State::IDENTIFIER;
+                }
+                else if (isdigit(c))
+                {
+                    // go to the digit state
+                    state = State::INTEGER;
+                }
+                else
+                {
+                    switch (c)
+                    {
+                    // these are all completed on the first char
+                    case '_':
+                        return new Token(Kind::UNDERSCORE_TOKEN, buffer);
+                    case ',':
+                        return new Token(Kind::COMMA_TOKEN, buffer);
+                    case '[':
+                        return new Token(Kind::LBRACKET_TOKEN, buffer);
+                    case ']':
+                        return new Token(Kind::RBRACKET_TOKEN, buffer);
+                    case '{':
+                        return new Token(Kind::LCURLEY_TOKEN, buffer);
+                    case '}':
+                        return new Token(Kind::RCURLEY_TOKEN, buffer);
+                    case '(':
+                        return new Token(Kind::LPAREN_TOKEN, buffer);
+                    case ')':
+                        return new Token(Kind::RPAREN_TOKEN, buffer);
+                    case '%':
+                        return new Token(Kind::OPERATION_TOKEN, buffer);
+                    case ';':
+                        return new Token(Kind::ERROR_TOKEN,
+                                         "No semi-colons in sailfish");
 
-            if (currentState == State::START)
-            {
-                if (!isspace(c))
-                {
-                    buffer += c;
+                    // these require multiple other states
+                    case '/':
+                        // go to comment state
+                        state = State::DIVISION_OR_COMMENT;
+                        break;
+                    case '\'':
+                        // go to byte state
+                        state = State::BYTE;
+                        break;
+                    case '\"':
+                        // go to string state
+                        state = State::STRING;
+                        break;
+                    case '+':
+                        // go to addition state
+                        state = State::ADDITION;
+                        break;
+                    case '-':
+                        // go to subtraction state
+                        state = State::SUBTRACTION;
+                        break;
+                    case '=':
+                        // go to equals state
+                        state = State::ASSIGNMENT;
+                        break;
+                    case '\\':
+                        // go to char state
+                        state = State::CHAR;
+                        break;
+                    case '!':
+                        // go to negation state
+                        state = State::NEGATION;
+                        break;
+                    case '*':
+                        // go to asteriks state
+                        state = State::MULTIPLICATION;
+                        break;
+                    case '&':
+                        // go to and prestate
+                        state = State::AND_PRESTATE;
+                        break;
+                    case '|':
+                        // go to or prestate
+                        state = State::OR_PRESTATE;
+                        break;
+                    case '<':
+                        // go to less than state
+                        state = State::LESS_THAN;
+                        break;
+                    case '>':
+                        // go to greater than state
+                        state = State::GREATER_THAN;
+                        break;
+                    }
                 }
-            }
-            else if (nextState == State::DONE)
-            {
-                auto tempBuffer = buffer;
-                buffer = "";
-                auto tempState = currentState;
-                if (currentState != State::STRING &&
-                    currentState != State::MULTIPLE_LINE_COMMENT)
+                break;
+            case State::IDENTIFIER:
+                if (!isalnum(c) && c != '_')
                 {
-                    scanner->putBackChar(c);
+                    return createTokenPutback(Kind::IDENTIFIER_TOKEN, c, buffer,
+                                              scanner);
                 }
-                currentState = State::START;
+                break;
+            case State::INTEGER:
+                if (c == '.')
+                {
+                    state = State::FLOAT;
+                }
+                else if (!isdigit(c))
+                {
+                    return createTokenPutback(Kind::INTEGER_TOKEN, c, buffer,
+                                              scanner);
+                }
+                break;
+            case State::FLOAT:
+                if (!isdigit(c))
+                {
+                    return createTokenPutback(Kind::FLOAT_TOKEN, c, buffer,
+                                              scanner);
+                }
+                break;
+            case State::DIVISION_OR_COMMENT:
+                if (c == '/')
+                {
+                    state = State::SINGLE_LINE_COMMENT;
+                }
+                else if (c == '*')
+                {
+                    state = State::MULTIPLE_LINE_COMMENT_PRESTATE;
+                }
+                else
+                {
+                    return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
+                                              scanner);
+                }
+                break;
+            case State::SINGLE_LINE_COMMENT:
+                if (c == '\n')
+                {
+                    return new Token(Kind::COMMENT_TOKEN, buffer);
+                }
+                break;
+            case State::MULTIPLE_LINE_COMMENT_PRESTATE:
+                if (c == '*')
+                {
+                    state = State::MULTIPLE_LINE_COMMENT;
+                }
+                break;
+            case State::MULTIPLE_LINE_COMMENT:
+                if (c == '/')
+                {
+                    return new Token(Kind::COMMENT_TOKEN, buffer);
+                }
 
-                switch (tempState)
+                state = State::MULTIPLE_LINE_COMMENT_PRESTATE;
+                break;
+            case State::BYTE:
+                if (c == '\'')
                 {
-                case State::IDENTIFIER:
-                    return new Token(Kind::IDENTIFIER_TOKEN, tempBuffer);
-                case State::INTEGER:
-                    return new Token(Kind::INTEGER_TOKEN, tempBuffer);
-                case State::FLOAT:
-                    return new Token(Kind::FLOAT_TOKEN, tempBuffer);
-                case State::DIVISION_OR_COMMENT:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::SINGLE_LINE_COMMENT:
-                    return new Token(Kind::COMMENT_TOKEN, tempBuffer);
-                case State::MULTIPLE_LINE_COMMENT:
-                    return new Token(Kind::COMMENT_TOKEN, tempBuffer);
-                case State::BYTE:
-                    return new Token(Kind::BYTE_TOKEN, tempBuffer);
-                case State::STRING:
-                    return new Token(Kind::STRING_TOKEN, tempBuffer);
-                case State::ADDITION:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::UNARY_ADDITION:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::SUBTRACTION:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::UNARY_SUBTRACTION:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::ASSIGNMENT:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::EQUIVALENCE:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::CHAR:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::NEGATION:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::NON_EQUIVALENCE:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::MULTIPLICATION:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::EXPONENTIATION:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::AND:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::OR:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::LESS_THAN:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::LESS_THAN_EQUAL:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::LARROW:
-                    return new Token(Kind::ARROW_TOKEN, tempBuffer);
-                case State::GREATER_THAN:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::GREATER_THAN_EQUAL:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
-                case State::RARROW:
-                    return new Token(Kind::ARROW_TOKEN, tempBuffer);
-                case State::UNDERSCORE:
-                    return new Token(Kind::UNDERSCORE_TOKEN, tempBuffer);
-                case State::COMMA:
-                    return new Token(Kind::COMMA_TOKEN, tempBuffer);
-                case State::LBRACKET:
-                    return new Token(Kind::LBRACKET_TOKEN, tempBuffer);
-                case State::RBRACKET:
-                    return new Token(Kind::RBRACKET_TOKEN, tempBuffer);
-                case State::LCURLEY:
-                    return new Token(Kind::LCURLEY_TOKEN, tempBuffer);
-                case State::LPAREN:
-                    return new Token(Kind::LPAREN_TOKEN, tempBuffer);
-                case State::RPAREN:
-                    return new Token(Kind::RPAREN_TOKEN, tempBuffer);
-                case State::MODULO:
-                    return new Token(Kind::OPERATION_TOKEN, tempBuffer);
+                    return new Token(Kind::BYTE_TOKEN, buffer);
+                }
+                break;
+            case State::STRING:
+                if (c == '\\')
+                {
+                    state = State::STRING_ESCAPE;
+                }
+                else if (c == '"')
+                {
+                    return new Token(Kind::STRING_TOKEN, buffer);
+                }
+                break;
+            case State::STRING_ESCAPE:
+                state = State::STRING;
+                break;
+            case State::ADDITION:
+                // this should not push back the char
+                if (c == '+')
+                {
+                    return new Token(Kind::OPERATION_TOKEN, buffer);
+                }
+                else
+                {
+                    return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
+                                              scanner);
+                }
+            case State::SUBTRACTION:
+                // this should not push back the char
+                if (c == '-')
+                {
+                    return new Token(Kind::OPERATION_TOKEN, buffer);
+                }
+                else if (c == '>')
+                {
+                    return new Token(Kind::ARROW_TOKEN, buffer);
+                }
+                else
+                {
+                    return new Token(Kind::OPERATION_TOKEN, buffer);
+                }
+                break;
+            case State::ASSIGNMENT:
+                // this should not push back the char
+                if (c == '=')
+                {
+                    return new Token(Kind::LOGIC_TOKEN, buffer);
+                }
+                else
+                {
+                    return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
+                                              scanner);
+                }
+            case State::CHAR:
+                return new Token(Kind::CHAR_TOKEN, buffer);
+            case State::NEGATION:
+                // this should not push back the char
+                if (c == '=')
+                {
+                    return new Token(Kind::LOGIC_TOKEN, buffer);
+                }
+                // is ! a logic token or an operation token?
+                else
+                {
+                    return new Token(Kind::LOGIC_TOKEN, buffer);
+                }
+            case State::MULTIPLICATION:
+                // this should not push back the char
+                if (c == '*')
+                {
+                    return new Token(Kind::OPERATION_TOKEN, buffer);
+                }
+                else
+                {
+                    return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
+                                              scanner);
+                }
+            case State::AND_PRESTATE:
+                if (c != '&')
+                {
+                    return createTokenPutback(Kind::ERROR_TOKEN, c,
+                                              "& is not a valid token",
+                                              scanner);
+                }
+                else
+                {
+                    return new Token(Kind::LOGIC_TOKEN, buffer);
+                }
+            case State::OR_PRESTATE:
+                if (c != '|')
+                {
+                    return createTokenPutback(Kind::INTEGER_TOKEN, c,
+                                              "| is not a valid token",
+                                              scanner);
+                }
+                else
+                {
+                    return new Token(Kind::LOGIC_TOKEN, buffer);
+                }
+            case State::LESS_THAN:
+                // no char putback here
+                if (c == '=')
+                {
+                    return new Token(Kind::LOGIC_TOKEN, buffer);
+                }
+                // no char putback here
+                else if (c == '-')
+                {
+                    return new Token(Kind::ARROW_TOKEN, buffer);
+                }
+                else
+                {
+                    return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
+                                              scanner);
+                }
+            case State::GREATER_THAN:
+                // no char putback here
+                if (c == '=')
+                {
+                    return new Token(Kind::LOGIC_TOKEN, buffer);
+                }
+                else
+                {
+                    return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
+                                              scanner);
                 }
             }
-            else if (nextState == State::ERROR)
-            {
-                auto tempBuffer = buffer;
-                return new Token(Kind::ERROR_TOKEN, tempBuffer);
-            }
-            else
-            {
-                if (!isspace(c))
-                {
-                    buffer += c;
-                }
-            }
-
-            currentState = nextState;
         }
     }
 }
