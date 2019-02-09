@@ -22,7 +22,7 @@ createTokenPutback(Kind k, char c, std::string buffer, Scanner* scanner)
         buffer.pop_back();
     }
     scanner->putBackChar(c);
-    return new Token(Kind::OPERATION_TOKEN, buffer);
+    return new Token(k, buffer);
 }
 
 Lexar::Lexar(std::string filename)
