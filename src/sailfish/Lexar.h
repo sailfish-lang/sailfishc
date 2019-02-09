@@ -8,6 +8,7 @@
 #include "Token.h"
 #include <string>
 
+// These states are utilized by the lexar as a sort of DFA.
 enum State
 {
     START,
@@ -43,6 +44,5 @@ class Lexar
     // constructor
     Lexar(std::string filename);
     // will return EOF_TOKEN indefinitely once done parsing
-    // Token* getToken();
     Token* getToken();
 };

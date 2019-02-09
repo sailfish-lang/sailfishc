@@ -5,6 +5,7 @@
 #pragma once
 #include <string>
 
+// Kind represents all the different types of tokens.
 enum Kind
 {
     START_TOKEN,
@@ -43,6 +44,6 @@ class Token
     Token(Kind, std::string);
     // debugging
     void display();
-    // for looping through
+    // useful for looping through
     bool isEOF();
 };

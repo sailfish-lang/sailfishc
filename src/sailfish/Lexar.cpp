@@ -7,6 +7,13 @@
 #include <iostream>
 #include <string>
 
+/*
+ * There are two types of token creations, one where the lexar stops at
+ * the completion of a token and another where the lexar stops one past,
+ * having found the end of the token. In the second case, I need the buffer to
+ * pop the last char and to return this char to the scanner. Thus, I have
+ * created a function for this second case.
+ */
 Token*
 createTokenPutback(Kind k, char c, std::string buffer, Scanner* scanner)
 {
@@ -26,14 +33,10 @@ Lexar::Lexar(std::string filename)
 Token*
 Lexar::getToken()
 {
-    // something to hold the current token
     char c;
-    // something to hold the current state
     int state = State::START;
-    // something to hold the current buffer
     std::string buffer = "";
 
-    // loop until no more chars in file to read
     while ((c = scanner->getChar()))
     {
         if (c == EOF)
@@ -51,12 +54,10 @@ Lexar::getToken()
             case State::START:
                 if (isalpha(c))
                 {
-                    // go to the identifier state
                     state = State::IDENTIFIER;
                 }
                 else if (isdigit(c))
                 {
-                    // go to the digit state
                     state = State::INTEGER;
                 }
                 else
@@ -88,55 +89,42 @@ Lexar::getToken()
 
                     // these require multiple other states
                     case '/':
-                        // go to comment state
                         state = State::DIVISION_OR_COMMENT;
                         break;
                     case '\'':
-                        // go to byte state
                         state = State::BYTE;
                         break;
                     case '\"':
-                        // go to string state
                         state = State::STRING;
                         break;
                     case '+':
-                        // go to addition state
                         state = State::ADDITION;
                         break;
                     case '-':
-                        // go to subtraction state
                         state = State::SUBTRACTION;
                         break;
                     case '=':
-                        // go to equals state
                         state = State::ASSIGNMENT;
                         break;
                     case '\\':
-                        // go to char state
                         state = State::CHAR;
                         break;
                     case '!':
-                        // go to negation state
                         state = State::NEGATION;
                         break;
                     case '*':
-                        // go to asteriks state
                         state = State::MULTIPLICATION;
                         break;
                     case '&':
-                        // go to and prestate
                         state = State::AND_PRESTATE;
                         break;
                     case '|':
-                        // go to or prestate
                         state = State::OR_PRESTATE;
                         break;
                     case '<':
-                        // go to less than state
                         state = State::LESS_THAN;
                         break;
                     case '>':
-                        // go to greater than state
                         state = State::GREATER_THAN;
                         break;
                     }
@@ -222,7 +210,6 @@ Lexar::getToken()
                 state = State::STRING;
                 break;
             case State::ADDITION:
-                // this should not push back the char
                 if (c == '+')
                 {
                     return new Token(Kind::OPERATION_TOKEN, buffer);
@@ -233,7 +220,6 @@ Lexar::getToken()
                                               scanner);
                 }
             case State::SUBTRACTION:
-                // this should not push back the char
                 if (c == '-')
                 {
                     return new Token(Kind::OPERATION_TOKEN, buffer);
@@ -248,7 +234,6 @@ Lexar::getToken()
                 }
                 break;
             case State::ASSIGNMENT:
-                // this should not push back the char
                 if (c == '=')
                 {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
@@ -261,18 +246,15 @@ Lexar::getToken()
             case State::CHAR:
                 return new Token(Kind::CHAR_TOKEN, buffer);
             case State::NEGATION:
-                // this should not push back the char
                 if (c == '=')
                 {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
                 }
-                // is ! a logic token or an operation token?
                 else
                 {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
                 }
             case State::MULTIPLICATION:
-                // this should not push back the char
                 if (c == '*')
                 {
                     return new Token(Kind::OPERATION_TOKEN, buffer);
@@ -305,12 +287,10 @@ Lexar::getToken()
                     return new Token(Kind::LOGIC_TOKEN, buffer);
                 }
             case State::LESS_THAN:
-                // no char putback here
                 if (c == '=')
                 {
                     return new Token(Kind::LOGIC_TOKEN, buffer);
                 }
-                // no char putback here
                 else if (c == '-')
                 {
                     return new Token(Kind::ARROW_TOKEN, buffer);
@@ -321,7 +301,6 @@ Lexar::getToken()
                                               scanner);
                 }
             case State::GREATER_THAN:
-                // no char putback here
                 if (c == '=')
                 {
                     return new Token(Kind::LOGIC_TOKEN, buffer);

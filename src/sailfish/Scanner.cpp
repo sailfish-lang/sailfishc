@@ -17,6 +17,7 @@ Scanner::getChar()
     char ch;
     int c = file.peek();
 
+    // possible cause for future errors here
     if (c == EOF)
     {
         ch = -1;
