@@ -9,11 +9,11 @@ fun fizzbuzz
 }
 
 start {
-    /* 
+    /**
         starts with 1, ends with 100; both sides are inclusive
         since we are using the common mathematical bracketing
         syntax. Thus (1,100) is exclusize on both sides
-    */ 
+    **/ 
     loop i := [1,100] {
         fizzbuzz(i)
     }
