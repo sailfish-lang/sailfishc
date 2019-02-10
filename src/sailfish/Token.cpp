@@ -8,13 +8,16 @@
 Token::Token(Kind k, std::string v)
 {
     kind = k;
-    // handle keywords
+    // handle keywords and start tokens
     if (k == IDENTIFIER_TOKEN)
     {
         if (v == "fun" || v == "Cat" || v == "Cfn" || v == "loop" ||
-            v == "dec" || v == "exp" || v == "ig" || v == "else" || "return" ||
-            "include" || "import" || "break" || "continue")
+            v == "dec" || v == "exp" || v == "if" || v == "elif" ||
+            v == "else" || v == "return" || v == "include" || v == "import" ||
+            v == "break" || v == "continue")
             kind = KEYWORD_TOKEN;
+        else if (v == "start")
+            kind = START_TOKEN;
     }
     value = v;
 }
@@ -60,6 +63,10 @@ kindToString(Kind k)
         return "Comma";
     case COMMENT_TOKEN:
         return "Comment";
+    case LOGIC_TOKEN:
+        return "Logic";
+    case DOT_TOKEN:
+        return "Dot";
     case ERROR_TOKEN:
         return "Error";
     case EOF_TOKEN:

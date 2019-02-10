@@ -25,11 +25,11 @@ enum State
     ADDITION,
     SUBTRACTION,
     ASSIGNMENT,
-    CHAR,
     NEGATION,
     MULTIPLICATION,
     AND_PRESTATE,
     OR_PRESTATE,
+    RANGE_PRESTATE,
     LESS_THAN,
     GREATER_THAN,
     ERROR
@@ -44,5 +44,5 @@ class Lexar
     // constructor
     Lexar(std::string filename);
     // will return EOF_TOKEN indefinitely once done parsing
-    Token* getToken();
+    Token* getNextToken();
 };

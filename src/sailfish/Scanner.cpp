@@ -12,7 +12,7 @@ Scanner::Scanner(std::string filename)
 }
 
 char
-Scanner::getChar()
+Scanner::getNextChar()
 {
     char ch;
     int c = file.peek();

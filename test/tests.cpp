@@ -8,7 +8,7 @@
 
 TEST(LexarTest, HelloWorld)
 {
-    static const Kind expected[] = {Kind::COMMENT_TOKEN, Kind::IDENTIFIER_TOKEN,
+    static const Kind expected[] = {Kind::COMMENT_TOKEN, Kind::START_TOKEN,
                                     Kind::LCURLEY_TOKEN, Kind::IDENTIFIER_TOKEN,
                                     Kind::LPAREN_TOKEN,  Kind::STRING_TOKEN,
                                     Kind::RPAREN_TOKEN,  Kind::RCURLEY_TOKEN};
@@ -18,12 +18,12 @@ TEST(LexarTest, HelloWorld)
     Token* t;
     int i = 0;
 
-    t = lexar->getToken();
+    t = lexar->getNextToken();
 
     while (!t->isEOF())
     {
         ASSERT_EQ(expected[i], t->getKind());
-        t = lexar->getToken();
+        t = lexar->getNextToken();
         ++i;
     }
 }
@@ -50,7 +50,7 @@ TEST(LexarTest, FizzBuzz)
         Kind::RPAREN_TOKEN,     Kind::RCURLEY_TOKEN,    Kind::KEYWORD_TOKEN,
         Kind::LCURLEY_TOKEN,    Kind::IDENTIFIER_TOKEN, Kind::LPAREN_TOKEN,
         Kind::IDENTIFIER_TOKEN, Kind::RPAREN_TOKEN,     Kind::RCURLEY_TOKEN,
-        Kind::RCURLEY_TOKEN,    Kind::IDENTIFIER_TOKEN, Kind::LCURLEY_TOKEN,
+        Kind::RCURLEY_TOKEN,    Kind::START_TOKEN,      Kind::LCURLEY_TOKEN,
         Kind::COMMENT_TOKEN,    Kind::KEYWORD_TOKEN,    Kind::IDENTIFIER_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::LBRACKET_TOKEN,   Kind::INTEGER_TOKEN,
         Kind::COMMA_TOKEN,      Kind::INTEGER_TOKEN,    Kind::RBRACKET_TOKEN,
@@ -64,12 +64,45 @@ TEST(LexarTest, FizzBuzz)
     Token* t;
     int i = 0;
 
-    t = lexar->getToken();
+    t = lexar->getNextToken();
 
     while (!t->isEOF())
     {
         ASSERT_EQ(expected[i], t->getKind());
-        t = lexar->getToken();
+        t = lexar->getNextToken();
+        ++i;
+    }
+}
+
+TEST(LexarTest, Nonsense)
+{
+    static const Kind expected[] = {
+        Kind::START_TOKEN,      Kind::LCURLEY_TOKEN,    Kind::KEYWORD_TOKEN,
+        Kind::IDENTIFIER_TOKEN, Kind::INTEGER_TOKEN,    Kind::FLOAT_TOKEN,
+        Kind::COMMENT_TOKEN,    Kind::STRING_TOKEN,     Kind::STRING_TOKEN,
+        Kind::BYTE_TOKEN,       Kind::BYTE_TOKEN,       Kind::KEYWORD_TOKEN,
+        Kind::IDENTIFIER_TOKEN, Kind::OPERATION_TOKEN,  Kind::INTEGER_TOKEN,
+        Kind::LOGIC_TOKEN,      Kind::LOGIC_TOKEN,      Kind::ARROW_TOKEN,
+        Kind::ARROW_TOKEN,      Kind::UNDERSCORE_TOKEN, Kind::COMMA_TOKEN,
+        Kind::LBRACKET_TOKEN,   Kind::RBRACKET_TOKEN,   Kind::LPAREN_TOKEN,
+        Kind::RPAREN_TOKEN,     Kind::ERROR_TOKEN,      Kind::DOT_TOKEN,
+        Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
+        Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
+        Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::COMMENT_TOKEN,
+        Kind::RCURLEY_TOKEN,
+    };
+
+    Lexar* lexar = new Lexar("../sailfish_examples/nonsense_lexar.fish");
+
+    Token* t;
+    int i = 0;
+
+    t = lexar->getNextToken();
+
+    while (!t->isEOF())
+    {
+        ASSERT_EQ(expected[i], t->getKind());
+        t = lexar->getNextToken();
         ++i;
     }
 }

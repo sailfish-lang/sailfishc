@@ -17,7 +17,6 @@ enum Kind
     COMMENT_TOKEN,
     BYTE_TOKEN,
     STRING_TOKEN,
-    ASSIGNMENT_TOKEN,
     CHAR_TOKEN,
     ARROW_TOKEN,
     UNDERSCORE_TOKEN,
@@ -30,6 +29,7 @@ enum Kind
     RPAREN_TOKEN,
     KEYWORD_TOKEN,
     ERROR_TOKEN,
+    DOT_TOKEN,
     EOF_TOKEN,
 };
 
@@ -46,6 +46,6 @@ class Token
     void display();
     // useful for looping through
     bool isEOF();
-    // usefule for testing
+    // useful for testing
     Kind getKind();
 };

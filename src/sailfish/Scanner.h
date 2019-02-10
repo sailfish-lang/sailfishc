@@ -15,7 +15,7 @@ class Scanner
     // constructor takes in a filename
     Scanner(std::string);
     // retreive next character from the ifstream
-    char getChar();
+    char getNextChar();
     // putback char
     void putBackChar(char);
 };

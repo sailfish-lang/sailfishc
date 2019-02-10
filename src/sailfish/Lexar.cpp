@@ -4,7 +4,6 @@
  */
 #include "Lexar.h"
 #include "Token.h"
-#include <iostream>
 #include <string>
 
 /*
@@ -31,13 +30,13 @@ Lexar::Lexar(std::string filename)
 }
 
 Token*
-Lexar::getToken()
+Lexar::getNextToken()
 {
     char c;
     int state = State::START;
     std::string buffer = "";
 
-    while ((c = scanner->getChar()))
+    while ((c = scanner->getNextChar()))
     {
         if (c == EOF)
         {
@@ -69,6 +68,8 @@ Lexar::getToken()
                         return new Token(Kind::UNDERSCORE_TOKEN, buffer);
                     case ',':
                         return new Token(Kind::COMMA_TOKEN, buffer);
+                    case '.':
+                        return new Token(Kind::DOT_TOKEN, buffer);
                     case '[':
                         return new Token(Kind::LBRACKET_TOKEN, buffer);
                     case ']':
@@ -106,9 +107,6 @@ Lexar::getToken()
                     case '=':
                         state = State::ASSIGNMENT;
                         break;
-                    case '\\':
-                        state = State::CHAR;
-                        break;
                     case '!':
                         state = State::NEGATION;
                         break;
@@ -121,6 +119,9 @@ Lexar::getToken()
                     case '|':
                         state = State::OR_PRESTATE;
                         break;
+                    case ':':
+                        state = State::RANGE_PRESTATE;
+                        break;
                     case '<':
                         state = State::LESS_THAN;
                         break;
@@ -130,117 +131,106 @@ Lexar::getToken()
                     }
                 }
                 break;
+
             case State::IDENTIFIER:
                 if (!isalnum(c) && c != '_')
-                {
                     return createTokenPutback(Kind::IDENTIFIER_TOKEN, c, buffer,
                                               scanner);
-                }
                 break;
+
             case State::INTEGER:
                 if (c == '.')
-                {
                     state = State::FLOAT;
-                }
                 else if (!isdigit(c))
-                {
                     return createTokenPutback(Kind::INTEGER_TOKEN, c, buffer,
                                               scanner);
-                }
                 break;
+
             case State::FLOAT:
                 if (!isdigit(c))
-                {
                     return createTokenPutback(Kind::FLOAT_TOKEN, c, buffer,
                                               scanner);
-                }
                 break;
+
             case State::DIVISION_OR_COMMENT:
                 if (c == '/')
-                {
                     state = State::SINGLE_LINE_COMMENT;
-                }
                 else if (c == '*')
-                {
                     state = State::MULTIPLE_LINE_COMMENT_PRESTATE;
-                }
                 else
-                {
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
                                               scanner);
-                }
                 break;
+
             case State::SINGLE_LINE_COMMENT:
                 if (c == '\n')
-                {
                     return new Token(Kind::COMMENT_TOKEN, buffer);
-                }
                 break;
+
             case State::MULTIPLE_LINE_COMMENT_PRESTATE:
                 if (c == '*')
-                {
                     state = State::MULTIPLE_LINE_COMMENT;
-                }
                 break;
-            case State::MULTIPLE_LINE_COMMENT:
-                if (c == '*')
-                {
-                    break;
-                }
-                else if (c == '/')
-                {
-                    return new Token(Kind::COMMENT_TOKEN, buffer);
-                }
 
-                state = State::MULTIPLE_LINE_COMMENT_PRESTATE;
+            case State::MULTIPLE_LINE_COMMENT:
+                if (c == '/')
+                    return new Token(Kind::COMMENT_TOKEN, buffer);
+                else if (c != '*')
+                    state = State::MULTIPLE_LINE_COMMENT_PRESTATE;
                 break;
+
             case State::BYTE:
                 if (c == '\'')
-                {
                     return new Token(Kind::BYTE_TOKEN, buffer);
-                }
+
                 break;
             case State::STRING:
                 if (c == '\\')
                     state = State::STRING_ESCAPE;
                 else if (c == '"')
                     return new Token(Kind::STRING_TOKEN, buffer);
+
                 break;
             case State::STRING_ESCAPE:
                 state = State::STRING;
                 break;
+
             case State::ADDITION:
                 if (c == '+')
                     return new Token(Kind::OPERATION_TOKEN, buffer);
                 else
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
                                               scanner);
+
             case State::SUBTRACTION:
                 if (c == '-')
                     return new Token(Kind::OPERATION_TOKEN, buffer);
                 else if (c == '>')
                     return new Token(Kind::ARROW_TOKEN, buffer);
                 else
-                    return new Token(Kind::OPERATION_TOKEN, buffer);
+                    return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
+                                              scanner);
             case State::ASSIGNMENT:
                 if (c == '=')
                     return new Token(Kind::LOGIC_TOKEN, buffer);
                 else
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
                                               scanner);
-            case State::CHAR:
-                return new Token(Kind::CHAR_TOKEN, buffer);
+
             case State::NEGATION:
                 if (c == '=')
                     return new Token(Kind::LOGIC_TOKEN, buffer);
                 else
-                    return new Token(Kind::LOGIC_TOKEN, buffer);
+                    return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
+                                              scanner);
+
             case State::MULTIPLICATION:
                 if (c == '*')
                     return new Token(Kind::OPERATION_TOKEN, buffer);
                 else
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
                                               scanner);
+
             case State::AND_PRESTATE:
                 if (c != '&')
                     return createTokenPutback(Kind::ERROR_TOKEN, c,
@@ -248,13 +238,23 @@ Lexar::getToken()
                                               scanner);
                 else
                     return new Token(Kind::LOGIC_TOKEN, buffer);
+
             case State::OR_PRESTATE:
                 if (c != '|')
-                    return createTokenPutback(Kind::INTEGER_TOKEN, c,
+                    return createTokenPutback(Kind::ERROR_TOKEN, c,
                                               "| is not a valid token",
                                               scanner);
                 else
                     return new Token(Kind::LOGIC_TOKEN, buffer);
+
+            case State::RANGE_PRESTATE:
+                if (c != '=')
+                    return createTokenPutback(Kind::ERROR_TOKEN, c,
+                                              ": is not a valid token",
+                                              scanner);
+                else
+                    return new Token(Kind::OPERATION_TOKEN, buffer);
+
             case State::LESS_THAN:
                 if (c == '=')
                     return new Token(Kind::LOGIC_TOKEN, buffer);
@@ -263,6 +263,7 @@ Lexar::getToken()
                 else
                     return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
                                               scanner);
+
             case State::GREATER_THAN:
                 if (c == '=')
                     return new Token(Kind::LOGIC_TOKEN, buffer);
