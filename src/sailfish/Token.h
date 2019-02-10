@@ -46,4 +46,6 @@ class Token
     void display();
     // useful for looping through
     bool isEOF();
+    // usefule for testing
+    Kind getKind();
 };

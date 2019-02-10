@@ -80,3 +80,9 @@ Token::isEOF()
 {
     return kind == EOF_TOKEN;
 }
+
+Kind
+Token::getKind()
+{
+    return kind;
+}
