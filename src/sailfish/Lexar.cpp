@@ -183,7 +183,11 @@ Lexar::getToken()
                 }
                 break;
             case State::MULTIPLE_LINE_COMMENT:
-                if (c == '/')
+                 if (c == '*')
+                {
+                    state = State::MULTIPLE_LINE_COMMENT;
+                } 
+                    else if (c == '/')
                 {
                     return new Token(Kind::COMMENT_TOKEN, buffer);
                 }
