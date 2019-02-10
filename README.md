@@ -77,6 +77,18 @@ start {
 
 ***
 
+## Development
+
+To run tests, you'll need [GoogleTest](https://github.com/google/googletest) and [CMake](https://cmake.org). There is a nice tutorial on how to get GoogleTest up and running on Ubuntu [here](https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/). In order to run the test suite, follow these steps:
+```
+cd test
+cmake CMakeLists.txt
+make
+./sailfishc_tests
+```
+
+***
+
 ## Wishlist
 
 * Standard documentation tools
