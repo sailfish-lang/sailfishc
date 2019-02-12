@@ -1,63 +1,79 @@
 Start  := Source
-Source := SourcePart*
+Source := [ImportSection] SourcePart*
 
-SourcePart := FunctionDefinition |
-              ListDefinition |
-              DictionaryDefinition |
+ImportSection := Import*
+Import := import Location | include FilePath
+Location := TBD
+FilePath := identifier/FilePath | ./FilePath | Identifier 
+
+SourcePart := ExportDefinition |
+              GeneralDecleration |
+              FunctionDefinition |
               UserDefinedTypeDefinition |
-              VariableDefinition |
-              InitialExecutionBody | 
-              Import
+              InitialExecutionBody
 
-FunctionDefinition := ['exp'] FunctionName FunctionInput FunctionOutput FunctionBody
+ExportDefinition := 'exp' Exportable
+Exportable := FunctionDefinition | GeneralDecleration
+
+FunctionDefinition := FunctionName FunctionInput FunctionOutput FunctionBody
 FunctionName := 'fun' Identifier
 FunctionInput := '<-' InputList 
 FunctionOutput := '->' OutputList
 FunctionBody := '{' Block '}'
 
 InputList := Input (',' Input)*
-Input := Typename Identifier
+Input := Variable
 OutputList := Output (',' Output)*
 Output := Typename
 
-ListDefinition := ['exp'] 'dec' 'list' Identifier ['=' Expression]
-
-DictionaryDefinition := ['exp'] 'dec' 'dictionary' Identifier ['=' Expression]
+GeneralDecleration := 'dec' GeneralDefinition
+GeneralDefinition := ListDefinition | DictionaryDefinition | NewVariableDefinition
+ListDefinition := 'list' Identifier ['=' Expression]
+DictionaryDefinition := ''dictionary' Identifier ['=' Expression]
+NewVariableDefinition := Variable '=' Expression
+RangeVariableDefinition := Variable ':=' Expression
+VariableAssignment := Identifier = Expression
+ShortVariableDefinition := Variable
+VariableDecleration := NewVariableDefinition | RangeVariableDefinition | ShortVariableDefinition
+Variable := TypeName Identifier
 
 UserDefinedTypeDefinition := UserDefinedTypeAttributes [UserDefinedTypeMethods]
-UserDefinedTypeAttributes := 'Cat' Identifier '{' VariableDecleration* '}'
+UserDefinedTypeAttributes := 'Cat' Identifier '{' ShortVariableDefinition* '}'
 UserDefinedTypeMethods := 'Cfn' Identifier '{' FunctionDefinition* '}'
-
-VariableDefinition := VariableDecleration | 'dec' VariableDecleration '=' Expression | Identifier ':=' Expression
-VariableDecleration := ['exp'] TypeName Identifier
 
 InitialExecutionBody := 'start' '{' Block '}'
 
-Import := import Location | include FilePath
-Location := TBD
-FilePath := identifier/FilePath | ./FilePath | Identifier 
-
 Block := Statement*
 
-Statement := IfStatement | LoopStatement | '{' Block '}' | SimpleStatement | Expression | 'continue' | 'break' | 'return' 
+Statement := IfStatement | LoopStatement | '{' Block '}' | SimpleStatement  | 'continue' | 'break' | ReturnStatement
 IfStatement := 'if' Expression '{' Statement '}' ('elif' Expression '{' Statement '}')* ['else' '{' Statement '}']
-LoopStatement := 'loop' Identifier := Expression { Statement }
-SimpleStatement := VariableDefinition | Expression
+LoopStatement := 'loop' RangeVariableDefinition { Statement } | 'loop' Expression { Statement }
+SimpleStatement := GeneralDefinition | VariableAssignment | Expression
+ReturnStatement := 'return' Expression | 'return'
 
 Expression := IndexAccess |
               MemberAccess |
               FunctionCall |
               '(' Expression ')' |
-              ('!' | '++' | '--' | '+' | '-') Expression |
-              Expression '**' Expression |
-              Expression ('*' | '/' | '%') Expression |
-              Expression ('+' | '-') Expression|
-              Expression ('>' | '<' | '>=' | '<=') Expression |
-              Expression ('==' | '!=') Expression|
-              Expression '&&' Expression |
-              Expression '||' Expression |
-              Expression ('=') Expression | 
+              ('!' | '++' | '--') Expression |
+               '**' Expression |
+               ('*' | '/' | '%') Expression |
+               ('+' | '-') Expression|
+               ('>' | '<' | '>=' | '<=') Expression |
+               ('==' | '!=') Expression|
+               '&&' Expression |
+               '||' Expression |
+               '=' Expression | 
               Primary Expression
+
+
+IndexAccess := Expression '[' [Expression] ']'
+MemberAccess := Expression '.' Identifier
+
+FunctionCall := '(' FunctionCallArguments ')'
+FunctionCallArguments := [NameValueList] | ExpressionList
+ExpressionList := Expression (',' Expression)*
+NameValueList := Identifier (',' Identifier)*
 
 PrimaryExpression := BooleanLiteral |
                      DictionaryLiteral |
@@ -66,40 +82,15 @@ PrimaryExpression := BooleanLiteral |
                      StringLiteral |
                      Identifier |
                      TypenameExpression
-TypenameExpression := Typename
-MemberAccess := Expression '.' Identifier
-IndexAccess := Expression '[' [Expression] ']'
-ExpressionList := Expression (',' Expression)*
-NameValueList := Identifier (',' Identifier)*
 
-FunctionCall := '(' FunctionCallArguments ')'
-FunctionCallArguments := [NameValueList] | ExpressionList
-
-Typename := 'bool' | 'str' | 'int' | 'flt' | 'void'
-
+BooleanLiteral := 'true' | 'false'
 DictionaryLiteral := '[' [DictionaryItem (',' DictionaryItem)] ']'
 DictionaryItem := Identifier ':' Identifier
 ListLiteral := '[' [ListItem (',' ListItem)] ']'
 ListItem := Identifier
-BooleanLiteral := 'true' | 'false'
 NumberLiteral := Decimal
+Decimal  := [0-9]+
 StringLiteral := "' ([^"\r\n\\] | '\\' .)* '"'
 Identifier := [a-zA-Z] [a-zA-Z_0-9]*
-Decimal  := [0-9]+
-
-***
-
-## Keywords
-* fun
-* Cat
-* Cfn
-* loop
-* dec
-* exp
-* if
-* else
-* return
-* include
-* import
-* break
-* continue
+TypenameExpression := Typename
+Typename := 'bool' | 'str' | 'int' | 'flt' | 'void'
