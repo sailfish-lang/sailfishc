@@ -46,6 +46,8 @@ class Token
     void display();
     // useful for looping through
     bool isEOF();
-    // useful for testing
+
+    // basic get functions
     Kind getKind();
+    std::string getValue();
 };

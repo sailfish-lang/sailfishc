@@ -2,7 +2,7 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "../sailfish/Lexar.h"
+#include "../sailfish/Parser.h"
 #include <iostream>
 #include <string>
 
@@ -22,14 +22,19 @@ handleCommandLine(int argc, char* const* argv)
         std::string filename = argv[1];
         std::cout << "Compiling " << filename << ".\n\n";
 
-        Lexar* lexar = new Lexar(filename);
+        Parser* p = new Parser();
+        Node* root = p->parse(filename);
 
-        Token* t;
-        t = lexar->getToken();
-        while (!t->isEOF())
+        std::cout << root->getTypeString() << '\n';
+
+        for (auto const& value : root->getList())
         {
-            t->display();
-            t = lexar->getToken();
+            std::cout << value->getTypeString() << '\n';
+
+            for (auto const& v : value->getList())
+            {
+                std::cout << v->getTypeString() << '\n';
+            }
         }
 
         return 1;

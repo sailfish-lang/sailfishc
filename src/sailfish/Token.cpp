@@ -93,3 +93,9 @@ Token::getKind()
 {
     return kind;
 }
+
+std::string
+Token::getValue()
+{
+    return value;
+}
