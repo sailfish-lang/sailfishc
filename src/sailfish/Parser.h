@@ -147,6 +147,8 @@ class Node
             return "InitialExecutionBody";
         case UserDefinedTypeAttributes:
             return "UserDefinedTypeAttributes";
+        case UserDefinedTypeMethods:
+            return "UserDefinedTypeMethods";
         default:
             return "unknown type";
         }
@@ -165,6 +167,7 @@ class Parser
     Node* parseStart();
     Node* parseSource();
     Node* parseSourcePart();
+    Node* parseExportDefinition();
 
     // helper functions
     Token* getNextToken();

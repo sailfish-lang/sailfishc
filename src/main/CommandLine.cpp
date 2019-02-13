@@ -25,18 +25,6 @@ handleCommandLine(int argc, char* const* argv)
         Parser* p = new Parser();
         Node* root = p->parse(filename);
 
-        std::cout << root->getTypeString() << '\n';
-
-        for (auto const& value : root->getList())
-        {
-            std::cout << value->getTypeString() << '\n';
-
-            for (auto const& v : value->getList())
-            {
-                std::cout << v->getTypeString() << '\n';
-            }
-        }
-
         return 1;
     }
     default:

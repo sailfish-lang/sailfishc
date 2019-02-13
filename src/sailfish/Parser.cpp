@@ -3,22 +3,11 @@
  * Sailfish Programming Language
  */
 #include "Parser.h"
+#include <iostream>
 #include <vector>
 
 Parser::Parser()
 {
-}
-
-Node*
-Parser::parse(const std::string filename)
-{
-    // initialize the Lexar
-    lexar = new Lexar(filename);
-
-    // retrieve the first token
-    currentToken = lexar->getNextToken();
-
-    return parseStart();
 }
 
 // helper function to get next non comment token
@@ -30,6 +19,15 @@ Parser::getNextToken()
     {
         currentToken = lexar->getNextToken();
     }
+}
+
+Node*
+Parser::parse(const std::string filename)
+{
+    // initialize the Lexar
+    lexar = new Lexar(filename);
+
+    return parseStart();
 }
 
 /**
@@ -64,17 +62,14 @@ Parser::parseSource()
 
 /**
  * SourcePart := ExportDefinition |
-              GeneralDecleration |
-              FunctionDefinition |
-              UserDefinedTypeDefinition |
-              InitialExecutionBody
-*/
+ *               GeneralDecleration |
+ *               FunctionDefinition |
+ *               UserDefinedTypeDefinition |
+ *               InitialExecutionBody
+ */
 Node*
 Parser::parseSourcePart()
 {
-    // get next token
-    getNextToken();
-
     std::vector<Node*> empty{};
     std::string tokenValue = currentToken->getValue();
     switch (currentToken->getKind())
@@ -83,9 +78,76 @@ Parser::parseSourcePart()
         if (tokenValue == "exp")
         {
             // ExportDefinition
-            return new Node(ExportDefinition, "", nullptr, empty);
+
+            // get next token
+            getNextToken();
+
+            std::vector<Node*> list{parseExportDefinition()};
+
+            return new Node(ExportDefinition, "", nullptr, list);
         }
         else if (tokenValue == "dec")
+        {
+            // GeneralDecleration
+
+            // get next token
+            getNextToken();
+
+            return new Node(GeneralDecleration, "", nullptr, empty);
+        }
+        else if (tokenValue == "fun")
+        {
+            // FunctionDefinition
+
+            // get next token
+            getNextToken();
+
+            return new Node(FunctionDefinition, "", nullptr, empty);
+        }
+        else if (tokenValue == "Cat")
+        {
+            // UserDefinedTypeDefinition
+
+            // get next token
+            getNextToken();
+
+            return new Node(UserDefinedTypeAttributes, "", nullptr, empty);
+        }
+        else if (tokenValue == "Cfn")
+        {
+            // UserDefinedTypeDefinition
+
+            // get next token
+            getNextToken();
+
+            return new Node(UserDefinedTypeMethods, "", nullptr, empty);
+        }
+        break;
+    case START_TOKEN:
+        // InitialExecutionBody
+
+        // get next token
+        getNextToken();
+
+        return new Node(InitialExecutionBody, "", nullptr, empty);
+        break;
+    }
+}
+
+/**
+ *  ExportDefinition := 'exp' Exportable
+ *  Exportable := FunctionDefinition | GeneralDecleration
+ */
+Node*
+Parser::parseExportDefinition()
+{
+
+    std::vector<Node*> empty{};
+    std::string tokenValue = currentToken->getValue();
+    switch (currentToken->getKind())
+    {
+    case KEYWORD_TOKEN:
+        if (tokenValue == "dec")
         {
             // GeneralDecleration
             return new Node(GeneralDecleration, "", nullptr, empty);
@@ -95,13 +157,5 @@ Parser::parseSourcePart()
             // FunctionDefinition
             return new Node(FunctionDefinition, "", nullptr, empty);
         }
-        break;
-    case START_TOKEN:
-        // InitialExecutionBody
-        return new Node(InitialExecutionBody, "", nullptr, empty);
-        break;
-    default:
-        // UserDefinedTypeDefinition
-        return new Node(UserDefinedTypeAttributes, "", nullptr, empty);
     }
 }

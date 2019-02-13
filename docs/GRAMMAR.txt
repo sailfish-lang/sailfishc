@@ -32,8 +32,8 @@ ShortVariableDefinition := Variable
 VariableDecleration := NewVariableDefinition | RangeVariableDefinition | ShortVariableDefinition
 Variable := TypeName Identifier
 
-UserDefinedTypeDefinition := UserDefinedTypeAttributes [UserDefinedTypeMethods]
-UserDefinedTypeAttributes := 'Cat' Identifier '{' ShortVariableDefinition* '}'
+UserDefinedTypeDefinition := 'Cat' UserDefinedTypeAttributes [UserDefinedTypeMethods]
+UserDefinedTypeAttributes := Identifier '{' ShortVariableDefinition* '}'
 UserDefinedTypeMethods := 'Cfn' Identifier '{' FunctionDefinition* '}'
 
 InitialExecutionBody := 'start' '{' Block '}'
