@@ -88,8 +88,8 @@ TEST(LexarTest, Nonsense)
         Kind::RPAREN_TOKEN,     Kind::ERROR_TOKEN,      Kind::DOT_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
-        Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::COMMENT_TOKEN,
-        Kind::RCURLEY_TOKEN,
+        Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
+        Kind::OPERATION_TOKEN,  Kind::COMMENT_TOKEN,    Kind::RCURLEY_TOKEN,
     };
 
     Lexar* lexar = new Lexar("../sailfish_examples/nonsense_lexar.fish");

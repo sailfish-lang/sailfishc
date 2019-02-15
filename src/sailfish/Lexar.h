@@ -22,7 +22,6 @@ enum State
     BYTE,
     STRING,
     STRING_ESCAPE,
-    ADDITION,
     SUBTRACTION,
     ASSIGNMENT,
     NEGATION,

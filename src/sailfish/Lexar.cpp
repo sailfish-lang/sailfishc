@@ -64,6 +64,8 @@ Lexar::getNextToken()
                     switch (c)
                     {
                     // these are all completed on the first char
+                    case '+':
+                        return new Token(Kind::OPERATION_TOKEN, buffer);
                     case '_':
                         return new Token(Kind::UNDERSCORE_TOKEN, buffer);
                     case ',':
@@ -97,9 +99,6 @@ Lexar::getNextToken()
                         break;
                     case '\"':
                         state = State::STRING;
-                        break;
-                    case '+':
-                        state = State::ADDITION;
                         break;
                     case '-':
                         state = State::SUBTRACTION;
@@ -195,17 +194,8 @@ Lexar::getNextToken()
                 state = State::STRING;
                 break;
 
-            case State::ADDITION:
-                if (c == '+')
-                    return new Token(Kind::OPERATION_TOKEN, buffer);
-                else
-                    return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
-                                              scanner);
-
             case State::SUBTRACTION:
-                if (c == '-')
-                    return new Token(Kind::OPERATION_TOKEN, buffer);
-                else if (c == '>')
+                if (c == '>')
                     return new Token(Kind::ARROW_TOKEN, buffer);
                 else
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
