@@ -3,7 +3,6 @@
  * Sailfish Programming Language
  */
 #pragma once
-
 #include "Scanner.h"
 #include "Token.h"
 #include <string>

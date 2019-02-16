@@ -3,7 +3,7 @@
  * Sailfish Programming Language
  */
 
-#include "../src/sailfish/Lexar.h"
+#include "../src/lexar/Lexar.h"
 #include <gtest/gtest.h>
 
 TEST(LexarTest, HelloWorld)

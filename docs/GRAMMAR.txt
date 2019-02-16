@@ -43,7 +43,8 @@ Block := Statement*
 Statement := IfStatement | LoopStatement | '{' Block '}' | SimpleStatement  | 'continue' | 'break' | ReturnStatement
 IfStatement := 'if' Expression '{' Statement '}' ('elif' Expression '{' Statement '}')* ['else' '{' Statement '}']
 LoopStatement := 'loop' RangeVariableDefinition { Statement } | 'loop' Expression { Statement }
-SimpleStatement := GeneralDefinition | VariableAssignment | Expression
+SimpleStatement := GeneralDefinition | VariableAssignment | ExpressionStatement
+ExpressionStatement := Expression
 ReturnStatement := 'return' Expression | 'return'
 
 Expression := IndexAccess |

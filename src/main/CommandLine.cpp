@@ -2,7 +2,7 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "../sailfish/Parser.h"
+#include "../parser/Parser.h"
 #include <iostream>
 #include <string>
 
