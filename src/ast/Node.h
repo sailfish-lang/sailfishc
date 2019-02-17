@@ -7,7 +7,6 @@
 
 namespace ast
 {
-
 // abstract class for all nodes
 class Node
 {
@@ -289,109 +288,247 @@ class Expression
 
 class IndexAccess : Node, Expression
 {
+  private:
+    Expression* expr;
+    Expression* index;
+
+  public:
+    // constructor
+    IndexAccess();
 };
 
 class MemberAccess : Node, Expression
 {
+  private:
+    Expression* expr;
+    Identifier* member;
+
+  public:
+    // constructor
+    MemberAccess();
 };
 
 class FunctionCall : Node, Expression
+{
+  private:
+    Identifier* name;
+    std::vector<Identifier*> args;
+
+  public:
+    // constructor
+    FunctionCall();
+};
+
+// abstract class used more like a rust trait here
+class Primary
 {
 };
 
 class PrimaryExpression : Node, Expression
 {
+  private:
+    Primary* expr;
+
+  public:
+    // constructor
+    PrimaryExpression();
 };
 
-class FunctionCallArguments : Node
+class BooleanLiteral : Node, Primary
 {
-};
-class ExpressionList : Node
-{
-};
-class NameValueList : Node
-{
-};
+  private:
+    std::string value;
 
-class BooleanLiteral : Node
-{
+  public:
+    // constructor
+    BooleanLiteral();
 };
-class DictionaryLiteral : Node
+class DictionaryLiteral : Node, Primary
 {
+  private:
+    Identifier* name;
+    std::vector<DictionaryItem*> dictionaryItems;
+
+  public:
+    // constructor
+    DictionaryLiteral();
 };
 class DictionaryItem : Node
 {
+  private:
+    Identifier* key;
+    Identifier* value;
+
+  public:
+    // constructor
+    DictionaryItem();
 };
-class ListLiteral : Node
+class ListLiteral : Node, Primary
 {
+  private:
+    Identifier* name;
+    std::vector<ListItem*> listItems;
+
+  public:
+    // constructor
+    ListLiteral();
 };
 class ListItem : Node
 {
+  private:
+    Identifier* name;
+
+  public:
+    // constructor
+    ListItem();
 };
-class NumberLiteral : Node
+
+class NumberLiteral : Node, Primary
 {
+  private:
+    std::string number;
+
+  public:
+    // constructor
+    NumberLiteral();
 };
-class Decimal : Node
+
+class StringLiteral : Node, Primary
 {
+  private:
+    std::string string;
+
+  public:
+    // constructor
+    StringLiteral();
 };
-class StringLiteral : Node
-{
-};
+
 class Identifier : Node
 {
+  private:
+    std::string identifier;
+
+  public:
+    // constructor
+    Identifier();
 };
-class TypenameExpression : Node
+
+class TypenameExpression : Node, Primary
 {
+  private:
+    Typename* type;
+
+  public:
+    // constructor
+    TypenameExpression();
 };
 class Typename : Node
 {
+  private:
+    Identifier* type;
+
+  public:
+    // constructor
+    Typename();
 };
 class Negation : Node
 {
+  public:
+    // constructor
+    Negation();
 };
 class Exponentiation : Node
 {
+  public:
+    // constructor
+    Exponentiation();
 };
 class Multiplication : Node
 {
+  public:
+    // constructor
+    Multiplication();
 };
 class Division : Node
 {
+  public:
+    // constructor
+    Division();
 };
 class Modulo : Node
 {
+  public:
+    // constructor
+    Modulo();
 };
 class Addition : Node
 {
+  public:
+    // constructor
+    Addition();
 };
 class Subtraction : Node
 {
+  public:
+    // constructor
+    Assignment();
 };
 class BinaryGreaterThan : Node
 {
+  public:
+    // constructor
+    BinaryGreaterThan();
 };
 class BinaryLessThan : Node
 {
+  public:
+    // constructor
+    BinaryLessThan();
 };
 class BinaryGreaterThanOrEqual : Node
 {
+  public:
+    // constructor
+    BinaryGreaterThanOrEqual();
 };
 class BinaryLessThanOrEqual : Node
 {
+  public:
+    // constructor
+    BinaryLessThanOrEqual();
 };
 class EquivalenceComparison : Node
 {
+  public:
+    // constructor
+    EquivalenceComparison();
 };
 class NonEquivalenceComparison : Node
 {
+  public:
+    // constructor
+    NonEquivalenceComparison();
 };
 class AndComparison : Node
 {
+  public:
+    // constructor
+    AndComparison();
 };
 class OrComparison : Node
 {
+  public:
+    // constructor
+    OrComparison();
 };
 class Assignment : Node
 {
+  private:
+    Identifier* name;
+    Expression* expr;
+
+  public:
+    // constructor
+    Assignment();
 };
 }

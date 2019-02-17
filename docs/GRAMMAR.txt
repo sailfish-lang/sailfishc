@@ -66,10 +66,7 @@ Expression := IndexAccess |
 IndexAccess := Expression '[' [Expression] ']'
 MemberAccess := Expression '.' Identifier
 
-FunctionCall := '(' FunctionCallArguments ')'
-FunctionCallArguments := [NameValueList] | ExpressionList
-ExpressionList := Expression (',' Expression)*
-NameValueList := Identifier (',' Identifier)*
+FunctionCall := Identifier '(' [Identifier] (',' Identifier)*')'
 
 PrimaryExpression := BooleanLiteral |
                      DictionaryLiteral |
@@ -84,8 +81,9 @@ DictionaryLiteral := '[' [DictionaryItem (',' DictionaryItem)] ']'
 DictionaryItem := Identifier ':' Identifier
 ListLiteral := '[' [ListItem (',' ListItem)] ']'
 ListItem := Identifier
-NumberLiteral := Decimal
-Decimal  := [0-9]+
+NumberLiteral := Integer | Decimal
+Integer := [0-9]+
+Decimal  := [0-9]+.[0-9]+
 StringLiteral := "' ([^"\r\n\\] | '\\' .)* '"'
 Identifier := [a-zA-Z] [a-zA-Z_0-9]*
 TypenameExpression := Typename
