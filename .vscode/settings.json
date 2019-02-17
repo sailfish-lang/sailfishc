@@ -37,6 +37,10 @@
         "type_traits": "cpp",
         "tuple": "cpp",
         "typeinfo": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "ctime": "cpp",
+        "iomanip": "cpp",
+        "__config": "cpp",
+        "__nullptr": "cpp"
     }
 }

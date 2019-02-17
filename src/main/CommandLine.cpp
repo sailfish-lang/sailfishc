@@ -2,7 +2,9 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
+#include "../ast/Node.h"
 #include "../parser/Parser.h"
+#include "../visitor/Visitor.h"
 #include <iostream>
 #include <string>
 
@@ -23,7 +25,10 @@ handleCommandLine(int argc, char* const* argv)
         std::cout << "Compiling " << filename << ".\n\n";
 
         Parser* p = new Parser();
-        Node* root = p->parse(filename);
+        ast::Start* root = p->parse(filename);
+
+        Visitor* v = new Visitor();
+        v->visit(root);
 
         return 1;
     }

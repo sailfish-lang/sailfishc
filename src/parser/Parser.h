@@ -18,9 +18,12 @@ class Parser
     // helper function for ignoring extraneous tokens
     Token* getNextUsefulToken();
 
+    // parse methods
+    ast::Start* parseStart();
+
   public:
     // constructor
     Parser();
     // actual parse function -- given filename returns the root of the ast
-    ast::Node* parse(const std::string);
+    ast::Start* parse(const std::string);
 };

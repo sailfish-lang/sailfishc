@@ -3,6 +3,7 @@
  * Sailfish Programming Language
  */
 #include "Parser.h"
+#include "../ast/Node.h"
 #include <iostream>
 #include <vector>
 
@@ -12,7 +13,7 @@ Parser::Parser()
 
 // helper function to get next non comment token
 Token*
-Parser::getNextToken()
+Parser::getNextUsefulToken()
 {
     currentToken = lexar->getNextToken();
     while (currentToken->getKind() == COMMENT_TOKEN)
@@ -21,141 +22,70 @@ Parser::getNextToken()
     }
 }
 
-Node*
+// public method utilized by external classes to parse a given file
+ast::Start*
 Parser::parse(const std::string filename)
 {
-    // initialize the Lexar
+    // (re)intialize the lexar to a new object with the correct file
     lexar = new Lexar(filename);
 
+    // start from the beginning, haha how punny :)
     return parseStart();
 }
 
 /**
- *  Start := Source
+ * Start  := Source
  */
-Node*
+ast::Start*
 Parser::parseStart()
 {
-    // get source
-    std::vector<Node*> source{parseSource()};
-    return new Node(Start, "", nullptr, source);
+    return new ast::Start();
 }
 
 /**
- *  Source := SourcePart*
+ * Source := SourcePart*
  */
-Node*
-Parser::parseSource()
+ast::Source*
+parseSource()
 {
-    // get next token
-    getNextToken();
-    // get source list
-    std::vector<Node*> sourcelist{};
-    while (!currentToken->isEOF())
-    {
-        Node* sourcePart = parseSourcePart();
-        sourcelist.push_back(sourcePart);
-        getNextToken();
-    }
-    return new Node(Source, "", nullptr, sourcelist);
 }
 
 /**
  * SourcePart := ExportDefinition |
  *               GeneralDecleration |
- *               FunctionDefinition |
+ *               FuctionDefinition |
  *               UserDefinedTypeDefinition |
  *               InitialExecutionBody
  */
-Node*
-Parser::parseSourcePart()
+ast::SourcePart*
+parseSourcePart()
 {
-    std::vector<Node*> empty{};
-    std::string tokenValue = currentToken->getValue();
-    switch (currentToken->getKind())
-    {
-    case KEYWORD_TOKEN:
-        if (tokenValue == "exp")
-        {
-            // ExportDefinition
-
-            // get next token
-            getNextToken();
-
-            std::vector<Node*> list{parseExportDefinition()};
-
-            return new Node(ExportDefinition, "", nullptr, list);
-        }
-        else if (tokenValue == "dec")
-        {
-            // GeneralDecleration
-
-            // get next token
-            getNextToken();
-
-            return new Node(GeneralDecleration, "", nullptr, empty);
-        }
-        else if (tokenValue == "fun")
-        {
-            // FunctionDefinition
-
-            // get next token
-            getNextToken();
-
-            return new Node(FunctionDefinition, "", nullptr, empty);
-        }
-        else if (tokenValue == "Cat")
-        {
-            // UserDefinedTypeDefinition
-
-            // get next token
-            getNextToken();
-
-            return new Node(UserDefinedTypeAttributes, "", nullptr, empty);
-        }
-        else if (tokenValue == "Cfn")
-        {
-            // UserDefinedTypeDefinition
-
-            // get next token
-            getNextToken();
-
-            return new Node(UserDefinedTypeMethods, "", nullptr, empty);
-        }
-        break;
-    case START_TOKEN:
-        // InitialExecutionBody
-
-        // get next token
-        getNextToken();
-
-        return new Node(InitialExecutionBody, "", nullptr, empty);
-        break;
-    }
 }
 
 /**
- *  ExportDefinition := 'exp' Exportable
- *  Exportable := FunctionDefinition | GeneralDecleration
+ * ExportDefinition := 'exp' Exportable
  */
-Node*
-Parser::parseExportDefinition()
+ast::ExportDefinition*
+parseExportDefinition()
 {
+}
 
-    std::vector<Node*> empty{};
-    std::string tokenValue = currentToken->getValue();
-    switch (currentToken->getKind())
-    {
-    case KEYWORD_TOKEN:
-        if (tokenValue == "dec")
-        {
-            // GeneralDecleration
-            return new Node(GeneralDecleration, "", nullptr, empty);
-        }
-        else if (tokenValue == "fun")
-        {
-            // FunctionDefinition
-            return new Node(FunctionDefinition, "", nullptr, empty);
-        }
-    }
+/**
+ * Exportable := FunctionDefinition | GeneralDecleration
+ */
+ast::Exportable*
+parseExportable()
+{
+}
+
+/**
+ * FunctionDefinition := FunctionName FunctionInput FunctionOutput FunctionBody
+ * FunctionName := 'fun' Identifier
+ * FunctionInput := '<-' InputList
+ * FunctionOutput := '->' OutputList
+ * FunctionBody := '{' Block '}'
+ */
+ast::FunctionDefinition*
+parseFunctionDefinition()
+{
 }

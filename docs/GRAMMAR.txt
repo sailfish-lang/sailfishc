@@ -2,8 +2,8 @@ Start  := Source
 Source := SourcePart*
 
 SourcePart := ExportDefinition |
-              GeneralDecleration |
               FunctionDefinition |
+              GeneralDecleration |
               UserDefinedTypeDefinition |
               InitialExecutionBody
 
@@ -41,8 +41,8 @@ InitialExecutionBody := 'start' '{' Block '}'
 Block := Statement*
 
 Statement := IfStatement | LoopStatement | '{' Block '}' | SimpleStatement  | 'continue' | 'break' | ReturnStatement
-IfStatement := 'if' Expression '{' Statement '}' ('elif' Expression '{' Statement '}')* ['else' '{' Statement '}']
-LoopStatement := 'loop' RangeVariableDefinition { Statement } | 'loop' Expression { Statement }
+IfStatement := 'if' Expression '{' Statement '}' 'else' '{' Statement '}'
+LoopStatement := 'loop' RangeVariableDefinition { Body } | 'loop' Expression { Body }
 SimpleStatement := GeneralDefinition | VariableAssignment | ExpressionStatement
 ExpressionStatement := Expression
 ReturnStatement := 'return' Expression | 'return'

@@ -2,6 +2,7 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
+#pragma once
 #include <string>
 #include <vector>
 
@@ -15,16 +16,78 @@ class Node
     // virtual void accept(class Visitor& v) = 0;
 };
 
-class Start : public Node
+// -------       Abstract Classes       ------- //
+class Expression
+{
+};
+class SourcePart : public Node
+{
+  public:
+    // constructor
+    SourcePart();
+};
+class Exportable
+{
+};
+class GeneralDefinition
+{
+};
+class Statement
+{
+};
+class SimpleStatement : Statement
+{
+};
+class VariableDecleration
+{
+};
+class Primary
+{
+};
+class Loop
+{
+};
+
+// -------       Basic Classes Needed by Alot        ------- //
+class Identifier : Node
 {
   private:
-    // FUTURE: imports
-    Source src;
+    std::string identifier;
 
   public:
     // constructor
-    Start();
+    Identifier();
 };
+class Typename : Node
+{
+  private:
+    Identifier* type;
+
+  public:
+    // constructor
+    Typename();
+};
+class Variable : Node
+{
+  private:
+    Typename* type;
+    Identifier* name;
+
+  public:
+    // constructor
+    Variable();
+};
+class Block : Node
+{
+  private:
+    std::vector<Statement*> statements;
+
+  public:
+    // constructor
+    Block();
+};
+
+// -------       Start Here       ------- //
 
 class Source : public Node
 {
@@ -36,12 +99,15 @@ class Source : public Node
     Source();
 };
 
-// abstract class for source parts
-class SourcePart : public Node
+class Start : public Node
 {
+  private:
+    // FUTURE: imports
+    Source src;
+
   public:
     // constructor
-    SourcePart();
+    Start();
 };
 
 class ExportDefinition : public SourcePart, SimpleStatement
@@ -54,11 +120,6 @@ class ExportDefinition : public SourcePart, SimpleStatement
     ExportDefinition();
 };
 
-// abstract class used more as a rust-like trait here
-class Exportable
-{
-};
-
 class GeneralDecleration : public SourcePart, Exportable
 {
   private:
@@ -67,11 +128,6 @@ class GeneralDecleration : public SourcePart, Exportable
   public:
     // constructor
     GeneralDecleration();
-};
-
-// abstract class used more as a rust-like trait here
-class GeneralDefinition
-{
 };
 
 class ListDefinition : public Node, GeneralDefinition
@@ -109,19 +165,6 @@ class NewVariableDefinition : public Node,
     NewVariableDefinition();
 };
 
-class FunctionDefinition : public SourcePart, Exportable
-{
-  private:
-    Identifier* name;
-    std::vector<Input*> inputList;
-    std::vector<Output*> outputList;
-    Block* body;
-
-  public:
-    // constructor
-    FunctionDefinition();
-};
-
 class Input : Node
 {
   private:
@@ -142,17 +185,17 @@ class Output : Node
     Output();
 };
 
-class UserDefinedTypeDefinition : public SourcePart
+class FunctionDefinition : public SourcePart, Exportable
 {
   private:
     Identifier* name;
-    UserDefinedTypeAttributes attributes;
-    // methods are optional
-    UserDefinedTypeMethods methods;
+    std::vector<Input*> inputList;
+    std::vector<Output*> outputList;
+    Block* body;
 
   public:
     // constructor
-    UserDefinedTypeDefinition();
+    FunctionDefinition();
 };
 
 class UserDefinedTypeAttributes : Node
@@ -177,6 +220,19 @@ class UserDefinedTypeMethods : Node
     UserDefinedTypeMethods();
 };
 
+class UserDefinedTypeDefinition : public SourcePart
+{
+  private:
+    Identifier* name;
+    UserDefinedTypeAttributes attributes;
+    // methods are optional
+    UserDefinedTypeMethods methods;
+
+  public:
+    // constructor
+    UserDefinedTypeDefinition();
+};
+
 class InitialExecutionBody : public SourcePart
 {
     Block* body;
@@ -184,11 +240,6 @@ class InitialExecutionBody : public SourcePart
   public:
     // constructor
     InitialExecutionBody();
-};
-
-// abstract class used more like a rust tract here
-class VariableDecleration
-{
 };
 
 class RangeVariableDefinition : Node, VariableDecleration
@@ -221,43 +272,48 @@ class ShortVariableDefinition : Node
     ShortVariableDefinition();
 };
 
-class Variable : Node
-{
-  private:
-    Typename* type;
-    Identifier* name;
-
-  public:
-    // constructor
-    Variable();
-};
-
-class Block : Node
-{
-  private:
-    std::vector<Statement*> statements;
-
-  public:
-    // constructor
-    Block();
-};
-
-// abstract class used more like a rust trait here
-class Statement
-{
-};
-
 class IfStatement : Node, Statement
 {
+  private:
+    Expression* ifConditional;
+    Statement* ifStatement;
+    Statement* elseStatement;
+
+  public:
+    // constructor
+    IfStatement();
 };
 
 class LoopStatement : Node, Statement
 {
+  private:
+    Loop* loop;
+
+  public:
+    // constructor
+    LoopStatement();
 };
 
-// abstract class used more like a rust trait here
-class SimpleStatement : Statement
+class LoopRange
 {
+  private:
+    RangeVariableDefinition* rngVar;
+    Block* body;
+
+  public:
+    // constructor
+    LoopRange();
+};
+
+class LoopExpression
+{
+  private:
+    Expression* loopCondition;
+    Block* body;
+
+  public:
+    // constructor
+    LoopExpression();
 };
 
 class ExpressionStatement : SimpleStatement
@@ -279,11 +335,6 @@ class ReturnStatement : Node, Statement
   public:
     // constructor
     ReturnStatement();
-};
-
-// abstract class used more like a rust trait here
-class Expression
-{
 };
 
 class IndexAccess : Node, Expression
@@ -319,11 +370,6 @@ class FunctionCall : Node, Expression
     FunctionCall();
 };
 
-// abstract class used more like a rust trait here
-class Primary
-{
-};
-
 class PrimaryExpression : Node, Expression
 {
   private:
@@ -343,16 +389,7 @@ class BooleanLiteral : Node, Primary
     // constructor
     BooleanLiteral();
 };
-class DictionaryLiteral : Node, Primary
-{
-  private:
-    Identifier* name;
-    std::vector<DictionaryItem*> dictionaryItems;
 
-  public:
-    // constructor
-    DictionaryLiteral();
-};
 class DictionaryItem : Node
 {
   private:
@@ -363,6 +400,27 @@ class DictionaryItem : Node
     // constructor
     DictionaryItem();
 };
+
+class ListItem : Node
+{
+  private:
+    Identifier* name;
+
+  public:
+    // constructor
+    ListItem();
+};
+class DictionaryLiteral : Node, Primary
+{
+  private:
+    Identifier* name;
+    std::vector<DictionaryItem*> dictionaryItems;
+
+  public:
+    // constructor
+    DictionaryLiteral();
+};
+
 class ListLiteral : Node, Primary
 {
   private:
@@ -372,15 +430,6 @@ class ListLiteral : Node, Primary
   public:
     // constructor
     ListLiteral();
-};
-class ListItem : Node
-{
-  private:
-    Identifier* name;
-
-  public:
-    // constructor
-    ListItem();
 };
 
 class NumberLiteral : Node, Primary
@@ -403,34 +452,16 @@ class StringLiteral : Node, Primary
     StringLiteral();
 };
 
-class Identifier : Node
-{
-  private:
-    std::string identifier;
-
-  public:
-    // constructor
-    Identifier();
-};
-
 class TypenameExpression : Node, Primary
 {
   private:
-    Typename* type;
+    ast::Typename* type;
 
   public:
     // constructor
     TypenameExpression();
 };
-class Typename : Node
-{
-  private:
-    Identifier* type;
 
-  public:
-    // constructor
-    Typename();
-};
 class Negation : Node
 {
   public:
@@ -471,7 +502,7 @@ class Subtraction : Node
 {
   public:
     // constructor
-    Assignment();
+    Subtraction();
 };
 class BinaryGreaterThan : Node
 {
