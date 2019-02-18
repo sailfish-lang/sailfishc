@@ -4,24 +4,24 @@
  */
 #include "Node.h"
 
-ast::Start::Start()
+ast::Start::Start(Source* s)
 {
+    src = s;
 }
 
-ast::Source::Source()
+ast::Source::Source(std::vector<SourcePart*> sps)
 {
+    srcParts = sps;
 }
 
-ast::SourcePart::SourcePart()
+ast::ExportDefinition::ExportDefinition(Exportable* e)
 {
+    exprt = e;
 }
 
-ast::ExportDefinition::ExportDefinition()
+ast::GeneralDecleration::GeneralDecleration(ast::GeneralDefinition* gd)
 {
-}
-
-ast::GeneralDecleration::GeneralDecleration()
-{
+    definition = gd;
 }
 
 ast::ListDefinition::ListDefinition()
@@ -32,32 +32,52 @@ ast::DictionaryDefinition::DictionaryDefinition()
 {
 }
 
-ast::NewVariableDefinition::NewVariableDefinition()
+ast::NewVariableDefinition::NewVariableDefinition(ast::Variable* v,
+                                                  ast::Expression* e)
 {
+    var = v;
+    expr = e;
 }
 
-ast::FunctionDefinition::FunctionDefinition()
+ast::FunctionDefinition::FunctionDefinition(Identifier* id,
+                                            std::vector<Input*> i,
+                                            std::vector<Output*> o, Block* b)
 {
+    name = id;
+    inputList = i;
+    outputList = o;
+    body = b;
 }
 
-ast::Input::Input()
+ast::Input::Input(Variable* v)
 {
+    input = v;
 }
 
-ast::Output::Output()
+ast::Output::Output(Typename* t)
 {
+    output = t;
 }
 
-ast::UserDefinedTypeDefinition::UserDefinedTypeDefinition()
+ast::UserDefinedTypeDefinition::UserDefinedTypeDefinition(
+    ast::UserDefinedTypeAttributes* a, ast::UserDefinedTypeMethods* m)
 {
+    attributes = a;
+    methods = m;
 }
 
-ast::UserDefinedTypeAttributes::UserDefinedTypeAttributes()
+ast::UserDefinedTypeAttributes::UserDefinedTypeAttributes(
+    Identifier* id, std::vector<Variable*> a)
 {
+    name = id;
+    attributes = a;
 }
 
-ast::UserDefinedTypeMethods::UserDefinedTypeMethods()
+ast::UserDefinedTypeMethods::UserDefinedTypeMethods(
+    Identifier* id, std::vector<FunctionDefinition*> m)
 {
+    name = id;
+    methods = m;
 }
 
 ast::InitialExecutionBody::InitialExecutionBody()
@@ -76,12 +96,15 @@ ast::ShortVariableDefinition::ShortVariableDefinition()
 {
 }
 
-ast::Variable::Variable()
+ast::Variable::Variable(Typename* t, Identifier* id)
 {
+    type = t;
+    name = id;
 }
 
-ast::Block::Block()
+ast::Block::Block(std::vector<ast::Statement*> s)
 {
+    statements = s;
 }
 
 ast::IfStatement::IfStatement()
@@ -104,8 +127,9 @@ ast::ExpressionStatement::ExpressionStatement()
 {
 }
 
-ast::ReturnStatement::ReturnStatement()
+ast::ReturnStatement::ReturnStatement(Expression* e)
 {
+    expr = e;
 }
 
 ast::IndexAccess::IndexAccess()
@@ -152,78 +176,104 @@ ast::StringLiteral::StringLiteral()
 {
 }
 
-ast::Identifier::Identifier()
+ast::Identifier::Identifier(std::string id)
 {
+    identifier = id;
 }
 
 ast::TypenameExpression::TypenameExpression()
 {
 }
 
-ast::Typename::Typename()
+ast::Typename::Typename(std::string t)
+{
+    type = t;
+}
+
+ast::Negation::Negation(Expression* e)
+{
+    expr = e;
+}
+
+ast::Exponentiation::Exponentiation(Expression* e)
+{
+    expr = e;
+}
+
+ast::Multiplication::Multiplication(Expression* e)
+{
+    expr = e;
+}
+
+ast::Modulo::Modulo(Expression* e)
+{
+    expr = e;
+}
+
+ast::Addition::Addition(Expression* e)
+{
+    expr = e;
+}
+
+ast::Subtraction::Subtraction(Expression* e)
+{
+    expr = e;
+}
+
+ast::Division::Division(Expression* e)
+{
+    expr = e;
+}
+
+ast::BinaryGreaterThan::BinaryGreaterThan(Expression* e)
+{
+    expr = e;
+}
+
+ast::BinaryLessThan::BinaryLessThan(Expression* e)
+{
+    expr = e;
+}
+
+ast::BinaryGreaterThanOrEqual::BinaryGreaterThanOrEqual(Expression* e)
+{
+    expr = e;
+}
+
+ast::BinaryLessThanOrEqual::BinaryLessThanOrEqual(Expression* e)
+{
+    expr = e;
+}
+
+ast::EquivalenceComparison::EquivalenceComparison(Expression* e)
+{
+    expr = e;
+}
+
+ast::NonEquivalenceComparison::NonEquivalenceComparison(Expression* e)
+{
+    expr = e;
+}
+
+ast::AndComparison::AndComparison(Expression* e)
+{
+    expr = e;
+}
+
+ast::OrComparison::OrComparison(Expression* e)
+{
+    expr = e;
+}
+
+ast::Break::Break()
 {
 }
 
-ast::Negation::Negation()
+ast::Continue::Continue()
 {
 }
 
-ast::Exponentiation::Exponentiation()
+ast::Assignment::Assignment(Expression* e)
 {
-}
-
-ast::Multiplication::Multiplication()
-{
-}
-
-ast::Division::Division()
-{
-}
-
-ast::Modulo::Modulo()
-{
-}
-
-ast::Addition::Addition()
-{
-}
-
-ast::Subtraction::Subtraction()
-{
-}
-
-ast::BinaryGreaterThan::BinaryGreaterThan()
-{
-}
-
-ast::BinaryLessThan::BinaryLessThan()
-{
-}
-
-ast::BinaryGreaterThanOrEqual::BinaryGreaterThanOrEqual()
-{
-}
-
-ast::BinaryLessThanOrEqual::BinaryLessThanOrEqual()
-{
-}
-
-ast::EquivalenceComparison::EquivalenceComparison()
-{
-}
-
-ast::NonEquivalenceComparison::NonEquivalenceComparison()
-{
-}
-
-ast::AndComparison::AndComparison()
-{
-}
-
-ast::OrComparison::OrComparison()
-{
-}
-
-ast::Assignment::Assignment()
-{
+    expr = e;
 }

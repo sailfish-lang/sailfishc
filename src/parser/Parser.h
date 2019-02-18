@@ -20,6 +20,48 @@ class Parser
 
     // parse methods
     ast::Start* parseStart();
+    ast::Source* parseSource();
+    ast::SourcePart* parseSourcePart();
+
+    ast::ExportDefinition* parseExportDefinition();
+    ast::FunctionDefinition* parseFunctionDefintion();
+    ast::GeneralDecleration* parseGeneralDecleration();
+    ast::UserDefinedTypeDefinition* parseUserDefinedTypeDefinition();
+    ast::InitialExecutionBody* parseInitialExecutionBody();
+
+    ast::Exportable* parseExportable();
+
+    ast::Input* parseInput();
+    ast::Output* parseOutput();
+
+    ast::GeneralDefinition* parseGeneralDefinition();
+
+    ast::UserDefinedTypeAttributes* UserDefinedTypeAttributes();
+    ast::UserDefinedTypeMethods* UserDefinedTypeMethods();
+
+    ast::DictionaryDefinition* parseDictionaryDefinition();
+    ast::ListDefinition* parseListDefinition();
+    ast::NewVariableDefinition* parseNewVariableDefinition();
+
+    ast::Expression* parseExpression();
+
+    ast::IndexAccess* parseIndexAccess();
+    ast::MemberAccess* parseMemberAccess();
+    ast::FunctionCall* parseFunctionCall();
+    ast::PrimaryExpression* parsePrimaryExpression();
+
+    ast::Block* parseBlock();
+
+    ast::Statement* parseStatement();
+    ast::IfStatement* parseIfStatement();
+    ast::LoopStatement* parseLoopStatement();
+    ast::SimpleStatement* parseSimpleStatement();
+    ast::ReturnStatement* parseReturnStatement();
+
+    ast::Variable* parseVariable();
+
+    ast::Identifier* parseIdentifier();
+    ast::Typename* parseTypename();
 
   public:
     // constructor

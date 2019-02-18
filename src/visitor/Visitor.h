@@ -26,12 +26,14 @@ class Visitor
     void visit(ast::VariableAssignment*);
     void visit(ast::ShortVariableDefinition*);
     void visit(ast::Variable*);
+    void visit(ast::Block*);
     void visit(ast::IfStatement*);
     void visit(ast::LoopStatement*);
     void visit(ast::LoopRange*);
     void visit(ast::LoopExpression*);
     void visit(ast::ExpressionStatement*);
     void visit(ast::ReturnStatement*);
+    void visit(ast::SimpleStatement*);
     void visit(ast::IndexAccess*);
     void visit(ast::MemberAccess*);
     void visit(ast::FunctionCall*);
@@ -44,6 +46,7 @@ class Visitor
     void visit(ast::NumberLiteral*);
     void visit(ast::StringLiteral*);
     void visit(ast::Identifier*);
+    void visit(ast::Expression*);
     void visit(ast::TypenameExpression*);
     void visit(ast::Typename*);
     void visit(ast::Negation*);
@@ -61,5 +64,7 @@ class Visitor
     void visit(ast::NonEquivalenceComparison*);
     void visit(ast::AndComparison*);
     void visit(ast::OrComparison*);
+    void visit(ast::Break*);
+    void visit(ast::Continue*);
     void visit(ast::Assignment*);
 };

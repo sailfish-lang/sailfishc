@@ -14,7 +14,7 @@ FunctionDefinition := FunctionName FunctionInput FunctionOutput FunctionBody
 FunctionName := 'fun' Identifier
 FunctionInput := '<-' InputList 
 FunctionOutput := '->' OutputList
-FunctionBody := '{' Block '}'
+FunctionBody := Block
 
 InputList := Input (',' Input)*
 Input := Variable
@@ -33,24 +33,23 @@ VariableDecleration := NewVariableDefinition | RangeVariableDefinition | ShortVa
 Variable := TypeName Identifier
 
 UserDefinedTypeDefinition := 'Cat' UserDefinedTypeAttributes [UserDefinedTypeMethods]
-UserDefinedTypeAttributes := Identifier '{' ShortVariableDefinition* '}'
+UserDefinedTypeAttributes := Identifier '{' Variable* '}'
 UserDefinedTypeMethods := 'Cfn' Identifier '{' FunctionDefinition* '}'
 
-InitialExecutionBody := 'start' '{' Block '}'
+InitialExecutionBody := 'start' 'Block
 
-Block := Statement*
+Block := '{' Statement* '}'
 
-Statement := IfStatement | LoopStatement | '{' Block '}' | SimpleStatement  | 'continue' | 'break' | ReturnStatement
+Statement := IfStatement | LoopStatement |  Block | SimpleStatement  | 'continue' | 'break' | ReturnStatement
 IfStatement := 'if' Expression '{' Statement '}' 'else' '{' Statement '}'
 LoopStatement := 'loop' RangeVariableDefinition { Body } | 'loop' Expression { Body }
 SimpleStatement := GeneralDefinition | VariableAssignment | ExpressionStatement
 ExpressionStatement := Expression
-ReturnStatement := 'return' Expression | 'return'
+ReturnStatement := 'return' Expression
 
 Expression := IndexAccess |
               MemberAccess |
               FunctionCall |
-              '(' Expression ')' |
               '!' Expression |
                '**' Expression |
                ('*' | '/' | '%') Expression |
@@ -63,10 +62,10 @@ Expression := IndexAccess |
               PrimaryExpression
 
 
-IndexAccess := Expression '[' [Expression] ']'
-MemberAccess := Expression '.' Identifier
+IndexAccess := '[' NumberLiteral ']'
+MemberAccess := '.' Identifier
 
-FunctionCall := Identifier '(' [Identifier] (',' Identifier)*')'
+FunctionCall := '(' [Expression] (',' Expression)*')'
 
 PrimaryExpression := BooleanLiteral |
                      DictionaryLiteral |
@@ -77,7 +76,7 @@ PrimaryExpression := BooleanLiteral |
                      TypenameExpression
 
 BooleanLiteral := 'true' | 'false'
-DictionaryLiteral := '[' [DictionaryItem (',' DictionaryItem)] ']'
+DictionaryLiteral := '{' [DictionaryItem (',' DictionaryItem)] '}'
 DictionaryItem := Identifier ':' Identifier
 ListLiteral := '[' [ListItem (',' ListItem)] ']'
 ListItem := Identifier

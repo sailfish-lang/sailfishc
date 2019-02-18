@@ -3,6 +3,7 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -19,24 +20,40 @@ class Node
 // -------       Abstract Classes       ------- //
 class Expression
 {
+  public:
+    virtual std::string getType(){};
 };
-class SourcePart : public Node
+class SourcePart : Node
 {
   public:
-    // constructor
-    SourcePart();
+    // must defined a default value for the virtual function
+    // https://stackoverflow.com/questions/307352/g-undefined-reference-to-typeinfo
+    virtual std::string getType(){};
 };
 class Exportable
 {
+  public:
+    virtual std::string getType(){};
 };
 class GeneralDefinition
 {
+  public:
+    virtual std::string getType(){};
 };
 class Statement
 {
+  public:
+    virtual std::string getType(){};
 };
-class SimpleStatement : Statement
+class SimpleStatement : public Statement
 {
+  public:
+    // implement Statement
+    /* virtual */ std::string
+    getType()
+    {
+        return "SimpleStatement";
+    }
 };
 class VariableDecleration
 {
@@ -56,16 +73,28 @@ class Identifier : Node
 
   public:
     // constructor
-    Identifier();
+    Identifier(std::string);
+    // get method
+    std::string
+    getValue()
+    {
+        return identifier;
+    }
 };
 class Typename : Node
 {
   private:
-    Identifier* type;
+    std::string type;
 
   public:
     // constructor
-    Typename();
+    Typename(std::string);
+    // get method
+    std::string
+    getType()
+    {
+        return type;
+    }
 };
 class Variable : Node
 {
@@ -75,7 +104,18 @@ class Variable : Node
 
   public:
     // constructor
-    Variable();
+    Variable(Typename*, Identifier*);
+    // get methods
+    Typename*
+    getType()
+    {
+        return type;
+    }
+    Identifier*
+    getName()
+    {
+        return name;
+    }
 };
 class Block : Node
 {
@@ -84,11 +124,16 @@ class Block : Node
 
   public:
     // constructor
-    Block();
+    Block(std::vector<ast::Statement*>);
+    // get methods
+    std::vector<ast::Statement*>
+    getStatements()
+    {
+        return statements;
+    }
 };
 
 // -------       Start Here       ------- //
-
 class Source : public Node
 {
   private:
@@ -96,41 +141,77 @@ class Source : public Node
 
   public:
     // constructor
-    Source();
+    Source(std::vector<SourcePart*>);
+    // get methods
+    std::vector<SourcePart*>
+    getSourceParts()
+    {
+        return srcParts;
+    }
 };
 
 class Start : public Node
 {
   private:
     // FUTURE: imports
-    Source src;
+    Source* src;
 
   public:
     // constructor
-    Start();
+    Start(Source*);
+    // get methods
+    Source*
+    getSource()
+    {
+        return src;
+    }
 };
 
 class ExportDefinition : public SourcePart, SimpleStatement
 {
   private:
-    Exportable* exp;
+    Exportable* exprt;
 
   public:
     // constructor
-    ExportDefinition();
+    ExportDefinition(Exportable*);
+    // implementation for SourcePart
+    /* virutal */ std::string
+    getType()
+    {
+        return "ExportDefinition";
+    }
+    // get methods
+    Exportable*
+    getExport()
+    {
+        return exprt;
+    }
 };
 
-class GeneralDecleration : public SourcePart, Exportable
+class GeneralDecleration : public SourcePart, public Exportable
 {
   private:
     GeneralDefinition* definition;
 
   public:
     // constructor
-    GeneralDecleration();
+    GeneralDecleration(ast::GeneralDefinition*);
+    // implementation for SourcePart
+    /* virutal */ std::string
+    getType()
+    {
+        return "GeneralDecleration";
+    }
+    // get methods
+    ast::GeneralDefinition*
+    getDefinition()
+    {
+        return definition;
+    }
 };
 
-class ListDefinition : public Node, GeneralDefinition
+class ListDefinition : public Node, public GeneralDefinition
 {
   private:
     Identifier* name;
@@ -140,8 +221,14 @@ class ListDefinition : public Node, GeneralDefinition
   public:
     // constructor
     ListDefinition();
+    // implement GeneralDefinition
+    std::string
+    getType()
+    {
+        return "ListDefinition";
+    }
 };
-class DictionaryDefinition : public Node, GeneralDefinition
+class DictionaryDefinition : public Node, public GeneralDefinition
 {
   private:
     Identifier* name;
@@ -151,9 +238,15 @@ class DictionaryDefinition : public Node, GeneralDefinition
   public:
     // constructor
     DictionaryDefinition();
+    // implement GeneralDefinition
+    std::string
+    getType()
+    {
+        return "DictionaryDefinition";
+    }
 };
-class NewVariableDefinition : public Node,
-                              GeneralDefinition,
+class NewVariableDefinition : public GeneralDefinition,
+                              public Node,
                               VariableDecleration
 {
   private:
@@ -162,7 +255,24 @@ class NewVariableDefinition : public Node,
 
   public:
     // constructor
-    NewVariableDefinition();
+    NewVariableDefinition(Variable*, Expression*);
+    // implement GeneralDefinition
+    std::string
+    getType()
+    {
+        return "NewVariableDefinition";
+    }
+    // get methods
+    Variable*
+    getVariable()
+    {
+        return var;
+    }
+    Expression*
+    getExpression()
+    {
+        return expr;
+    }
 };
 
 class Input : Node
@@ -172,20 +282,32 @@ class Input : Node
 
   public:
     // constructor
-    Input();
+    Input(Variable*);
+    // getMethods
+    Variable*
+    getInput()
+    {
+        return input;
+    }
 };
 
 class Output : Node
 {
   private:
-    Typename* type;
+    Typename* output;
 
   public:
     // constructor
-    Output();
+    Output(Typename*);
+    // get methods
+    Typename*
+    getOutput()
+    {
+        return output;
+    }
 };
 
-class FunctionDefinition : public SourcePart, Exportable
+class FunctionDefinition : public SourcePart, public Exportable
 {
   private:
     Identifier* name;
@@ -195,7 +317,35 @@ class FunctionDefinition : public SourcePart, Exportable
 
   public:
     // constructor
-    FunctionDefinition();
+    FunctionDefinition(Identifier*, std::vector<Input*>, std::vector<Output*>,
+                       Block*);
+    // implementation for SourcePart
+    /* virutal */ std::string
+    getType()
+    {
+        return "FunctionDefinition";
+    }
+    // get methods
+    Identifier*
+    getName()
+    {
+        return name;
+    }
+    std::vector<Input*>
+    getInputList()
+    {
+        return inputList;
+    }
+    std::vector<Output*>
+    getOutputList()
+    {
+        return outputList;
+    }
+    Block*
+    getBody()
+    {
+        return body;
+    }
 };
 
 class UserDefinedTypeAttributes : Node
@@ -206,7 +356,18 @@ class UserDefinedTypeAttributes : Node
 
   public:
     // constructor
-    UserDefinedTypeAttributes();
+    UserDefinedTypeAttributes(Identifier*, std::vector<Variable*>);
+    // get methods
+    Identifier*
+    getName()
+    {
+        return name;
+    }
+    std::vector<Variable*>
+    getAttributes()
+    {
+        return attributes;
+    }
 };
 
 class UserDefinedTypeMethods : Node
@@ -217,20 +378,48 @@ class UserDefinedTypeMethods : Node
 
   public:
     // constructor
-    UserDefinedTypeMethods();
+    UserDefinedTypeMethods(Identifier*, std::vector<FunctionDefinition*>);
+    // get methods
+    Identifier*
+    getName()
+    {
+        return name;
+    }
+    std::vector<FunctionDefinition*>
+    getMethods()
+    {
+        return methods;
+    }
 };
 
 class UserDefinedTypeDefinition : public SourcePart
 {
   private:
-    Identifier* name;
-    UserDefinedTypeAttributes attributes;
+    UserDefinedTypeAttributes* attributes;
     // methods are optional
-    UserDefinedTypeMethods methods;
+    UserDefinedTypeMethods* methods;
 
   public:
     // constructor
-    UserDefinedTypeDefinition();
+    UserDefinedTypeDefinition(UserDefinedTypeAttributes*,
+                              UserDefinedTypeMethods*);
+    // implementation for SourcePart
+    /* virutal */ std::string
+    getType()
+    {
+        return "UserDefinedTypeDefinition";
+    }
+    // get methods
+    UserDefinedTypeAttributes*
+    getAttributes()
+    {
+        return attributes;
+    }
+    UserDefinedTypeMethods*
+    getMethods()
+    {
+        return methods;
+    }
 };
 
 class InitialExecutionBody : public SourcePart
@@ -240,6 +429,12 @@ class InitialExecutionBody : public SourcePart
   public:
     // constructor
     InitialExecutionBody();
+    // implementation for SourcePart
+    /* virutal */ std::string
+    getType()
+    {
+        return "InitialExecutionBody";
+    }
 };
 
 class RangeVariableDefinition : Node, VariableDecleration
@@ -272,7 +467,7 @@ class ShortVariableDefinition : Node
     ShortVariableDefinition();
 };
 
-class IfStatement : Node, Statement
+class IfStatement : Node, public Statement
 {
   private:
     Expression* ifConditional;
@@ -282,9 +477,15 @@ class IfStatement : Node, Statement
   public:
     // constructor
     IfStatement();
+    // implement Statement
+    /* virtual */ std::string
+    getType()
+    {
+        return "IfStatement";
+    }
 };
 
-class LoopStatement : Node, Statement
+class LoopStatement : Node, public Statement
 {
   private:
     Loop* loop;
@@ -292,6 +493,12 @@ class LoopStatement : Node, Statement
   public:
     // constructor
     LoopStatement();
+    // implement Statement
+    /* virtual */ std::string
+    getType()
+    {
+        return "LoopStatement";
+    }
 };
 
 class LoopRange
@@ -326,7 +533,7 @@ class ExpressionStatement : SimpleStatement
     ExpressionStatement();
 };
 
-class ReturnStatement : Node, Statement
+class ReturnStatement : Node, public Statement
 {
   private:
     // optional
@@ -334,7 +541,19 @@ class ReturnStatement : Node, Statement
 
   public:
     // constructor
-    ReturnStatement();
+    ReturnStatement(Expression*);
+    // implement Statement
+    /* virtual */ std::string
+    getType()
+    {
+        return "ReturnStatement";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
 };
 
 class IndexAccess : Node, Expression
@@ -346,6 +565,12 @@ class IndexAccess : Node, Expression
   public:
     // constructor
     IndexAccess();
+    // implement Expression
+    std::string
+    getType()
+    {
+        return "IndexAccess";
+    }
 };
 
 class MemberAccess : Node, Expression
@@ -357,17 +582,28 @@ class MemberAccess : Node, Expression
   public:
     // constructor
     MemberAccess();
+    // implement Expression
+    std::string
+    getType()
+    {
+        return "MemberAccess";
+    }
 };
 
 class FunctionCall : Node, Expression
 {
   private:
-    Identifier* name;
-    std::vector<Identifier*> args;
+    std::vector<Expression*> args;
 
   public:
     // constructor
     FunctionCall();
+    // implement Expression
+    std::string
+    getType()
+    {
+        return "FunctionCall";
+    }
 };
 
 class PrimaryExpression : Node, Expression
@@ -378,6 +614,12 @@ class PrimaryExpression : Node, Expression
   public:
     // constructor
     PrimaryExpression();
+    // implement Expression
+    std::string
+    getType()
+    {
+        return "PrimaryExpression";
+    }
 };
 
 class BooleanLiteral : Node, Primary
@@ -462,104 +704,364 @@ class TypenameExpression : Node, Primary
     TypenameExpression();
 };
 
-class Negation : Node
-{
-  public:
-    // constructor
-    Negation();
-};
-class Exponentiation : Node
-{
-  public:
-    // constructor
-    Exponentiation();
-};
-class Multiplication : Node
-{
-  public:
-    // constructor
-    Multiplication();
-};
-class Division : Node
-{
-  public:
-    // constructor
-    Division();
-};
-class Modulo : Node
-{
-  public:
-    // constructor
-    Modulo();
-};
-class Addition : Node
-{
-  public:
-    // constructor
-    Addition();
-};
-class Subtraction : Node
-{
-  public:
-    // constructor
-    Subtraction();
-};
-class BinaryGreaterThan : Node
-{
-  public:
-    // constructor
-    BinaryGreaterThan();
-};
-class BinaryLessThan : Node
-{
-  public:
-    // constructor
-    BinaryLessThan();
-};
-class BinaryGreaterThanOrEqual : Node
-{
-  public:
-    // constructor
-    BinaryGreaterThanOrEqual();
-};
-class BinaryLessThanOrEqual : Node
-{
-  public:
-    // constructor
-    BinaryLessThanOrEqual();
-};
-class EquivalenceComparison : Node
-{
-  public:
-    // constructor
-    EquivalenceComparison();
-};
-class NonEquivalenceComparison : Node
-{
-  public:
-    // constructor
-    NonEquivalenceComparison();
-};
-class AndComparison : Node
-{
-  public:
-    // constructor
-    AndComparison();
-};
-class OrComparison : Node
-{
-  public:
-    // constructor
-    OrComparison();
-};
-class Assignment : Node
+class Negation : Node, public Expression
 {
   private:
-    Identifier* name;
     Expression* expr;
 
   public:
     // constructor
-    Assignment();
+    Negation(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "Negation";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class Exponentiation : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    Exponentiation(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "Exponentiation";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class Multiplication : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    Multiplication(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "Multiplication";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class Division : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    Division(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "Division";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class Modulo : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    Modulo(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "Modulo";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class Addition : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    Addition(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "Addition";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class Subtraction : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    Subtraction(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "Subtraction";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class BinaryGreaterThan : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    BinaryGreaterThan(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "BinaryGreaterThan";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class BinaryLessThan : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    BinaryLessThan(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "BinaryLessThan";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class BinaryGreaterThanOrEqual : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    BinaryGreaterThanOrEqual(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "BinaryGreaterThan";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class BinaryLessThanOrEqual : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    BinaryLessThanOrEqual(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "BinaryLessThan";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class EquivalenceComparison : Node
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    EquivalenceComparison(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "EquivalenceComparison";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class NonEquivalenceComparison : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    NonEquivalenceComparison(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "NonEquivalenceComparison";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class AndComparison : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    AndComparison(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "AndComparison";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class OrComparison : Node, public Expression
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    OrComparison(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "OrComparison";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
+};
+class Break : Node, public Statement
+{
+  public:
+    // constructor
+    Break();
+    // implement Statement
+    /* virtual */ std::string
+    getType()
+    {
+        return "Break";
+    }
+};
+class Continue : Node, public Statement
+{
+  public:
+    // constructor
+    Continue();
+    // implement Statement
+    /* virtual */ std::string
+    getType()
+    {
+        return "Continue";
+    }
+};
+class Assignment : Node
+{
+  private:
+    Expression* expr;
+
+  public:
+    // constructor
+    Assignment(Expression*);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "Assignment";
+    }
+    // get methods
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
 };
 }
