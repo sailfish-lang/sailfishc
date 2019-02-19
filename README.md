@@ -21,7 +21,7 @@ The intention is for this language to be simple and usable by the end of the sem
 
 **Source language:** Sailfish <br>
 **Implementation language:** C++ (original version) <br>
-**Target(s):** TBD
+**Target(s):** TBD <br>
 **Compiled or Interpreted:** Compiled <br>
 **Functional, Procedural, or Obect Oriented:** Hybrid <br>
 **Model Languages:** Python with some fun stuff from Rust, Haskell and Go
@@ -88,6 +88,100 @@ make
 ```
 
 ***
+
+## Grammar (WIP)
+*WIP since this probably won't be v1 finalized until after frontend of compiler is complete.*
+
+Start  := Source <br>
+Source := SourcePart*  <br>
+
+SourcePart := ExportDefinition | 
+              FunctionDefinition |
+              GeneralDecleration |
+              UserDefinedTypeDefinition |
+              InitialExecutionBody  <br>
+
+ExportDefinition := 'exp' Exportable  <br>
+Exportable := FunctionDefinition | GeneralDecleration  <br>
+
+FunctionDefinition := FunctionName FunctionInput FunctionOutput FunctionBody  <br>
+FunctionName := 'fun' Identifier  <br>
+FunctionInput := '<-' InputList  <br>
+FunctionOutput := '->' OutputList  <br>
+FunctionBody := Block  <br>
+
+InputList := Input (',' Input)*  <br>
+Input := Variable  <br>
+OutputList := Output (',' Output)*  <br>
+Output := Typename  <br>
+
+GeneralDecleration := 'dec' GeneralDefinition  <br>
+GeneralDefinition := ListDefinition | DictionaryDefinition | NewVariableDefinition  <br>
+ListDefinition := 'list' Identifier  <br>
+DictionaryDefinition := ''dictionary' Identifier  <br>
+NewVariableDefinition := Variable '=' Expression  <br>
+RangeVariableDefinition := Variable ':=' Expression  <br>
+VariableAssignment := Identifier = Expression  <br>
+ShortVariableDefinition := Variable  <br>
+VariableDecleration := NewVariableDefinition | RangeVariableDefinition | ShortVariableDefinition  <br>
+Variable := TypeName Identifier  <br>
+
+UserDefinedTypeDefinition := 'Cat' UserDefinedTypeAttributes [UserDefinedTypeMethods]  <br>
+UserDefinedTypeAttributes := Identifier '{' Variable* '}'  <br>
+UserDefinedTypeMethods := 'Cfn' Identifier '{' FunctionDefinition* '}'  <br>
+
+InitialExecutionBody := 'start' 'Block  <br>
+
+Block := '{' Statement* '}'  <br>
+
+Statement := IfStatement | LoopStatement |  Block | SimpleStatement  | 'continue' | 'break' | ReturnStatement  <br>
+IfStatement := 'if' Expression Block 'else' Block  <br>
+LoopStatement := 'loop' 'over' RangeVariableDefinition { Body } | 'loop' Expression { Body }  <br>
+SimpleStatement := GeneralDefinition | ExpressionStatement  <br>
+ExpressionStatement := Expression  <br>
+ReturnStatement := 'return' Expression  <br>
+
+Expression := IndexAccess |
+              MemberAccess |
+              FunctionCall |
+              '!' Expression |
+               '**' Expression |
+               ('*' | '/' | '%') Expression |
+               ('+' | '-') Expression|
+               ('>' | '<' | '>=' | '<=') Expression |
+               ('==' | '!=') Expression|
+               '&&' Expression |
+               '||' Expression |
+               '=' Expression | 
+              PrimaryExpression  <br>
+
+
+IndexAccess := '[' IntegerLiteral ']'  <br>
+MemberAccess := '.' Identifier  <br>
+
+FunctionCall := '(' [Expression] (',' Expression)*')'  <br>
+
+PrimaryExpression := Primary  <br>
+
+Primary := BooleanLiteral |
+           DictionaryLiteral |
+           ListLiteral |
+           NumberLiteral |
+           StringLiteral |
+           Identifier  <br>
+
+BooleanLiteral := 'true' | 'false'  <br>
+DictionaryLiteral := '{' [DictionaryItem (',' DictionaryItem)] '}'  <br>
+DictionaryItem := Identifier ':' Identifier  <br>
+ListLiteral := '[' [ListItem (',' ListItem)] ']'  <br>
+ListItem := Identifier  <br>
+NumberLiteral := Integer | Decimal  <br>
+Integer := [0-9]+  <br>
+Decimal  := [0-9]+.[0-9]+  <br>
+StringLiteral := "' ([^"\r\n\\] | '\\' .)* '"'  <br>
+Identifier := [a-zA-Z] [a-zA-Z_0-9]*  <br>
+Typename := 'bool' | 'str' | 'int' | 'flt' | 'void'  <br>
+
 
 ## Wishlist
 
