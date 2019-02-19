@@ -14,7 +14,7 @@ Token::Token(Kind k, std::string v)
         if (v == "fun" || v == "Cat" || v == "Cfn" || v == "loop" ||
             v == "dec" || v == "exp" || v == "if" || v == "elif" ||
             v == "else" || v == "return" || v == "include" || v == "import" ||
-            v == "break" || v == "continue")
+            v == "break" || v == "continue" || "over")
             kind = KEYWORD_TOKEN;
         else if (v == "start")
             kind = START_TOKEN;

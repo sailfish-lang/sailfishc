@@ -162,11 +162,6 @@ Parser::parseFunctionDefintion()
     while (currentToken->getKind() != Kind::ARROW_TOKEN)
     {
         inputs.push_back(parseInput());
-
-        if (currentToken->getKind() == Kind::COMMA_TOKEN)
-        {
-            // getNextUsefulToken();
-        }
         getNextUsefulToken();
     }
 
@@ -177,10 +172,6 @@ Parser::parseFunctionDefintion()
     while (currentToken->getKind() != Kind::LCURLEY_TOKEN)
     {
         outputs.push_back(parseOutput());
-        if (currentToken->getKind() == Kind::COMMA_TOKEN)
-        {
-            // getNextUsefulToken();
-        }
         getNextUsefulToken();
     }
 
@@ -304,6 +295,19 @@ Parser::UserDefinedTypeMethods()
     getNextUsefulToken();
 
     std::vector<ast::FunctionDefinition*> methods;
+    currentToken->display();
+
+    getNextUsefulToken();
+
+    while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
+    {
+        methods.push_back(parseFunctionDefintion());
+        // getNextUsefulToken();
+        currentToken->display();
+    }
+
+    // skip '}'
+    getNextUsefulToken();
 
     return new ast::UserDefinedTypeMethods(name, methods);
 }
@@ -314,24 +318,35 @@ Parser::UserDefinedTypeMethods()
 ast::InitialExecutionBody*
 Parser::parseInitialExecutionBody()
 {
-    return new ast::InitialExecutionBody();
+    ast::Block* body = parseBlock();
+    return new ast::InitialExecutionBody(body);
 }
 
 /**
- * ListDefinition := 'list' Identifier ['=' Expression]
+ * ListDefinition := 'list' Identifier
  */
 ast::ListDefinition*
 Parser::parseListDefinition()
 {
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+
+    // move to next token
+    getNextUsefulToken();
+
     return new ast::ListDefinition();
 }
 
 /**
- * DictionaryDefinition := ''dictionary' Identifier ['=' Expression]
+ * DictionaryDefinition := ''dictionary' Identifier
  */
 ast::DictionaryDefinition*
 Parser::parseDictionaryDefinition()
 {
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+
+    // move to next token
+    getNextUsefulToken();
+
     return new ast::DictionaryDefinition();
 }
 
@@ -377,11 +392,15 @@ Parser::parseExpression()
     else if (tk == ".")
     {
         // skip '.'
+        getNextUsefulToken();
+
         return (ast::Expression*)parseMemberAccess();
     }
     else if (tk == "(")
     {
-        // skip '.'
+        // skip '('
+        getNextUsefulToken();
+
         return (ast::Expression*)parseFunctionCall();
     }
     else if (tk == "!")
@@ -498,17 +517,26 @@ Parser::parseExpression()
     }
     else
     {
-        return (ast::Expression*)new ast::PrimaryExpression();
+        return (ast::Expression*)parsePrimaryExpression();
     }
 }
 
 /**
- * IndexAccess := '[' NumberLiteral ']'
+ * IndexAccess := '[' IntegerLiteral ']'
  */
 ast::IndexAccess*
 Parser::parseIndexAccess()
 {
-    return new ast::IndexAccess();
+    ast::IntegerLiteral* index =
+        new ast::IntegerLiteral(currentToken->getValue());
+
+    // move to next token
+    getNextUsefulToken();
+
+    // skip closing bracker
+    getNextUsefulToken();
+
+    return new ast::IndexAccess(index);
 }
 
 /**
@@ -517,7 +545,8 @@ Parser::parseIndexAccess()
 ast::MemberAccess*
 Parser::parseMemberAccess()
 {
-    return new ast::MemberAccess();
+    ast::Identifier* member = new ast::Identifier(currentToken->getValue());
+    return new ast::MemberAccess(member);
 }
 
 /**
@@ -526,22 +555,142 @@ Parser::parseMemberAccess()
 ast::FunctionCall*
 Parser::parseFunctionCall()
 {
+    std::vector<ast::Expression*> exprs;
+
+    while (currentToken->getKind() != Kind::RPAREN_TOKEN)
+    {
+        exprs.push_back(parseExpression());
+        getNextUsefulToken();
+    }
     return new ast::FunctionCall();
 }
 
 /**
- * PrimaryExpression := BooleanLiteral |
- *                   DictionaryLiteral |
- *                   ListLiteral |
- *                   NumberLiteral |
- *                   StringLiteral |
- *                   Identifier |
- *                   TypenameExpression
+ * PrimaryExpression := Primary
  */
 ast::PrimaryExpression*
 Parser::parsePrimaryExpression()
 {
-    return new ast::PrimaryExpression();
+    return new ast::PrimaryExpression(parsePrimary());
+}
+
+/**
+ * Primary := BooleanLiteral |
+ *            DictionaryLiteral |
+ *            ListLiteral |
+ *            IntegerLiteral |
+ *            FloatLiteral |
+ *            StringLiteral |
+ *            Identifier
+ */
+ast::Primary*
+Parser::parsePrimary()
+{
+    std::string tk = currentToken->getValue();
+    Kind kind = currentToken->getKind();
+
+    if (tk == "true" || tk == "false")
+    {
+        return (ast::Primary*)new ast::BooleanLiteral(tk);
+    }
+    else if (tk == "{")
+    {
+        // skip '{'
+        getNextUsefulToken();
+
+        return (ast::Primary*)parseDictionaryLiteral();
+    }
+    else if (tk == "(")
+    {
+        // skip '('
+        getNextUsefulToken();
+
+        return (ast::Primary*)parseListLiteral();
+    }
+    else if (kind == Kind::INTEGER_TOKEN)
+    {
+        return (ast::Primary*)new ast::IntegerLiteral(currentToken->getValue());
+    }
+    else if (kind == Kind::FLOAT_TOKEN)
+    {
+        return (ast::Primary*)new ast::FloatLiteral(currentToken->getValue());
+    }
+    else if (kind == Kind::STRING_TOKEN)
+    {
+        return (ast::Primary*)new ast::StringLiteral(currentToken->getValue());
+    }
+    else if (kind == Kind::IDENTIFIER_TOKEN)
+    {
+        return (ast::Primary*)new ast::Identifier(currentToken->getValue());
+    }
+}
+
+/**
+ * DictionaryLiteral := '{' [DictionaryItem (',' DictionaryItem)] '}'
+ */
+ast::DictionaryLiteral*
+Parser::parseDictionaryLiteral()
+{
+    std::vector<ast::DictionaryItem*> dictionaryItems;
+
+    while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
+    {
+        dictionaryItems.push_back(parseDictionaryItem());
+    }
+
+    return new ast::DictionaryLiteral(dictionaryItems);
+}
+
+/**
+ * DictionaryItem := Identifier ':' Identifier
+ */
+ast::DictionaryItem*
+Parser::parseDictionaryItem()
+{
+    ast::Identifier* key = new ast::Identifier(currentToken->getValue());
+
+    // move on to next token
+    getNextUsefulToken();
+
+    // skip ':'
+    getNextUsefulToken();
+
+    ast::Identifier* value = new ast::Identifier(currentToken->getValue());
+
+    // move on to next token
+    getNextUsefulToken();
+
+    return new ast::DictionaryItem(key, value);
+}
+
+/**
+ * ListLiteral := '[' [ListItem (',' ListItem)] ']'
+ */
+ast::ListLiteral*
+Parser::parseListLiteral()
+{
+    std::vector<ast::ListItem*> listItems;
+
+    while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
+    {
+        listItems.push_back(parseListItem());
+    }
+
+    return new ast::ListLiteral(listItems);
+}
+
+/**
+ * ListItem := Identifier
+ */
+ast::ListItem*
+Parser::parseListItem()
+{
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+
+    // move on to next token
+    getNextUsefulToken();
+
+    return new ast::ListItem(name);
 }
 
 /**
@@ -568,9 +717,9 @@ Parser::parseBlock()
     std::vector<ast::Statement*> statements;
 
     // skip '{'
-    // getNextUsefulToken();
+    getNextUsefulToken();
 
-    while (currentToken->getKind() != Kind::LCURLEY_TOKEN)
+    while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
 
         ast::Statement* s = parseStatement();
@@ -632,36 +781,110 @@ Parser::parseStatement()
 }
 
 /**
- * IfStatement := 'if' Expression '{' Statement '}' 'else' '{' Statement '}'
+ * IfStatement := 'if' Expression Block 'else' Block
  */
 ast::IfStatement*
 Parser::parseIfStatement()
 {
-    return new ast::IfStatement();
+    ast::Expression* ifExpr = parseExpression();
+
+    // move to next token
+    getNextUsefulToken();
+
+    // skip '{'
+    getNextUsefulToken();
+
+    ast::Block* ifStatements = parseBlock();
+
+    // move to next token
+    getNextUsefulToken();
+
+    // skip 'else'
+    ast::Block* elseStatements = parseBlock();
+
+    return new ast::IfStatement(ifExpr, ifStatements, elseStatements);
 }
 
 /**
- * LoopStatement := 'loop' RangeVariableDefinition { Body } |
- *                  'loop' Expression{ Body }
+ * LoopStatement := 'loop' 'over' RangeVariableDefinition Body |
+ *                  'loop' Expression Body
  */
-ast::LoopStatement*
+ast::Loop*
 Parser::parseLoopStatement()
 {
-    // skip 'loop'
+    if (currentToken->getValue() == "over")
+    {
+        ast::RangeVariableDefinition* rvd = parseRangeVariableDefinition();
+
+        // move to next token
+        getNextUsefulToken();
+
+        ast::Block* body = parseBlock();
+
+        return (ast::Loop*)new ast::LoopRange(rvd, body);
+    }
+    else
+    {
+        ast::Expression* exp = parseExpression();
+
+        // move to next token
+        getNextUsefulToken();
+
+        ast::Block* body = parseBlock();
+
+        return (ast::Loop*)new ast::LoopExpression(exp, body);
+    }
+}
+
+/**
+ * RangeVariableDefinition := Variable ':=' Expression
+ */
+ast::RangeVariableDefinition*
+Parser::parseRangeVariableDefinition()
+{
+    ast::Variable* var = parseVariable();
+
+    // move to next token
     getNextUsefulToken();
 
-    return new ast::LoopStatement();
+    // skip ':='
+    getNextUsefulToken();
+
+    ast::Expression* expr = parseExpression();
+
+    return new ast::RangeVariableDefinition(var, expr);
 }
 
 /**
  * SimpleStatement := GeneralDefinition |
- *                    VariableAssignment |
  *                    ExpressionStatement
  */
 ast::SimpleStatement*
 Parser::parseSimpleStatement()
 {
-    return new ast::SimpleStatement();
+    std::string tk = currentToken->getValue();
+    Kind kind = currentToken->getKind();
+
+    if (kind == Kind::KEYWORD_TOKEN && tk == "dec")
+    {
+        // move over 'dec'
+        getNextUsefulToken();
+
+        return (ast::SimpleStatement*)parseGeneralDefinition();
+    }
+    else
+    {
+        return (ast::SimpleStatement*)parseExpressionStatement();
+    }
+}
+
+/**
+ *
+ */
+ast::ExpressionStatement*
+Parser::parseExpressionStatement()
+{
+    return new ast::ExpressionStatement();
 }
 
 /**

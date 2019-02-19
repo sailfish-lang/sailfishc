@@ -23,8 +23,8 @@ Output := Typename
 
 GeneralDecleration := 'dec' GeneralDefinition
 GeneralDefinition := ListDefinition | DictionaryDefinition | NewVariableDefinition
-ListDefinition := 'list' Identifier ['=' Expression]
-DictionaryDefinition := ''dictionary' Identifier ['=' Expression]
+ListDefinition := 'list' Identifier
+DictionaryDefinition := ''dictionary' Identifier
 NewVariableDefinition := Variable '=' Expression
 RangeVariableDefinition := Variable ':=' Expression
 VariableAssignment := Identifier = Expression
@@ -41,9 +41,9 @@ InitialExecutionBody := 'start' 'Block
 Block := '{' Statement* '}'
 
 Statement := IfStatement | LoopStatement |  Block | SimpleStatement  | 'continue' | 'break' | ReturnStatement
-IfStatement := 'if' Expression '{' Statement '}' 'else' '{' Statement '}'
-LoopStatement := 'loop' RangeVariableDefinition { Body } | 'loop' Expression { Body }
-SimpleStatement := GeneralDefinition | VariableAssignment | ExpressionStatement
+IfStatement := 'if' Expression Block 'else' Block
+LoopStatement := 'loop' 'over' RangeVariableDefinition { Body } | 'loop' Expression { Body }
+SimpleStatement := GeneralDefinition | ExpressionStatement
 ExpressionStatement := Expression
 ReturnStatement := 'return' Expression
 
@@ -62,18 +62,19 @@ Expression := IndexAccess |
               PrimaryExpression
 
 
-IndexAccess := '[' NumberLiteral ']'
+IndexAccess := '[' IntegerLiteral ']'
 MemberAccess := '.' Identifier
 
 FunctionCall := '(' [Expression] (',' Expression)*')'
 
-PrimaryExpression := BooleanLiteral |
-                     DictionaryLiteral |
-                     ListLiteral |
-                     NumberLiteral |
-                     StringLiteral |
-                     Identifier |
-                     TypenameExpression
+PrimaryExpression := Primary
+
+Primary := BooleanLiteral |
+           DictionaryLiteral |
+           ListLiteral |
+           NumberLiteral |
+           StringLiteral |
+           Identifier
 
 BooleanLiteral := 'true' | 'false'
 DictionaryLiteral := '{' [DictionaryItem (',' DictionaryItem)] '}'
@@ -85,5 +86,4 @@ Integer := [0-9]+
 Decimal  := [0-9]+.[0-9]+
 StringLiteral := "' ([^"\r\n\\] | '\\' .)* '"'
 Identifier := [a-zA-Z] [a-zA-Z_0-9]*
-TypenameExpression := Typename
 Typename := 'bool' | 'str' | 'int' | 'flt' | 'void'

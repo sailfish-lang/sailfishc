@@ -60,13 +60,17 @@ class VariableDecleration
 };
 class Primary
 {
+  public:
+    virtual std::string getType(){};
 };
 class Loop
 {
+  public:
+    virtual std::string getType(){};
 };
 
 // -------       Basic Classes Needed by Alot        ------- //
-class Identifier : Node
+class Identifier : Node, public Primary
 {
   private:
     std::string identifier;
@@ -74,6 +78,12 @@ class Identifier : Node
   public:
     // constructor
     Identifier(std::string);
+    // implement Primary
+    /* virtual */ std::string
+    getType()
+    {
+        return "Identifier";
+    }
     // get method
     std::string
     getValue()
@@ -133,6 +143,28 @@ class Block : Node
     }
 };
 
+class IntegerLiteral : Node, public Primary
+{
+  private:
+    std::string num;
+
+  public:
+    // constructor
+    IntegerLiteral(std::string);
+    // implement Primary
+    /* virtual */ std::string
+    getType()
+    {
+        return "IntegerLiteral";
+    }
+    // get methods
+    std::string
+    getNum()
+    {
+        return num;
+    }
+};
+
 // -------       Start Here       ------- //
 class Source : public Node
 {
@@ -167,7 +199,7 @@ class Start : public Node
     }
 };
 
-class ExportDefinition : public SourcePart, SimpleStatement
+class ExportDefinition : public SourcePart, public SimpleStatement
 {
   private:
     Exportable* exprt;
@@ -175,7 +207,7 @@ class ExportDefinition : public SourcePart, SimpleStatement
   public:
     // constructor
     ExportDefinition(Exportable*);
-    // implementation for SourcePart
+    // implementation for SourcePart/SimpleStatement
     /* virutal */ std::string
     getType()
     {
@@ -428,12 +460,18 @@ class InitialExecutionBody : public SourcePart
 
   public:
     // constructor
-    InitialExecutionBody();
+    InitialExecutionBody(Block*);
     // implementation for SourcePart
     /* virutal */ std::string
     getType()
     {
         return "InitialExecutionBody";
+    }
+    // get methods
+    Block*
+    getBody()
+    {
+        return body;
     }
 };
 
@@ -445,9 +483,20 @@ class RangeVariableDefinition : Node, VariableDecleration
 
   public:
     // constructor
-    RangeVariableDefinition();
+    RangeVariableDefinition(Variable*, Expression*);
+    // get methods
+    Variable*
+    getVar()
+    {
+        return var;
+    }
+    Expression*
+    getExpr()
+    {
+        return expr;
+    }
 };
-class VariableAssignment : Node, VariableDecleration, SimpleStatement
+class VariableAssignment : Node, VariableDecleration
 {
   private:
     Identifier* name;
@@ -471,17 +520,33 @@ class IfStatement : Node, public Statement
 {
   private:
     Expression* ifConditional;
-    Statement* ifStatement;
-    Statement* elseStatement;
+    Block* ifStatements;
+    Block* elseStatements;
 
   public:
     // constructor
-    IfStatement();
+    IfStatement(Expression*, Block*, Block*);
     // implement Statement
     /* virtual */ std::string
     getType()
     {
         return "IfStatement";
+    }
+    // get methods
+    Expression*
+    getIfConditional()
+    {
+        return ifConditional;
+    }
+    Block*
+    getIfStatements()
+    {
+        return ifStatements;
+    }
+    Block*
+    getElseStatements()
+    {
+        return elseStatements;
     }
 };
 
@@ -501,7 +566,7 @@ class LoopStatement : Node, public Statement
     }
 };
 
-class LoopRange
+class LoopRange : public Loop
 {
   private:
     RangeVariableDefinition* rngVar;
@@ -509,10 +574,27 @@ class LoopRange
 
   public:
     // constructor
-    LoopRange();
+    LoopRange(RangeVariableDefinition*, Block*);
+    // implement Loop
+    /* virtual */ std::string
+    getType()
+    {
+        return "LoopExpression";
+    }
+    // get methods
+    RangeVariableDefinition*
+    getRangeVariable()
+    {
+        return rngVar;
+    }
+    Block*
+    getBody()
+    {
+        return body;
+    }
 };
 
-class LoopExpression
+class LoopExpression : public Loop
 {
   private:
     Expression* loopCondition;
@@ -520,10 +602,27 @@ class LoopExpression
 
   public:
     // constructor
-    LoopExpression();
+    LoopExpression(Expression*, Block*);
+    // implement Loop
+    /* virtual */ std::string
+    getType()
+    {
+        return "LoopExpression";
+    }
+    // get methods
+    Expression*
+    getCondition()
+    {
+        return loopCondition;
+    }
+    Block*
+    getBody()
+    {
+        return body;
+    }
 };
 
-class ExpressionStatement : SimpleStatement
+class ExpressionStatement : public SimpleStatement
 {
   private:
     Expression* Expr;
@@ -531,6 +630,12 @@ class ExpressionStatement : SimpleStatement
   public:
     // constructor
     ExpressionStatement();
+    // implement SimpleStatement
+    /* virtual */ std::string
+    getType()
+    {
+        return "SimpleStatement";
+    }
 };
 
 class ReturnStatement : Node, public Statement
@@ -556,41 +661,51 @@ class ReturnStatement : Node, public Statement
     }
 };
 
-class IndexAccess : Node, Expression
+class IndexAccess : Node, public Expression
 {
   private:
-    Expression* expr;
-    Expression* index;
+    IntegerLiteral* index;
 
   public:
     // constructor
-    IndexAccess();
+    IndexAccess(IntegerLiteral*);
     // implement Expression
     std::string
     getType()
     {
         return "IndexAccess";
     }
+    // get method
+    IntegerLiteral*
+    getIndex()
+    {
+        return index;
+    }
 };
 
-class MemberAccess : Node, Expression
+class MemberAccess : Node, public Expression
 {
   private:
-    Expression* expr;
     Identifier* member;
 
   public:
     // constructor
-    MemberAccess();
+    MemberAccess(Identifier*);
     // implement Expression
     std::string
     getType()
     {
         return "MemberAccess";
     }
+    // get method
+    Identifier*
+    getMember()
+    {
+        return member;
+    }
 };
 
-class FunctionCall : Node, Expression
+class FunctionCall : Node, public Expression
 {
   private:
     std::vector<Expression*> args;
@@ -606,30 +721,48 @@ class FunctionCall : Node, Expression
     }
 };
 
-class PrimaryExpression : Node, Expression
+class PrimaryExpression : Node, public Expression
 {
   private:
-    Primary* expr;
+    Primary* primary;
 
   public:
     // constructor
-    PrimaryExpression();
+    PrimaryExpression(Primary*);
     // implement Expression
-    std::string
+    /* virtual */ std::string
     getType()
     {
         return "PrimaryExpression";
     }
+    // get methods
+    Primary*
+    getPrimary()
+    {
+        return primary;
+    }
 };
 
-class BooleanLiteral : Node, Primary
+class BooleanLiteral : Node, public Primary
 {
   private:
     std::string value;
 
   public:
     // constructor
-    BooleanLiteral();
+    BooleanLiteral(std::string);
+    // implement Primary
+    /* virtual */ std::string
+    getType()
+    {
+        return "BooleanLiteral";
+    }
+    // get methods
+    std::string
+    getValue()
+    {
+        return value;
+    }
 };
 
 class DictionaryItem : Node
@@ -640,7 +773,18 @@ class DictionaryItem : Node
 
   public:
     // constructor
-    DictionaryItem();
+    DictionaryItem(Identifier*, Identifier*);
+    // get methods
+    Identifier*
+    getKey()
+    {
+        return key;
+    }
+    Identifier*
+    getValue()
+    {
+        return value;
+    }
 };
 
 class ListItem : Node
@@ -650,58 +794,100 @@ class ListItem : Node
 
   public:
     // constructor
-    ListItem();
+    ListItem(Identifier*);
+    // get methods
+    Identifier*
+    getName()
+    {
+        return name;
+    }
 };
-class DictionaryLiteral : Node, Primary
+class DictionaryLiteral : Node, public Primary
 {
   private:
-    Identifier* name;
     std::vector<DictionaryItem*> dictionaryItems;
 
   public:
     // constructor
-    DictionaryLiteral();
+    DictionaryLiteral(std::vector<DictionaryItem*>);
+    // implement Primary
+    /* virtual */ std::string
+    getType()
+    {
+        return "DictionaryLiteral";
+    }
+    // get methods
+    std::vector<DictionaryItem*>
+    getItems()
+    {
+        return dictionaryItems;
+    }
 };
 
-class ListLiteral : Node, Primary
+class ListLiteral : Node, public Primary
 {
   private:
-    Identifier* name;
     std::vector<ListItem*> listItems;
 
   public:
     // constructor
-    ListLiteral();
+    ListLiteral(std::vector<ListItem*>);
+    // implement Primary
+    /* virtual */ std::string
+    getType()
+    {
+        return "DictionaryLiteral";
+    }
+    // get methods
+    std::vector<ListItem*>
+    getItems()
+    {
+        return listItems;
+    }
 };
 
-class NumberLiteral : Node, Primary
+class FloatLiteral : Node, public Primary
 {
   private:
-    std::string number;
+    std::string num;
 
   public:
     // constructor
-    NumberLiteral();
+    FloatLiteral(std::string);
+    // implement Primary
+    /* virtual */ std::string
+    getType()
+    {
+        return "FloatLiteral";
+    }
+    // get methods
+    std::string
+    getNum()
+    {
+        return num;
+    }
 };
 
-class StringLiteral : Node, Primary
+class StringLiteral : Node, public Primary
 {
   private:
     std::string string;
 
   public:
     // constructor
-    StringLiteral();
-};
-
-class TypenameExpression : Node, Primary
-{
-  private:
-    ast::Typename* type;
-
-  public:
-    // constructor
-    TypenameExpression();
+    StringLiteral(std::string);
+    // implement Expression
+    /* virtual */ std::string
+    getType()
+    {
+        return "StringLiteral";
+    }
+    // get methods
+    std::string
+    getString()
+    {
+        return string;
+    }
 };
 
 class Negation : Node, public Expression
@@ -935,7 +1121,7 @@ class BinaryLessThanOrEqual : Node, public Expression
         return expr;
     }
 };
-class EquivalenceComparison : Node
+class EquivalenceComparison : Node, public Expression
 {
   private:
     Expression* expr;
@@ -1043,7 +1229,7 @@ class Continue : Node, public Statement
         return "Continue";
     }
 };
-class Assignment : Node
+class Assignment : Node, public Expression
 {
   private:
     Expression* expr;

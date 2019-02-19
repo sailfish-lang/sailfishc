@@ -86,22 +86,30 @@ Visitor::visit(ast::GeneralDecleration* node)
 
     ast::GeneralDefinition* gd = node->getDefinition();
 
-    std::string type = gd->getType();
+    visit(gd);
+}
+void
+Visitor::visit(ast::GeneralDefinition* node)
+{
+    std::cout << "At a General Definition\n";
+
+    std::string type = node->getType();
+
     if (type == "ListDefinition")
     {
-        ast::ListDefinition* ld = dynamic_cast<ast::ListDefinition*>(gd);
+        ast::ListDefinition* ld = dynamic_cast<ast::ListDefinition*>(node);
         visit(ld);
     }
     else if (type == "DictionaryDefinition")
     {
         ast::DictionaryDefinition* dd =
-            dynamic_cast<ast::DictionaryDefinition*>(gd);
+            dynamic_cast<ast::DictionaryDefinition*>(node);
         visit(dd);
     }
     else if (type == "NewVariableDefinition")
     {
         ast::NewVariableDefinition* nvd =
-            dynamic_cast<ast::NewVariableDefinition*>(gd);
+            dynamic_cast<ast::NewVariableDefinition*>(node);
         visit(nvd);
     }
 }
@@ -134,109 +142,109 @@ Visitor::visit(ast::Expression* node)
 
     if (type == "IndexAccess")
     {
-        ast::IndexAccess* node = dynamic_cast<ast::IndexAccess*>(node);
-        visit(node);
+        ast::IndexAccess* ia = dynamic_cast<ast::IndexAccess*>(node);
+        visit(ia);
     }
     else if (type == "MemberAccess")
     {
-        ast::MemberAccess* node = dynamic_cast<ast::MemberAccess*>(node);
-        visit(node);
+        ast::MemberAccess* ma = dynamic_cast<ast::MemberAccess*>(node);
+        visit(ma);
     }
     else if (type == "FunctionCall")
     {
-        ast::FunctionCall* node = dynamic_cast<ast::FunctionCall*>(node);
-        visit(node);
+        ast::FunctionCall* fc = dynamic_cast<ast::FunctionCall*>(node);
+        visit(fc);
     }
     else if (type == "PrimaryExpression")
     {
-        ast::PrimaryExpression* node =
+        ast::PrimaryExpression* pe =
             dynamic_cast<ast::PrimaryExpression*>(node);
-        visit(node);
+        visit(pe);
     }
     else if (type == "Negation")
     {
-        ast::Negation* node = dynamic_cast<ast::Negation*>(node);
-        visit(node);
+        ast::Negation* n = dynamic_cast<ast::Negation*>(node);
+        visit(n);
     }
     else if (type == "Exponentiation")
     {
-        ast::Exponentiation* node = dynamic_cast<ast::Exponentiation*>(node);
-        visit(node);
+        ast::Exponentiation* e = dynamic_cast<ast::Exponentiation*>(node);
+        visit(e);
     }
     else if (type == "Multiplication")
     {
-        ast::Multiplication* node = dynamic_cast<ast::Multiplication*>(node);
-        visit(node);
+        ast::Multiplication* m = dynamic_cast<ast::Multiplication*>(node);
+        visit(m);
     }
     else if (type == "Divison")
     {
-        ast::Division* node = dynamic_cast<ast::Division*>(node);
-        visit(node);
+        ast::Division* d = dynamic_cast<ast::Division*>(node);
+        visit(d);
     }
     else if (type == "Modulo")
     {
-        ast::Modulo* node = dynamic_cast<ast::Modulo*>(node);
-        visit(node);
+        ast::Modulo* m = dynamic_cast<ast::Modulo*>(node);
+        visit(m);
     }
     else if (type == "Addition")
     {
-        ast::Addition* node = dynamic_cast<ast::Addition*>(node);
-        visit(node);
+        ast::Addition* a = dynamic_cast<ast::Addition*>(node);
+        visit(a);
     }
     else if (type == "Subtraction")
     {
-        ast::Subtraction* node = dynamic_cast<ast::Subtraction*>(node);
-        visit(node);
+        ast::Subtraction* s = dynamic_cast<ast::Subtraction*>(node);
+        visit(s);
     }
     else if (type == "BinaryGreaterThan")
     {
-        ast::BinaryGreaterThan* node =
+        ast::BinaryGreaterThan* bgt =
             dynamic_cast<ast::BinaryGreaterThan*>(node);
-        visit(node);
+        visit(bgt);
     }
     else if (type == "BinaryLessThan")
     {
-        ast::BinaryLessThan* node = dynamic_cast<ast::BinaryLessThan*>(node);
-        visit(node);
+        ast::BinaryLessThan* blt = dynamic_cast<ast::BinaryLessThan*>(node);
+        visit(blt);
     }
     else if (type == "BinaryGreaterThanOrEqual")
     {
-        ast::BinaryGreaterThanOrEqual* node =
+        ast::BinaryGreaterThanOrEqual* bgtoe =
             dynamic_cast<ast::BinaryGreaterThanOrEqual*>(node);
-        visit(node);
+        visit(bgtoe);
     }
     else if (type == "BinaryLessThanOrEqual")
     {
-        ast::BinaryLessThanOrEqual* node =
+        ast::BinaryLessThanOrEqual* bltoe =
             dynamic_cast<ast::BinaryLessThanOrEqual*>(node);
-        visit(node);
+        visit(bltoe);
     }
     else if (type == "EquivalenceComparison")
     {
-        ast::EquivalenceComparison* node =
+        ast::EquivalenceComparison* ec =
             dynamic_cast<ast::EquivalenceComparison*>(node);
-        visit(node);
+        visit(ec);
     }
     else if (type == "NonEquivalenceComparison")
     {
-        ast::NonEquivalenceComparison* node =
+        ast::NonEquivalenceComparison* nec =
             dynamic_cast<ast::NonEquivalenceComparison*>(node);
-        visit(node);
+        visit(nec);
     }
     else if (type == "AndComparison")
     {
-        ast::AndComparison* node = dynamic_cast<ast::AndComparison*>(node);
-        visit(node);
+        ast::AndComparison* ac = dynamic_cast<ast::AndComparison*>(node);
+        visit(ac);
     }
     else if (type == "OrComparison")
     {
-        ast::OrComparison* node = dynamic_cast<ast::OrComparison*>(node);
-        visit(node);
+        ast::OrComparison* oc = dynamic_cast<ast::OrComparison*>(node);
+        visit(oc);
     }
     else if (type == "Assignment")
     {
-        ast::Assignment* node = dynamic_cast<ast::Assignment*>(node);
-        visit(node);
+        ast::Assignment* a = dynamic_cast<ast::Assignment*>(node);
+        visit(a);
     }
 }
 void
@@ -333,8 +341,8 @@ Visitor::visit(ast::Variable* node)
     ast::Identifier* name = node->getName();
     ast::Typename* type = node->getType();
 
-    visit(name);
     visit(type);
+    visit(name);
 }
 void
 Visitor::visit(ast::Block* node)
@@ -404,6 +412,21 @@ void
 Visitor::visit(ast::SimpleStatement* node)
 {
     std::cout << "At a Simple Statement\n";
+
+    std::string type = node->getType();
+
+    if (type == "ExpressionStatement")
+    {
+        ast::ExpressionStatement* es =
+            dynamic_cast<ast::ExpressionStatement*>(node);
+        visit(es);
+    }
+    else if (type == "GeneralDefinition")
+    {
+        ast::GeneralDefinition* gd =
+            dynamic_cast<ast::GeneralDefinition*>(node);
+        visit(gd);
+    }
 }
 void
 Visitor::visit(ast::ExpressionStatement* node)
@@ -433,6 +456,47 @@ void
 Visitor::visit(ast::PrimaryExpression* node)
 {
     std::cout << "At a Primary Expression\n";
+
+    ast::Primary* primary = node->getPrimary();
+
+    std::string type = primary->getType();
+
+    if (type == "BooleanLiteral")
+    {
+        ast::BooleanLiteral* bl = dynamic_cast<ast::BooleanLiteral*>(primary);
+        visit(bl);
+    }
+    else if (type == "DictionaryLiteral")
+    {
+        ast::DictionaryLiteral* bl =
+            dynamic_cast<ast::DictionaryLiteral*>(primary);
+        visit(bl);
+    }
+    else if (type == "ListLiteral")
+    {
+        ast::ListLiteral* ll = dynamic_cast<ast::ListLiteral*>(primary);
+        visit(ll);
+    }
+    else if (type == "IntegerLiteral")
+    {
+        ast::IntegerLiteral* il = dynamic_cast<ast::IntegerLiteral*>(primary);
+        visit(il);
+    }
+    else if (type == "FloatLiteral")
+    {
+        ast::FloatLiteral* fl = dynamic_cast<ast::FloatLiteral*>(primary);
+        visit(fl);
+    }
+    else if (type == "StringLiteral")
+    {
+        ast::StringLiteral* sl = dynamic_cast<ast::StringLiteral*>(primary);
+        visit(sl);
+    }
+    else if (type == "Identifier")
+    {
+        ast::Identifier* i = dynamic_cast<ast::Identifier*>(primary);
+        visit(i);
+    }
 }
 void
 Visitor::visit(ast::BooleanLiteral* node)
@@ -455,7 +519,11 @@ Visitor::visit(ast::ListItem* node)
 {
 }
 void
-Visitor::visit(ast::NumberLiteral* node)
+Visitor::visit(ast::IntegerLiteral* node)
+{
+}
+void
+Visitor::visit(ast::FloatLiteral* node)
 {
 }
 void
@@ -470,10 +538,6 @@ Visitor::visit(ast::Identifier* node)
     std::string value = node->getValue();
 
     std::cout << "VALUE: " << value << '\n';
-}
-void
-Visitor::visit(ast::TypenameExpression* node)
-{
 }
 void
 Visitor::visit(ast::Typename* node)

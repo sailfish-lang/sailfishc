@@ -12,6 +12,7 @@ class Visitor
     void visit(ast::Source*);
     void visit(ast::ExportDefinition*);
     void visit(ast::GeneralDecleration*);
+    void visit(ast::GeneralDefinition*);
     void visit(ast::ListDefinition*);
     void visit(ast::DictionaryDefinition*);
     void visit(ast::NewVariableDefinition*);
@@ -43,11 +44,12 @@ class Visitor
     void visit(ast::DictionaryItem*);
     void visit(ast::ListLiteral*);
     void visit(ast::ListItem*);
-    void visit(ast::NumberLiteral*);
+    void visit(ast::IntegerLiteral*);
+    void visit(ast::FloatLiteral*);
+    void visit(ast::ExpressionStatement);
     void visit(ast::StringLiteral*);
     void visit(ast::Identifier*);
     void visit(ast::Expression*);
-    void visit(ast::TypenameExpression*);
     void visit(ast::Typename*);
     void visit(ast::Negation*);
     void visit(ast::Exponentiation*);

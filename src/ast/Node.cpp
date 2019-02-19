@@ -80,12 +80,16 @@ ast::UserDefinedTypeMethods::UserDefinedTypeMethods(
     methods = m;
 }
 
-ast::InitialExecutionBody::InitialExecutionBody()
+ast::InitialExecutionBody::InitialExecutionBody(Block* b)
 {
+    body = b;
 }
 
-ast::RangeVariableDefinition::RangeVariableDefinition()
+ast::RangeVariableDefinition::RangeVariableDefinition(Variable* v,
+                                                      Expression* e)
 {
+    var = v;
+    expr = e;
 }
 
 ast::VariableAssignment::VariableAssignment()
@@ -107,20 +111,27 @@ ast::Block::Block(std::vector<ast::Statement*> s)
     statements = s;
 }
 
-ast::IfStatement::IfStatement()
+ast::IfStatement::IfStatement(Expression* ifc, Block* ifs, Block* elses)
 {
+    ifConditional = ifc;
+    ifStatements = ifs;
+    elseStatements = elses;
 }
 
 ast::LoopStatement::LoopStatement()
 {
 }
 
-ast::LoopRange::LoopRange()
+ast::LoopRange::LoopRange(RangeVariableDefinition* rvd, Block* b)
 {
+    rngVar = rvd;
+    body = b;
 }
 
-ast::LoopExpression::LoopExpression()
+ast::LoopExpression::LoopExpression(Expression* e, Block* b)
 {
+    loopCondition = e;
+    body = b;
 }
 
 ast::ExpressionStatement::ExpressionStatement()
@@ -132,57 +143,69 @@ ast::ReturnStatement::ReturnStatement(Expression* e)
     expr = e;
 }
 
-ast::IndexAccess::IndexAccess()
+ast::IndexAccess::IndexAccess(ast::IntegerLiteral* i)
 {
+    index = i;
 }
 
-ast::MemberAccess::MemberAccess()
+ast::MemberAccess::MemberAccess(Identifier* m)
 {
+    member = m;
 }
 
 ast::FunctionCall::FunctionCall()
 {
 }
 
-ast::PrimaryExpression::PrimaryExpression()
+ast::PrimaryExpression::PrimaryExpression(Primary* p)
 {
+    primary = p;
 }
 
-ast::BooleanLiteral::BooleanLiteral()
+ast::BooleanLiteral::BooleanLiteral(std::string s)
 {
+    value = s;
 }
 
-ast::DictionaryLiteral::DictionaryLiteral()
+ast::DictionaryLiteral::DictionaryLiteral(std::vector<ast::DictionaryItem*> v)
 {
+    dictionaryItems = v;
 }
 
-ast::DictionaryItem::DictionaryItem()
+ast::DictionaryItem::DictionaryItem(ast::Identifier* k, ast::Identifier* v)
 {
+    key = k;
+    value = v;
 }
 
-ast::ListLiteral::ListLiteral()
+ast::ListLiteral::ListLiteral(std::vector<ListItem*> v)
 {
+    listItems = v;
 }
 
-ast::ListItem::ListItem()
+ast::ListItem::ListItem(Identifier* n)
 {
+    name = n;
 }
 
-ast::NumberLiteral::NumberLiteral()
+ast::IntegerLiteral::IntegerLiteral(std::string n)
 {
+    num = n;
 }
 
-ast::StringLiteral::StringLiteral()
+ast::FloatLiteral::FloatLiteral(std::string n)
 {
+    num = n;
+}
+
+ast::StringLiteral::StringLiteral(std::string s)
+{
+    string = s;
 }
 
 ast::Identifier::Identifier(std::string id)
 {
     identifier = id;
-}
-
-ast::TypenameExpression::TypenameExpression()
-{
 }
 
 ast::Typename::Typename(std::string t)

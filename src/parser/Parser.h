@@ -50,13 +50,24 @@ class Parser
     ast::FunctionCall* parseFunctionCall();
     ast::PrimaryExpression* parsePrimaryExpression();
 
+    ast::Primary* parsePrimary();
+
+    ast::DictionaryLiteral* parseDictionaryLiteral();
+    ast::DictionaryItem* parseDictionaryItem();
+
+    ast::ListLiteral* parseListLiteral();
+    ast::ListItem* parseListItem();
+
     ast::Block* parseBlock();
 
     ast::Statement* parseStatement();
     ast::IfStatement* parseIfStatement();
-    ast::LoopStatement* parseLoopStatement();
+    ast::Loop* parseLoopStatement();
     ast::SimpleStatement* parseSimpleStatement();
     ast::ReturnStatement* parseReturnStatement();
+    ast::ExpressionStatement* parseExpressionStatement();
+
+    ast::RangeVariableDefinition* parseRangeVariableDefinition();
 
     ast::Variable* parseVariable();
 
