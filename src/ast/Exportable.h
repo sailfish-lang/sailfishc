@@ -13,6 +13,7 @@ class Exportable
     {
         ExportDefinition,
         FunctionDefinition,
+        GeneralDecleration,
     };
 
     virtual ExportableType getExportableType() = 0;

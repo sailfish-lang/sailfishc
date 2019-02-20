@@ -30,7 +30,7 @@ class GeneralDecleration : public SourcePart, public Exportable
     /* virtual */ ExportableType
     getExportableType()
     {
-        return ExportableType::ExportDefinition;
+        return ExportableType::GeneralDecleration;
     }
     // get methods
     GeneralDefinition*

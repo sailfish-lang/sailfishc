@@ -16,7 +16,7 @@ class Continue : public Statement
     /* virtual */ StatementType
     getStatementType()
     {
-        return StatementType::IfStatement;
+        return StatementType::Continue;
     }
 };
 }
