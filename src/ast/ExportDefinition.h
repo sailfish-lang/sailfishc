@@ -28,10 +28,10 @@ class ExportDefinition : public SourcePart, public SimpleStatement
         return SourcePartType::ExportDefinition;
     }
     // implementation for SimpleStatement
-    /* virutal */ std::string
-    getType()
+    /* virutal */ SimpleStatementType
+    getSimpleStatementType()
     {
-        return "ExportDefinition";
+        return SimpleStatementType::ExportDefinition;
     }
     // get methods
     Exportable*

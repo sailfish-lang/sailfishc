@@ -10,6 +10,12 @@ namespace ast
 class SimpleStatement : public Statement
 {
   public:
+    enum SimpleStatementType
+    {
+        ExportDefinition,
+        ExpressionStatement,
+    };
+    virtual SimpleStatementType getSimpleStatementType() = 0;
     // implement Statement
     /* virtual */ StatementType
     getStatementType()

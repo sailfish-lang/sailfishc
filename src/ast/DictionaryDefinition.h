@@ -13,7 +13,6 @@ class DictionaryDefinition : public GeneralDefinition
 {
   private:
     Identifier* name;
-    // optional
     Expression* expr;
 
   public:

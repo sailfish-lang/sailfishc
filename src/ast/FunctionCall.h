@@ -18,7 +18,7 @@ class FunctionCall : public Expression
     FunctionCall(){};
     // implement Expression
     /* virtual*/ ExpressionType
-    getType()
+    getExpressionType()
     {
         return ExpressionType::FunctionCall;
     }

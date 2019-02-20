@@ -19,7 +19,7 @@ class RangeVariableDefinition
     RangeVariableDefinition(Variable* v, Expression* e)
     {
         var = v;
-        expr = e
+        expr = e;
     };
     // get methods
     Variable*

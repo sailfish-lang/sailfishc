@@ -18,10 +18,10 @@ class ExpressionStatement : public SimpleStatement
     // constructor
     ExpressionStatement(){};
     // implement SimpleStatement
-    /* virtual */ std::string
-    getType()
+    /* virtual */ SimpleStatementType
+    getSimpleStatementType()
     {
-        return "SimpleStatement";
+        return SimpleStatementType::ExpressionStatement;
     }
 };
 }

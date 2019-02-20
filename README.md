@@ -117,8 +117,8 @@ Output := Typename  <br>
 
 GeneralDecleration := 'dec' GeneralDefinition  <br>
 GeneralDefinition := ListDefinition | DictionaryDefinition | NewVariableDefinition  <br>
-ListDefinition := 'list' Identifier  <br>
-DictionaryDefinition := ''dictionary' Identifier  <br>
+ListDefinition := 'list' Identifier '=' Expression  <br>
+DictionaryDefinition := ''dictionary' Identifier  '=' Expression<br>
 NewVariableDefinition := Variable '=' Expression  <br>
 RangeVariableDefinition := Variable ':=' Expression  <br>
 VariableAssignment := Identifier = Expression  <br>

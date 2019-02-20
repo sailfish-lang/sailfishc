@@ -323,7 +323,7 @@ Parser::parseInitialExecutionBody()
 }
 
 /**
- * ListDefinition := 'list' Identifier
+ * ListDefinition := 'list' Identifier = Expression
  */
 ast::ListDefinition*
 Parser::parseListDefinition()
@@ -333,11 +333,16 @@ Parser::parseListDefinition()
     // move to next token
     getNextUsefulToken();
 
-    return new ast::ListDefinition();
+    // skip '='
+    getNextUsefulToken();
+
+    ast::Expression* expr = parseExpression();
+
+    return new ast::ListDefinition(name, expr);
 }
 
 /**
- * DictionaryDefinition := ''dictionary' Identifier
+ * DictionaryDefinition := ''dictionary' Identifier = Expression
  */
 ast::DictionaryDefinition*
 Parser::parseDictionaryDefinition()
@@ -347,7 +352,12 @@ Parser::parseDictionaryDefinition()
     // move to next token
     getNextUsefulToken();
 
-    return new ast::DictionaryDefinition();
+    // skip '='
+    getNextUsefulToken();
+
+    ast::Expression* expr = parseExpression();
+
+    return new ast::DictionaryDefinition(name, expr);
 }
 
 /**

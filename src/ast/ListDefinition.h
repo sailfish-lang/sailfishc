@@ -13,12 +13,15 @@ class ListDefinition : public GeneralDefinition
 {
   private:
     Identifier* name;
-    // optional
     Expression* expr;
 
   public:
     // constructor
-    ListDefinition(){};
+    ListDefinition(Identifier* i, Expression* e)
+    {
+        name = i;
+        expr = e;
+    };
     // implement GeneralDefinition
     /* virtual */ GeneralDefinitionType
     getGeneralDefinitionType()

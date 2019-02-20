@@ -14,7 +14,10 @@ class Exponentiation : public Expression
 
   public:
     // constructor
-    Exponentiation(Expression* e){expr = e};
+    Exponentiation(Expression* e)
+    {
+        expr = e;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()
