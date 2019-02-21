@@ -21,7 +21,7 @@ class Identifier : public Primary
     };
     // implement Primary
     /* virtual */ PrimaryType
-    getType()
+    getPrimaryType()
     {
         return PrimaryType::Identifier;
     }

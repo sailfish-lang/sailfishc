@@ -131,12 +131,16 @@ Parser::parseExportable()
     std::string kwd = currentToken->getValue();
     if (kwd == "fun")
     {
+        // consume 'fun'
         getNextUsefulToken();
+
         return (ast::Exportable*)parseFunctionDefintion();
     }
     else if (kwd == "dec")
     {
+        // consume 'dec'
         getNextUsefulToken();
+
         return (ast::Exportable*)parseGeneralDecleration();
     }
 }
@@ -262,7 +266,7 @@ Parser::UserDefinedTypeAttributes()
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue());
 
-    // move past identifier
+    // consume identifier
     getNextUsefulToken();
     // skip '{'
     getNextUsefulToken();
@@ -392,7 +396,14 @@ ast::Expression*
 Parser::parseExpression()
 {
     std::string tk = currentToken->getValue();
-    if (tk == "[")
+    if (tk == "new")
+    {
+        // skip 'new'
+        getNextUsefulToken();
+
+        return (ast::Expression*)parseNewExpression();
+    }
+    else if (tk == "[")
     {
         // skip '['
         getNextUsefulToken();
@@ -532,6 +543,38 @@ Parser::parseExpression()
 }
 
 /**
+ * NewExpression := New
+ */
+ast::NewExpression*
+Parser::parseNewExpression()
+{
+    ast::New* newVal = parseNew();
+
+    return new ast::NewExpression(newVal);
+}
+
+/**
+ * NewExpression := ListLiteral | DictionaryLiteral
+ */
+ast::New*
+Parser::parseNew()
+{
+    std::string tk = currentToken->getValue();
+
+    // consume current token
+    getNextUsefulToken();
+
+    if (tk == "[")
+    {
+        return (ast::New*)parseListLiteral();
+    }
+    else if (tk == "{")
+    {
+        return (ast::New*)parseDictionaryLiteral();
+    }
+}
+
+/**
  * IndexAccess := '[' IntegerLiteral ']'
  */
 ast::IndexAccess*
@@ -586,8 +629,6 @@ Parser::parsePrimaryExpression()
 
 /**
  * Primary := BooleanLiteral |
- *            DictionaryLiteral |
- *            ListLiteral |
  *            IntegerLiteral |
  *            FloatLiteral |
  *            StringLiteral |
@@ -602,20 +643,6 @@ Parser::parsePrimary()
     if (tk == "true" || tk == "false")
     {
         return (ast::Primary*)new ast::BooleanLiteral(tk);
-    }
-    else if (tk == "{")
-    {
-        // skip '{'
-        getNextUsefulToken();
-
-        return (ast::Primary*)parseDictionaryLiteral();
-    }
-    else if (tk == "(")
-    {
-        // skip '('
-        getNextUsefulToken();
-
-        return (ast::Primary*)parseListLiteral();
     }
     else if (kind == Kind::INTEGER_TOKEN)
     {
@@ -681,9 +708,12 @@ Parser::parseListLiteral()
 {
     std::vector<ast::ListItem*> listItems;
 
-    while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
+    while (currentToken->getKind() != Kind::RBRACKET_TOKEN)
     {
         listItems.push_back(parseListItem());
+
+        // move on to next token
+        getNextUsefulToken();
     }
 
     return new ast::ListLiteral(listItems);
@@ -696,9 +726,6 @@ ast::ListItem*
 Parser::parseListItem()
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue());
-
-    // move on to next token
-    getNextUsefulToken();
 
     return new ast::ListItem(name);
 }

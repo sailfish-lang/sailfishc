@@ -45,6 +45,9 @@ class Parser
 
     ast::Expression* parseExpression();
 
+    ast::NewExpression* parseNewExpression();
+    ast::New* parseNew();
+
     ast::IndexAccess* parseIndexAccess();
     ast::MemberAccess* parseMemberAccess();
     ast::FunctionCall* parseFunctionCall();

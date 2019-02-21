@@ -141,7 +141,8 @@ SimpleStatement := GeneralDefinition | ExpressionStatement  <br>
 ExpressionStatement := Expression  <br>
 ReturnStatement := 'return' Expression  <br>
 
-Expression := IndexAccess |
+Expression := NewExpression |
+              IndexAccess |
               MemberAccess |
               FunctionCall |
               '!' Expression |
@@ -155,6 +156,8 @@ Expression := IndexAccess |
                '=' Expression | 
               PrimaryExpression  <br>
 
+NewExpression := New
+New := ListLiteral | DictionaryLiteral
 
 IndexAccess := '[' IntegerLiteral ']'  <br>
 MemberAccess := '.' Identifier  <br>
@@ -164,8 +167,6 @@ FunctionCall := '(' [Expression] (',' Expression)*')'  <br>
 PrimaryExpression := Primary  <br>
 
 Primary := BooleanLiteral |
-           DictionaryLiteral |
-           ListLiteral |
            NumberLiteral |
            StringLiteral |
            Identifier  <br>

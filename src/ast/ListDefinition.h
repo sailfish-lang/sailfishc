@@ -28,5 +28,16 @@ class ListDefinition : public GeneralDefinition
     {
         return GeneralDefinitionType::ListDefinition;
     }
+    // get methods
+    Identifier*
+    getName()
+    {
+        return name;
+    }
+    Expression*
+    getExpression()
+    {
+        return expr;
+    }
 };
 }

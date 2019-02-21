@@ -21,7 +21,7 @@ class BooleanLiteral : public Primary
     };
     // implement Primary
     /* virtual */ PrimaryType
-    getType()
+    getPrimaryType()
     {
         return PrimaryType::BooleanLiteral;
     }

@@ -1,26 +1,5 @@
-Cat Foo {
-    int baz
-    flt saz
-    str zaz
-}
+/* Entirety here is source, made of source parts */
 
-Cfn Foo {
-    fun bar 
-    <- flt num, str word
-    -> void
-    {
-    }
-}
-
-fun fizzbuzz 
-<- int num, int num2, int num3
--> bool, str
-{
-  
-}
-
-start {
-    loop i := [1,100] {
-        fizzbuzz(i)
-    }
-}
+// --------        Export Definition      -------//
+exp dec list someList = new [1,2,3]
+exp dec dictionary someDict = new {1 : "hello", 2: "world"}

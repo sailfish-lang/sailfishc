@@ -35,6 +35,7 @@ class Visitor
     void visit(ast::ExpressionStatement*);
     void visit(ast::ReturnStatement*);
     void visit(ast::SimpleStatement*);
+    void visit(ast::NewExpression*);
     void visit(ast::IndexAccess*);
     void visit(ast::MemberAccess*);
     void visit(ast::FunctionCall*);

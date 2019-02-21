@@ -4,12 +4,12 @@
  */
 #pragma once
 #include "DictionaryItem.h"
-#include "Primary.h"
+#include "New.h"
 #include <vector>
 
 namespace ast
 {
-class DictionaryLiteral : public Primary
+class DictionaryLiteral : public New
 {
   private:
     std::vector<DictionaryItem*> dictionaryItems;
@@ -20,11 +20,11 @@ class DictionaryLiteral : public Primary
     {
         dictionaryItems = v;
     };
-    // implement Primary
-    /* virtual */ PrimaryType
-    getType()
+    // implement New
+    /* virtual */ NewType
+    getNewType()
     {
-        return PrimaryType::DictionaryLiteral;
+        return NewType::DictionaryLiteral;
     }
     // get methods
     std::vector<DictionaryItem*>

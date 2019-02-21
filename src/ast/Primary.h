@@ -16,9 +16,7 @@ class Primary
         BooleanLiteral,
         IntegerLiteral,
         FloatLiteral,
-        ListLiteral,
-        DictionaryLiteral,
     };
-    virtual PrimaryType getType() = 0;
+    virtual PrimaryType getPrimaryType() = 0;
 };
 }

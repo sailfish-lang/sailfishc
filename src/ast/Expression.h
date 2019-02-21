@@ -31,6 +31,7 @@ class Expression
         AndComparison,
         OrComparison,
         Assignment,
+        NewExpression,
     };
     virtual ExpressionType getExpressionType() = 0;
 };

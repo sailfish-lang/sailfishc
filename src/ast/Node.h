@@ -47,6 +47,8 @@
 #include "Modulo.h"
 #include "Multiplication.h"
 #include "Negation.h"
+#include "New.h"
+#include "NewExpression.h"
 #include "NewVariableDecleration.h"
 #include "Node.h"
 #include "NonEquivalenceComparison.h"

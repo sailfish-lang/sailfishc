@@ -11,7 +11,6 @@ class Exportable
   public:
     enum ExportableType
     {
-        ExportDefinition,
         FunctionDefinition,
         GeneralDecleration,
     };

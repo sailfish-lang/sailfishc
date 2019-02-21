@@ -3,12 +3,12 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Primary.h"
+#include "New.h"
 #include <vector>
 
 namespace ast
 {
-class ListLiteral : public Primary
+class ListLiteral : public New
 {
   private:
     std::vector<ListItem*> listItems;
@@ -19,11 +19,11 @@ class ListLiteral : public Primary
     {
         listItems = v;
     };
-    // implement Primary
-    /* virtual */ PrimaryType
-    getType()
+    // implement New
+    /* virtual */ NewType
+    getNewType()
     {
-        return PrimaryType::ListLiteral;
+        return NewType::ListLiteral;
     }
     // get methods
     std::vector<ListItem*>
