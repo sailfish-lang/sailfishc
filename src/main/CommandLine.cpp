@@ -44,12 +44,6 @@ fullCompilation()
 int
 handleCommandLine(int argc, char* const* argv)
 {
-    std::string lex_str("--lex_only");
-    std::string parse_str("--parse_only");
-    std::string help_str("--help");
-    std::string version_str("--version");
-    std::string input(argv[1]);
-
     switch (argc)
     {
     case 1:
@@ -58,11 +52,11 @@ handleCommandLine(int argc, char* const* argv)
 
     case 2:
     {
-        if (help_str.compare(input) == 0)
+        if (std::string("--help").compare(argv[1]) == 0)
         {
             helpMessage();
         }
-        else if (version_str.compare(input) == 0)
+        else if (std::string("--version").compare(argv[1]) == 0)
         {
             versionInfo();
         }
@@ -77,7 +71,7 @@ handleCommandLine(int argc, char* const* argv)
     }
 
     case 3:
-        if (lex_str.compare(input) == 0)
+        if (std::string("--lex_only").compare(argv[1]) == 0)
         {
             std::string filename = argv[2];
             std::cout << "Lexing " << filename << ".\n\n";
@@ -91,7 +85,7 @@ handleCommandLine(int argc, char* const* argv)
                 t = l->getNextToken();
             }
         }
-        else if (parse_str.compare(input) == 0)
+        else if (std::string("--parse_only").compare(argv[1]) == 0)
         {
             std::string filename = argv[2];
             std::cout << "Parsing " << filename << ".\n\n";
@@ -99,8 +93,8 @@ handleCommandLine(int argc, char* const* argv)
             Parser* p = new Parser();
             ast::Start* root = p->parse(filename);
 
-            // Visitor* v = new Visitor();
-            // v->visit(root);
+            Visitor* v = new Visitor();
+            v->visit(root);
         }
 
         return 1;
