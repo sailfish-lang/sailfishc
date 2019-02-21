@@ -230,17 +230,25 @@ Parser::parseGeneralDefinition()
     std::string val = currentToken->getValue();
     if (val == "list")
     {
+        // consume 'list'
         getNextUsefulToken();
+
         return (ast::GeneralDefinition*)parseListDefinition();
     }
     else if (val == "dictionary")
     {
+        // consume 'dictionary'
         getNextUsefulToken();
+
         return (ast::GeneralDefinition*)parseDictionaryDefinition();
     }
     else if (val == "bool" || val == "str" || val == "int" || val == "flt" ||
              val == "void")
     {
+        // since the lexar actually catches these types, we can consume the type
+        // keywords here
+        getNextUsefulToken();
+
         return (ast::GeneralDefinition*)parseNewVariableDefinition();
     }
 }
@@ -337,9 +345,6 @@ Parser::parseListDefinition()
     // move to next token
     getNextUsefulToken();
 
-    // skip '='
-    getNextUsefulToken();
-
     ast::Expression* expr = parseExpression();
 
     return new ast::ListDefinition(name, expr);
@@ -354,9 +359,6 @@ Parser::parseDictionaryDefinition()
     ast::Identifier* name = new ast::Identifier(currentToken->getValue());
 
     // move to next token
-    getNextUsefulToken();
-
-    // skip '='
     getNextUsefulToken();
 
     ast::Expression* expr = parseExpression();
@@ -637,6 +639,7 @@ Parser::parsePrimaryExpression()
 ast::Primary*
 Parser::parsePrimary()
 {
+    currentToken->display();
     std::string tk = currentToken->getValue();
     Kind kind = currentToken->getKind();
 

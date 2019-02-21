@@ -70,7 +70,6 @@ Visitor::visit(ast::ExportDefinition* node)
     std::cout << "At an Export Definition\n";
 
     ast::Exportable* exprt = node->getExport();
-
     ast::Exportable::ExportableType type = exprt->getExportableType();
     switch (type)
     {
@@ -493,6 +492,44 @@ Visitor::visit(ast::PrimaryExpression* node)
     std::cout << "At a Primary Expression\n";
 
     ast::Primary* primary = node->getPrimary();
+    ast::Primary::PrimaryType type = primary->getPrimaryType();
+
+    switch (type)
+    {
+    case ast::Primary::Identifier:
+    {
+        ast::Identifier* subnode = dynamic_cast<ast::Identifier*>(primary);
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::StringLiteral:
+    {
+        ast::StringLiteral* subnode =
+            dynamic_cast<ast::StringLiteral*>(primary);
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::BooleanLiteral:
+    {
+        ast::BooleanLiteral* subnode =
+            dynamic_cast<ast::BooleanLiteral*>(primary);
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::IntegerLiteral:
+    {
+        ast::IntegerLiteral* subnode =
+            dynamic_cast<ast::IntegerLiteral*>(primary);
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::FloatLiteral:
+    {
+        ast::FloatLiteral* subnode = dynamic_cast<ast::FloatLiteral*>(primary);
+        visit(subnode);
+        break;
+    }
+    }
 }
 void
 Visitor::visit(ast::BooleanLiteral* node)
@@ -545,14 +582,29 @@ Visitor::visit(ast::ListItem* node)
 void
 Visitor::visit(ast::IntegerLiteral* node)
 {
+    std::cout << "At an Integer Literal\n";
+
+    std::string value = node->getNum();
+
+    std::cout << "VALUE: " << value << '\n';
 }
 void
 Visitor::visit(ast::FloatLiteral* node)
 {
+    std::cout << "At an Float Literal\n";
+
+    std::string value = node->getNum();
+
+    std::cout << "VALUE: " << value << '\n';
 }
 void
 Visitor::visit(ast::StringLiteral* node)
 {
+    std::cout << "At an String Literal\n";
+
+    std::string value = node->getString();
+
+    std::cout << "VALUE: " << value << '\n';
 }
 void
 Visitor::visit(ast::Identifier* node)
@@ -661,4 +713,8 @@ void
 Visitor::visit(ast::Assignment* node)
 {
     std::cout << "At a Assignment\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
