@@ -183,6 +183,10 @@ StringLiteral := "' ([^"\r\n\\] | '\\' .)* '"'  <br>
 Identifier := [a-zA-Z] [a-zA-Z_0-9]*  <br>
 Typename := 'bool' | 'str' | 'int' | 'flt' | 'void'  <br>
 
+## Notes
+
+* Cannot assign unnamed lists or dictionaries to variables (commit: `f0e6239f6999bcc6dd9cbf2e90689801b0fb3c8d`)
+* Lists and dictionaries must be initialized when declared
 
 ## Wishlist
 
