@@ -157,9 +157,9 @@ Parser::parseFunctionDefintion()
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue());
 
-    // skip function name
+    // consume function name
     getNextUsefulToken();
-    // skip '<-'
+    // consume '<-'
     getNextUsefulToken();
 
     std::vector<ast::Input*> inputs;
@@ -169,7 +169,7 @@ Parser::parseFunctionDefintion()
         getNextUsefulToken();
     }
 
-    // skip '<-'
+    // consume '->'
     getNextUsefulToken();
 
     std::vector<ast::Output*> outputs;
@@ -178,8 +178,6 @@ Parser::parseFunctionDefintion()
         outputs.push_back(parseOutput());
         getNextUsefulToken();
     }
-
-    getNextUsefulToken();
 
     ast::Block* body = parseBlock();
 
@@ -756,7 +754,7 @@ Parser::parseBlock()
 {
     std::vector<ast::Statement*> statements;
 
-    // skip '{'
+    // consume '{'
     getNextUsefulToken();
 
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
