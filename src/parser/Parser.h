@@ -69,8 +69,6 @@ class Parser
     ast::ReturnStatement* parseReturnStatement();
     ast::ExpressionStatement* parseExpressionStatement();
 
-    ast::RangeVariableDefinition* parseRangeVariableDefinition();
-
     ast::Variable* parseVariable();
 
     ast::Identifier* parseIdentifier();

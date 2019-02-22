@@ -118,9 +118,6 @@ Lexar::getNextToken()
                     case '|':
                         state = State::OR_PRESTATE;
                         break;
-                    case ':':
-                        state = State::RANGE_PRESTATE;
-                        break;
                     case '<':
                         state = State::LESS_THAN;
                         break;
@@ -236,14 +233,6 @@ Lexar::getNextToken()
                                               scanner);
                 else
                     return new Token(Kind::LOGIC_TOKEN, buffer);
-
-            case State::RANGE_PRESTATE:
-                if (c != '=')
-                    return createTokenPutback(Kind::ERROR_TOKEN, c,
-                                              ": is not a valid token",
-                                              scanner);
-                else
-                    return new Token(Kind::OPERATION_TOKEN, buffer);
 
             case State::LESS_THAN:
                 if (c == '=')

@@ -103,10 +103,9 @@ GeneralDefinition := ListDefinition | DictionaryDefinition | NewVariableDefiniti
 ListDefinition := 'list' Identifier '=' Expression  <br>
 DictionaryDefinition := ''dictionary' Identifier  '=' Expression<br>
 NewVariableDefinition := Variable '=' Expression  <br>
-RangeVariableDefinition := Variable ':=' Expression  <br>
 VariableAssignment := Identifier = Expression  <br>
 ShortVariableDefinition := Variable  <br>
-VariableDecleration := NewVariableDefinition | RangeVariableDefinition | ShortVariableDefinition  <br>
+VariableDecleration := NewVariableDefinition | ShortVariableDefinition  <br>
 Variable := TypeName Identifier  <br>
 
 UserDefinedTypeDefinition := 'Cat' UserDefinedTypeAttributes [UserDefinedTypeMethods]  <br>

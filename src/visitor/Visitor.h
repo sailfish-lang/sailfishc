@@ -23,7 +23,6 @@ class Visitor
     void visit(ast::UserDefinedTypeAttributes*);
     void visit(ast::UserDefinedTypeMethods*);
     void visit(ast::InitialExecutionBody*);
-    void visit(ast::RangeVariableDefinition*);
     void visit(ast::VariableAssignment*);
     void visit(ast::ShortVariableDefinition*);
     void visit(ast::Variable*);

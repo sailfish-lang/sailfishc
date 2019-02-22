@@ -399,17 +399,6 @@ Visitor::visit(ast::InitialExecutionBody* node)
     visit(body);
 }
 void
-Visitor::visit(ast::RangeVariableDefinition* node)
-{
-    std::cout << "At a Range Variable\n";
-
-    ast::Variable* var = node->getVar();
-    ast::Expression* expr = node->getExpr();
-
-    visit(var);
-    visit(expr);
-}
-void
 Visitor::visit(ast::VariableAssignment* node)
 {
 }
