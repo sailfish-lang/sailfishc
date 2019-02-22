@@ -787,7 +787,6 @@ Parser::parseBlock()
 
 /**
  * Statement := IfStatement |
- *              LoopStatement |
  *              Block |
  *              'continue' |
  *              'break' |
@@ -803,11 +802,6 @@ Parser::parseStatement()
     {
         getNextUsefulToken();
         return (ast::Statement*)parseIfStatement();
-    }
-    else if (tk == "loop")
-    {
-        getNextUsefulToken();
-        return (ast::Statement*)parseLoopStatement();
     }
     else if (tk == "{")
     {
@@ -859,56 +853,6 @@ Parser::parseIfStatement()
     ast::Block* elseStatements = parseBlock();
 
     return new ast::IfStatement(ifExpr, ifStatements, elseStatements);
-}
-
-/**
- * LoopStatement := 'loop' 'over' RangeVariableDefinition Body |
- *                  'loop' Expression Body
- */
-ast::Loop*
-Parser::parseLoopStatement()
-{
-    if (currentToken->getValue() == "over")
-    {
-        ast::RangeVariableDefinition* rvd = parseRangeVariableDefinition();
-
-        // move to next token
-        getNextUsefulToken();
-
-        ast::Block* body = parseBlock();
-
-        return (ast::Loop*)new ast::LoopRange(rvd, body);
-    }
-    else
-    {
-        ast::Expression* exp = parseExpression();
-
-        // move to next token
-        getNextUsefulToken();
-
-        ast::Block* body = parseBlock();
-
-        return (ast::Loop*)new ast::LoopExpression(exp, body);
-    }
-}
-
-/**
- * RangeVariableDefinition := Variable ':=' Expression
- */
-ast::RangeVariableDefinition*
-Parser::parseRangeVariableDefinition()
-{
-    ast::Variable* var = parseVariable();
-
-    // move to next token
-    getNextUsefulToken();
-
-    // skip ':='
-    getNextUsefulToken();
-
-    ast::Expression* expr = parseExpression();
-
-    return new ast::RangeVariableDefinition(var, expr);
 }
 
 /**

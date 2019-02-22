@@ -11,7 +11,6 @@ class Statement
     enum StatementType
     {
         IfStatement,
-        LoopStatement,
         ReturnStatement,
         SimpleStatement,
         Break,

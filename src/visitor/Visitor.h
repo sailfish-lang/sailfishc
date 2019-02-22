@@ -29,9 +29,6 @@ class Visitor
     void visit(ast::Variable*);
     void visit(ast::Block*);
     void visit(ast::IfStatement*);
-    void visit(ast::LoopStatement*);
-    void visit(ast::LoopRange*);
-    void visit(ast::LoopExpression*);
     void visit(ast::ExpressionStatement*);
     void visit(ast::ReturnStatement*);
     void visit(ast::SimpleStatement*);

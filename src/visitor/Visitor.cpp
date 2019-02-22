@@ -393,10 +393,21 @@ void
 Visitor::visit(ast::InitialExecutionBody* node)
 {
     std::cout << "At an Initial Execution Body\n";
+
+    ast::Block* body = node->getBody();
+
+    visit(body);
 }
 void
 Visitor::visit(ast::RangeVariableDefinition* node)
 {
+    std::cout << "At a Range Variable\n";
+
+    ast::Variable* var = node->getVar();
+    ast::Expression* expr = node->getExpr();
+
+    visit(var);
+    visit(expr);
 }
 void
 Visitor::visit(ast::VariableAssignment* node)
@@ -426,25 +437,50 @@ Visitor::visit(ast::Block* node)
 
     for (auto const& statement : statements)
     {
+        ast::Statement::StatementType type = statement->getStatementType();
+
+        switch (type)
+        {
+        case ast::Statement::IfStatement:
+        {
+            ast::IfStatement* subnode =
+                dynamic_cast<ast::IfStatement*>(statement);
+            visit(subnode);
+            break;
+        }
+        case ast::Statement::ReturnStatement:
+        {
+            ast::ReturnStatement* subnode =
+                dynamic_cast<ast::ReturnStatement*>(statement);
+            visit(subnode);
+            break;
+        }
+        case ast::Statement::SimpleStatement:
+        {
+            ast::SimpleStatement* subnode =
+                dynamic_cast<ast::SimpleStatement*>(statement);
+            visit(subnode);
+            break;
+        }
+        case ast::Statement::Break:
+        {
+            ast::Break* subnode = dynamic_cast<ast::Break*>(statement);
+            visit(subnode);
+            break;
+        }
+        case ast::Statement::Continue:
+        {
+            ast::Continue* subnode = dynamic_cast<ast::Continue*>(statement);
+            visit(subnode);
+            break;
+        }
+        }
     }
 }
 void
 Visitor::visit(ast::IfStatement* node)
 {
     std::cout << "At an If Statement\n";
-}
-void
-Visitor::visit(ast::LoopStatement* node)
-{
-    std::cout << "At a Loop Statement\n";
-}
-void
-Visitor::visit(ast::LoopRange* node)
-{
-}
-void
-Visitor::visit(ast::LoopExpression* node)
-{
 }
 void
 Visitor::visit(ast::SimpleStatement* node)

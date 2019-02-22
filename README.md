@@ -38,23 +38,6 @@ start {
 }
 ```
 
-**Fizz Buzz**
-```
-start {
-    /* 
-        starts with 1, ends with 100; both sides are inclusive
-        since we are using the common mathematical bracketing
-        syntax. Thus (1,100) is exclusize on both sides
-    */ 
-    loop i := [1,100] {
-        if   (i % 3 == 0)  { display ("Fizz") }
-        elif (i % 5 == 0)  { display ("Buzz") }
-        elif (i % 15 == 0) { display ("FizzBuzz") }
-        else               { display (i) }
-    }
-}
-```
-
 **Example of Multiple Files**
 *foo.fish*
 ```
@@ -134,9 +117,8 @@ InitialExecutionBody := 'start' 'Block  <br>
 
 Block := '{' Statement* '}'  <br>
 
-Statement := IfStatement | LoopStatement |  Block | SimpleStatement  | 'continue' | 'break' | ReturnStatement  <br>
+Statement := IfStatement |  Block | SimpleStatement  | 'continue' | 'break' | ReturnStatement  <br>
 IfStatement := 'if' Expression Block 'else' Block  <br>
-LoopStatement := 'loop' 'over' RangeVariableDefinition { Body } | 'loop' Expression { Body }  <br>
 SimpleStatement := GeneralDefinition | ExpressionStatement  <br>
 ExpressionStatement := Expression  <br>
 ReturnStatement := 'return' Expression  <br>

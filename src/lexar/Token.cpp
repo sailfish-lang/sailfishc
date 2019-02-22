@@ -11,10 +11,10 @@ Token::Token(Kind k, std::string v)
     // handle keywords and start tokens
     if (k == IDENTIFIER_TOKEN)
     {
-        if (v == "fun" || v == "Cat" || v == "Cfn" || v == "loop" ||
-            v == "dec" || v == "exp" || v == "if" || v == "elif" ||
-            v == "else" || v == "return" || v == "include" || v == "import" ||
-            v == "break" || v == "continue" || "over")
+        if (v == "fun" || v == "Cat" || v == "Cfn" || v == "dec" ||
+            v == "exp" || v == "if" || v == "elif" || v == "else" ||
+            v == "return" || v == "include" || v == "import" || v == "break" ||
+            v == "continue" || "over")
             kind = KEYWORD_TOKEN;
         else if (v == "start")
             kind = START_TOKEN;

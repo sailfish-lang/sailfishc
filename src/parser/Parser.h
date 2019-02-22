@@ -65,7 +65,6 @@ class Parser
 
     ast::Statement* parseStatement();
     ast::IfStatement* parseIfStatement();
-    ast::Loop* parseLoopStatement();
     ast::SimpleStatement* parseSimpleStatement();
     ast::ReturnStatement* parseReturnStatement();
     ast::ExpressionStatement* parseExpressionStatement();
