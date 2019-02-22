@@ -399,10 +399,6 @@ Visitor::visit(ast::InitialExecutionBody* node)
     visit(body);
 }
 void
-Visitor::visit(ast::VariableAssignment* node)
-{
-}
-void
 Visitor::visit(ast::Variable* node)
 {
     std::cout << "At a Variable\n";

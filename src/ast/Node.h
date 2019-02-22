@@ -65,4 +65,3 @@
 #include "UserDefinedTypeDefinition.h"
 #include "UserDefinedTypeMethods.h"
 #include "Variable.h"
-#include "VariableAssignment.h"
