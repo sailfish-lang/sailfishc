@@ -166,6 +166,8 @@ Parser::parseFunctionDefintion()
     while (currentToken->getKind() != Kind::ARROW_TOKEN)
     {
         inputs.push_back(parseInput());
+
+        // consume leftover token from parseInput()
         getNextUsefulToken();
     }
 
@@ -176,6 +178,8 @@ Parser::parseFunctionDefintion()
     while (currentToken->getKind() != Kind::LCURLEY_TOKEN)
     {
         outputs.push_back(parseOutput());
+
+        // consume leftover token from parseOutput()
         getNextUsefulToken();
     }
 
@@ -274,7 +278,7 @@ Parser::UserDefinedTypeAttributes()
 
     // consume identifier
     getNextUsefulToken();
-    // skip '{'
+    // consume '{'
     getNextUsefulToken();
 
     std::vector<ast::Variable*> attributes;
@@ -282,9 +286,10 @@ Parser::UserDefinedTypeAttributes()
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
         attributes.push_back(parseVariable());
+        getNextUsefulToken();
     }
 
-    // skip '}'
+    // consume '}'
     getNextUsefulToken();
 
     return new ast::UserDefinedTypeAttributes(name, attributes);
@@ -296,24 +301,26 @@ Parser::UserDefinedTypeAttributes()
 ast::UserDefinedTypeMethods*
 Parser::UserDefinedTypeMethods()
 {
-    // skip 'Cfn'
+    // consume 'Cfn'
     getNextUsefulToken();
 
     ast::Identifier* name = new ast::Identifier(currentToken->getValue());
 
+    // consume identifier
     getNextUsefulToken();
+    // consume '{'
     getNextUsefulToken();
 
     std::vector<ast::FunctionDefinition*> methods;
-    currentToken->display();
-
-    getNextUsefulToken();
-
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
+        // consume 'fun'
+        getNextUsefulToken();
+
         methods.push_back(parseFunctionDefintion());
-        // getNextUsefulToken();
-        currentToken->display();
+
+        // consume last token leftover from parseFunctionDefinition()
+        getNextUsefulToken();
     }
 
     // skip '}'
@@ -637,7 +644,7 @@ Parser::parsePrimaryExpression()
 ast::Primary*
 Parser::parsePrimary()
 {
-    currentToken->display();
+
     std::string tk = currentToken->getValue();
     Kind kind = currentToken->getKind();
 
@@ -737,6 +744,15 @@ Parser::parseListItem()
 ast::Variable*
 Parser::parseVariable()
 {
+
+    // TODO: fix this hack for void input
+    if (std::string("void").compare(currentToken->getValue()) == 0)
+    {
+        ast::Typename* type = new ast::Typename("void");
+        ast::Identifier* id = new ast::Identifier("void");
+        return new ast::Variable(type, id);
+    }
+
     ast::Typename* type = new ast::Typename(currentToken->getValue());
 
     getNextUsefulToken();

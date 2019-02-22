@@ -365,7 +365,14 @@ Visitor::visit(ast::UserDefinedTypeAttributes* node)
     std::cout << "At a User defined type attributes.\n";
 
     ast::Identifier* id = node->getName();
+    std::vector<ast::Variable*> attributes = node->getAttributes();
+
     visit(id);
+
+    for (auto const& attribute : attributes)
+    {
+        visit(attribute);
+    }
 }
 void
 Visitor::visit(ast::UserDefinedTypeMethods* node)
@@ -373,7 +380,14 @@ Visitor::visit(ast::UserDefinedTypeMethods* node)
     std::cout << "At a User defined type methods.\n";
 
     ast::Identifier* id = node->getName();
+    std::vector<ast::FunctionDefinition*> methods = node->getMethods();
+
     visit(id);
+
+    for (auto const& method : methods)
+    {
+        visit(method);
+    }
 }
 void
 Visitor::visit(ast::InitialExecutionBody* node)

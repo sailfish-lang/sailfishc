@@ -11,13 +11,34 @@
 // dec dictionary someNonExportDict = new {1 : "hello", 2: "world"}
 
 // -------       Function Definition       ------- //
-fun foo
-<- int i, flt f, str s
--> str, float
-{
-    
-}
+/*
+    fun foo
+        <- int i, flt f, str s
+        -> str, float
+    {}
+*/
 
 // -------       User Defined Type Definition       ------- //
+/*
+    Cat FooS {
+            int someInt
+            flt someFloat
+            str SomeString
+    }
+
+    Cfn FooS {
+   
+        fun bar
+            <- void
+            -> void
+            {}
+
+        fun baz
+            <- int inty, void, flt flty
+            -> void
+            {}
+    
+    }
+*/
 
 // -------       Initial Execution Body       ------- //
