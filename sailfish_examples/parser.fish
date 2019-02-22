@@ -37,8 +37,8 @@
             <- int inty, void, flt flty
             -> void
             {}
-    
     }
 */
 
 // -------       Initial Execution Body       ------- //
+start {}

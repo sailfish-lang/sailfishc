@@ -104,9 +104,11 @@ Parser::parseSourcePart()
         {
             return (ast::SourcePart*)parseUserDefinedTypeDefinition();
         }
+        else if (kwd == "start")
+        {
+            return (ast::SourcePart*)parseInitialExecutionBody();
+        }
         break;
-    case Kind::START_TOKEN:
-        return (ast::SourcePart*)parseInitialExecutionBody();
     }
     return nullptr;
 }
