@@ -403,10 +403,6 @@ Visitor::visit(ast::VariableAssignment* node)
 {
 }
 void
-Visitor::visit(ast::ShortVariableDefinition* node)
-{
-}
-void
 Visitor::visit(ast::Variable* node)
 {
     std::cout << "At a Variable\n";
