@@ -4,17 +4,24 @@
  */
 
 #include "Visitor.h"
+#include <iostream>
 #include <vector>
 
 void
 Visitor::visit(ast::Start* node)
 {
+    std::cout << "At the start\n";
+
     visit(node->getSource());
 }
 void
 Visitor::visit(ast::Source* node)
 {
-    for (auto const& srcPart : node->getSourceParts())
+    std::cout << "At the source\n";
+
+    std::vector<ast::SourcePart*> srcParts = node->getSourceParts();
+
+    for (auto const& srcPart : srcParts)
     {
         ast::SourcePart::SourcePartType type = srcPart->getSourcePartType();
         switch (type)
@@ -60,6 +67,8 @@ Visitor::visit(ast::Source* node)
 void
 Visitor::visit(ast::ExportDefinition* node)
 {
+    std::cout << "At an Export Definition\n";
+
     ast::Exportable* exprt = node->getExport();
     ast::Exportable::ExportableType type = exprt->getExportableType();
     switch (type)
@@ -83,12 +92,21 @@ Visitor::visit(ast::ExportDefinition* node)
 void
 Visitor::visit(ast::GeneralDecleration* node)
 {
-    visit(node->getDefinition());
+    std::cout << "At a General Decleration\n";
+
+    ast::GeneralDefinition* gd = node->getDefinition();
+
+    visit(gd);
 }
 void
 Visitor::visit(ast::GeneralDefinition* node)
 {
-    switch (node->getGeneralDefinitionType())
+    std::cout << "At a General Definition\n";
+
+    ast::GeneralDefinition::GeneralDefinitionType type =
+        node->getGeneralDefinitionType();
+
+    switch (type)
     {
     case ast::GeneralDefinition::ListDefinition:
     {
@@ -115,25 +133,44 @@ Visitor::visit(ast::GeneralDefinition* node)
 void
 Visitor::visit(ast::ListDefinition* node)
 {
-    visit(node->getName());
-    visit(node->getExpression());
+    std::cout << "At a List Definition\n";
+
+    ast::Identifier* name = node->getName();
+    ast::Expression* expr = node->getExpression();
+
+    visit(name);
+    visit(expr);
 }
 void
 Visitor::visit(ast::DictionaryDefinition* node)
 {
-    visit(node->getName());
-    visit(node->getExpression());
+    std::cout << "At a Dictionary Definition\n";
+
+    ast::Identifier* name = node->getName();
+    ast::Expression* expr = node->getExpression();
+
+    visit(name);
+    visit(expr);
 }
 void
 Visitor::visit(ast::NewVariableDefinition* node)
 {
-    visit(node->getVariable());
-    visit(node->getExpression());
+    std::cout << "At a New Variable Definition\n";
+
+    ast::Variable* var = node->getVariable();
+    visit(var);
+
+    ast::Expression* expr = node->getExpression();
+    visit(expr);
 }
 void
 Visitor::visit(ast::Expression* node)
 {
-    switch (node->getExpressionType())
+    std::cout << "At an Expression\n";
+
+    ast::Expression::ExpressionType type = node->getExpressionType();
+
+    switch (type)
     {
     case ast::Expression::NewExpression:
     {
@@ -280,42 +317,67 @@ Visitor::visit(ast::Expression* node)
 void
 Visitor::visit(ast::FunctionDefinition* node)
 {
-    visit(node->getName());
+    std::cout << "At a Function Definition\n";
 
-    for (auto const& input : node->getInputList())
+    ast::Identifier* name = node->getName();
+    std::vector<ast::Input*> inputs = node->getInputList();
+    std::vector<ast::Output*> outputs = node->getOutputList();
+    ast::Block* body = node->getBody();
+
+    visit(name);
+
+    for (auto const& input : inputs)
     {
         visit(input);
     }
 
-    for (auto const& output : node->getOutputList())
+    for (auto const& output : outputs)
     {
         visit(output);
     }
 
-    visit(node->getBody());
+    visit(body);
 }
 void
 Visitor::visit(ast::Input* node)
 {
-    visit(node->getInput());
+    std::cout << "At an input\n";
+
+    ast::Variable* var = node->getInput();
+
+    visit(var);
 }
 void
 Visitor::visit(ast::Output* node)
 {
-    visit(node->getOutput());
+    std::cout << "At an output\n";
+
+    ast::Typename* type = node->getOutput();
+
+    visit(type);
 }
 void
 Visitor::visit(ast::UserDefinedTypeDefinition* node)
 {
-    visit(node->getAttributes());
-    visit(node->getMethods());
+    std::cout << "At a User defined type definition\n";
+
+    ast::UserDefinedTypeAttributes* attributes = node->getAttributes();
+    ast::UserDefinedTypeMethods* methods = node->getMethods();
+
+    visit(attributes);
+    visit(methods);
 }
 void
 Visitor::visit(ast::UserDefinedTypeAttributes* node)
 {
-    visit(node->getName());
+    std::cout << "At a User defined type attributes.\n";
 
-    for (auto const& attribute : node->getAttributes())
+    ast::Identifier* id = node->getName();
+    std::vector<ast::Variable*> attributes = node->getAttributes();
+
+    visit(id);
+
+    for (auto const& attribute : attributes)
     {
         visit(attribute);
     }
@@ -323,9 +385,14 @@ Visitor::visit(ast::UserDefinedTypeAttributes* node)
 void
 Visitor::visit(ast::UserDefinedTypeMethods* node)
 {
-    visit(node->getName());
+    std::cout << "At a User defined type methods.\n";
 
-    for (auto const& method : node->getMethods())
+    ast::Identifier* id = node->getName();
+    std::vector<ast::FunctionDefinition*> methods = node->getMethods();
+
+    visit(id);
+
+    for (auto const& method : methods)
     {
         visit(method);
     }
@@ -333,18 +400,31 @@ Visitor::visit(ast::UserDefinedTypeMethods* node)
 void
 Visitor::visit(ast::InitialExecutionBody* node)
 {
-    visit(node->getBody());
+    std::cout << "At an Initial Execution Body\n";
+
+    ast::Block* body = node->getBody();
+
+    visit(body);
 }
 void
 Visitor::visit(ast::Variable* node)
 {
-    visit(node->getName());
-    visit(node->getType());
+    std::cout << "At a Variable\n";
+
+    ast::Identifier* name = node->getName();
+    ast::Typename* type = node->getType();
+
+    visit(type);
+    visit(name);
 }
 void
 Visitor::visit(ast::Block* node)
 {
-    for (auto const& statement : node->getStatements())
+    std::cout << "At a Block\n";
+
+    std::vector<ast::Statement*> statements = node->getStatements();
+
+    for (auto const& statement : statements)
     {
         ast::Statement::StatementType type = statement->getStatementType();
 
@@ -390,23 +470,39 @@ Visitor::visit(ast::Block* node)
 void
 Visitor::visit(ast::IfStatement* node)
 {
-    visit(node->getIfConditional());
-    visit(node->getIfStatements());
-    visit(node->getElseStatements());
+    std::cout << "At an If Statement\n";
+
+    ast::Expression* ifConditional = node->getIfConditional();
+    ast::Block* ifStatements = node->getIfStatements();
+    ast::Block* elseStatements = node->getElseStatements();
+
+    visit(ifConditional);
+    visit(ifStatements);
+    visit(elseStatements);
 }
 void
 Visitor::visit(ast::ExpressionStatement* node)
 {
-    visit(node->getExpression());
+    std::cout << "At an Expression Statement\n";
+
+    ast::Expression* expr = node->getExpression();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::ReturnStatement* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Return Statement\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::NewExpression* node)
 {
+    std::cout << "At a New Expression\n";
+
     ast::New* newVal = node->getNewVal();
     ast::New::NewType type = newVal->getNewType();
 
@@ -430,7 +526,14 @@ Visitor::visit(ast::NewExpression* node)
 void
 Visitor::visit(ast::ArrayExpression* node)
 {
-    for (auto const& expression : node->getExpressionList())
+    std::cout << "At an Array Expression\n";
+
+    bool canBeIndexAccess = node->getCanBeIndexAccess();
+    std::vector<ast::Expression*> expressionList = node->getExpressionList();
+
+    std::cout << "Possible indexing: " << canBeIndexAccess << '\n';
+
+    for (auto const& expression : expressionList)
     {
         visit(expression);
     }
@@ -438,7 +541,11 @@ Visitor::visit(ast::ArrayExpression* node)
 void
 Visitor::visit(ast::MemberAccess* node)
 {
-    switch (node->getMemberAccessType())
+    std::cout << "At a Member Access\n";
+
+    ast::MemberAccess::MemberAccessType type = node->getMemberAccessType();
+
+    switch (type)
     {
     case ast::MemberAccess::AttributeAccess:
     {
@@ -458,18 +565,28 @@ Visitor::visit(ast::MemberAccess* node)
 void
 Visitor::visit(ast::AttributeAccess* node)
 {
-    visit(node->getAttribute());
+    std::cout << "At an Attribute Access\n";
+
+    ast::Identifier* attribute = node->getAttribute();
+
+    visit(attribute);
 }
 void
 Visitor::visit(ast::MethodAccess* node)
 {
+    std::cout << "At a Method Access\n";
 
-    visit(node->getName());
-    visit(node->getFunctionCall());
+    ast::Identifier* name = node->getName();
+    ast::FunctionCall* funcCall = node->getFunctionCall();
+
+    visit(name);
+    visit(funcCall);
 }
 void
 Visitor::visit(ast::FunctionCall* node)
 {
+    std::cout << "At a Function Call\n";
+
     std::vector<ast::Identifier*> args = node->getArguments();
 
     for (auto const& arg : args)
@@ -480,6 +597,8 @@ Visitor::visit(ast::FunctionCall* node)
 void
 Visitor::visit(ast::PrimaryExpression* node)
 {
+    std::cout << "At a Primary Expression\n";
+
     ast::Primary* primary = node->getPrimary();
     ast::Primary::PrimaryType type = primary->getPrimaryType();
 
@@ -523,11 +642,18 @@ Visitor::visit(ast::PrimaryExpression* node)
 void
 Visitor::visit(ast::BooleanLiteral* node)
 {
+    std::cout << "At Boolean Literal\n";
+
+    std::cout << "VALUE: " << node->getValue() << '\n';
 }
 void
 Visitor::visit(ast::DictionaryLiteral* node)
 {
-    for (auto const& dictionaryItem : node->getItems())
+    std::cout << "At Dictionary Literal\n";
+
+    std::vector<ast::DictionaryItem*> dictionaryItems = node->getItems();
+
+    for (auto const& dictionaryItem : dictionaryItems)
     {
         visit(dictionaryItem);
     }
@@ -535,13 +661,22 @@ Visitor::visit(ast::DictionaryLiteral* node)
 void
 Visitor::visit(ast::DictionaryItem* node)
 {
-    visit(node->getKey());
-    visit(node->getValue());
+    std::cout << "At Dictionary Item\n";
+
+    ast::Identifier* key = node->getKey();
+    ast::Identifier* value = node->getValue();
+
+    visit(key);
+    visit(value);
 }
 void
 Visitor::visit(ast::ListLiteral* node)
 {
-    for (auto const& listItem : node->getItems())
+    std::cout << "At List Literal\n";
+
+    std::vector<ast::ListItem*> listItems = node->getItems();
+
+    for (auto const& listItem : listItems)
     {
         visit(listItem);
     }
@@ -549,67 +684,128 @@ Visitor::visit(ast::ListLiteral* node)
 void
 Visitor::visit(ast::ListItem* node)
 {
-    visit(node->getName());
+    std::cout << "At List Item\n";
+
+    ast::Identifier* name = node->getName();
+
+    visit(name);
 }
 void
 Visitor::visit(ast::IntegerLiteral* node)
 {
+    std::cout << "At an Integer Literal\n";
+
+    std::string value = node->getNum();
+
+    std::cout << "VALUE: " << value << '\n';
 }
 void
 Visitor::visit(ast::FloatLiteral* node)
 {
+    std::cout << "At an Float Literal\n";
+
+    std::string value = node->getNum();
+
+    std::cout << "VALUE: " << value << '\n';
 }
 void
 Visitor::visit(ast::StringLiteral* node)
 {
+    std::cout << "At an String Literal\n";
+
+    std::string value = node->getString();
+
+    std::cout << "VALUE: " << value << '\n';
 }
 void
 Visitor::visit(ast::Identifier* node)
 {
+    std::cout << "At an identifier with ";
+
+    std::string value = node->getValue();
+
+    std::cout << "VALUE: " << value << '\n';
 }
 void
 Visitor::visit(ast::Typename* node)
 {
+    std::cout << "At a typename";
+
+    std::string type = node->getType();
+
+    std::cout << " VALUE: " << type << '\n';
 }
 void
 Visitor::visit(ast::Negation* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Negation\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Exponentiation* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Exponentiation\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Multiplication* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Multiplication\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Division* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Division\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Modulo* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Modulo\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Addition* node)
 {
-    visit(node->getExpr());
+    std::cout << "At an Addition\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Subtraction* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Subtraction\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::BinaryExpression* node)
 {
-    for (auto const& expr : node->getExpressionList())
+    std::cout << "At a BinaryExpression\n";
+
+    std::vector<ast::Expression*> exprs = node->getExpressionList();
+
+    for (auto const& expr : exprs)
     {
         visit(expr);
     }
@@ -617,45 +813,81 @@ Visitor::visit(ast::BinaryExpression* node)
 void
 Visitor::visit(ast::BinaryGreaterThan* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Binary Greater Than\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::BinaryLessThan* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Binary Less Than\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::BinaryGreaterThanOrEqual* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Binary Greater Than or Equal\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::BinaryLessThanOrEqual* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Binary Less Than or Equal\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::EquivalenceComparison* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Equivalence Comparison\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::NonEquivalenceComparison* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Non Equivalence Comparison\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::AndComparison* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a And Comparison\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::OrComparison* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Or Comparison\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Assignment* node)
 {
-    visit(node->getExpr());
+    std::cout << "At a Assignment\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
