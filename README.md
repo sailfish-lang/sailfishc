@@ -113,7 +113,7 @@ InitialExecutionBody := 'start' 'Block  <br>
 
 Block := '{' Statement* '}'  <br>
 
-Statement := IfStatement |  Block | SimpleStatement  | 'continue' | 'break' | ReturnStatement  <br>
+Statement := IfStatement |  Block | SimpleStatement  | ReturnStatement  <br>
 IfStatement := 'if' Expression Block 'else' Block  <br>
 SimpleStatement := GeneralDefinition | ExpressionStatement  <br>
 ExpressionStatement := Expression  <br>

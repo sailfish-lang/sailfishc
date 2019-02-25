@@ -104,11 +104,9 @@ Parser::parseSourcePart()
         {
             return (ast::SourcePart*)parseUserDefinedTypeDefinition();
         }
-        else if (kwd == "start")
-        {
-            return (ast::SourcePart*)parseInitialExecutionBody();
-        }
         break;
+    case Kind::START_TOKEN:
+        return (ast::SourcePart*)parseInitialExecutionBody();
     }
     return nullptr;
 }
@@ -788,8 +786,6 @@ Parser::parseBlock()
 /**
  * Statement := IfStatement |
  *              Block |
- *              'continue' |
- *              'break' |
  *              ReturnStatement |
  *              SimpleStatement
  */
@@ -813,16 +809,6 @@ Parser::parseStatement()
         getNextUsefulToken();
         return (ast::Statement*)parseReturnStatement();
     }
-    else if (tk == "continue")
-    {
-        getNextUsefulToken();
-        return (ast::Statement*)new ast::Continue();
-    }
-    else if (tk == "break")
-    {
-        getNextUsefulToken();
-        return (ast::Statement*)new ast::Break();
-    }
     else
     {
         getNextUsefulToken();
@@ -841,15 +827,13 @@ Parser::parseIfStatement()
     // move to next token
     getNextUsefulToken();
 
-    // skip '{'
-    getNextUsefulToken();
-
     ast::Block* ifStatements = parseBlock();
 
     // move to next token
     getNextUsefulToken();
 
     // skip 'else'
+    getNextUsefulToken();
     ast::Block* elseStatements = parseBlock();
 
     return new ast::IfStatement(ifExpr, ifStatements, elseStatements);

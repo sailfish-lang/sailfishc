@@ -61,7 +61,5 @@ class Visitor
     void visit(ast::NonEquivalenceComparison*);
     void visit(ast::AndComparison*);
     void visit(ast::OrComparison*);
-    void visit(ast::Break*);
-    void visit(ast::Continue*);
     void visit(ast::Assignment*);
 };

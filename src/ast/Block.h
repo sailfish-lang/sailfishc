@@ -8,7 +8,7 @@
 
 namespace ast
 {
-class Block
+class Block : public Statement
 {
   private:
     std::vector<Statement*> statements;
@@ -19,6 +19,12 @@ class Block
     {
         statements = v;
     };
+    // implement Statement
+    /* virtual */ StatementType
+    getStatementType()
+    {
+        return StatementType::BlockStatement;
+    }
     // get methods
     std::vector<Statement*>
     getStatements()

@@ -13,8 +13,7 @@ class Statement
         IfStatement,
         ReturnStatement,
         SimpleStatement,
-        Break,
-        Continue,
+        BlockStatement,
     };
     virtual StatementType getStatementType() = 0;
 };

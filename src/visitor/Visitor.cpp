@@ -443,15 +443,9 @@ Visitor::visit(ast::Block* node)
             visit(subnode);
             break;
         }
-        case ast::Statement::Break:
+        case ast::Statement::BlockStatement:
         {
-            ast::Break* subnode = dynamic_cast<ast::Break*>(statement);
-            visit(subnode);
-            break;
-        }
-        case ast::Statement::Continue:
-        {
-            ast::Continue* subnode = dynamic_cast<ast::Continue*>(statement);
+            ast::Block* subnode = dynamic_cast<ast::Block*>(statement);
             visit(subnode);
             break;
         }
@@ -729,16 +723,6 @@ void
 Visitor::visit(ast::OrComparison* node)
 {
     std::cout << "At a Or Comparison\n";
-}
-void
-Visitor::visit(ast::Break* node)
-{
-    std::cout << "BREAK\n";
-}
-void
-Visitor::visit(ast::Continue* node)
-{
-    std::cout << "CONTINUE\n";
 }
 void
 Visitor::visit(ast::Assignment* node)

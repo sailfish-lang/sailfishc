@@ -42,5 +42,17 @@
 
 // -------       Initial Execution Body       ------- //
 start {
-    
+    {
+        // nest two blocks
+       {
+           {
+
+           }
+       }
+        
+        // nest another block
+       {
+
+       }
+    }
 }
