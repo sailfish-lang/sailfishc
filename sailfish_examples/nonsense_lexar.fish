@@ -18,4 +18,6 @@ start {
     ...
     and
     or
+    true
+    false
 }
