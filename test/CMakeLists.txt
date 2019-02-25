@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 
 # Add sailfishc libs. TODO: write this more eloquently
 ADD_LIBRARY(SailfishcLibs 
-    ../src/sailfish/Lexar.cpp
-    ../src/sailfish/Scanner.cpp
-    ../src/sailfish/Token.cpp
+    ../src/lexar/Lexar.cpp
+    ../src/lexar/Scanner.cpp
+    ../src/lexar/Token.cpp
 )
 
 # Locate GTest
