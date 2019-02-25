@@ -470,6 +470,10 @@ void
 Visitor::visit(ast::ReturnStatement* node)
 {
     std::cout << "At a Return Statement\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::NewExpression* node)

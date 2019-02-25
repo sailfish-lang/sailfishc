@@ -21,6 +21,8 @@ Parser::getNextUsefulToken()
     {
         currentToken = lexar->getNextToken();
     }
+    std::cout << "\n HERE: ";
+    currentToken->display();
 }
 
 // public method utilized by external classes to parse a given file
@@ -106,6 +108,8 @@ Parser::parseSourcePart()
         }
         break;
     case Kind::START_TOKEN:
+        // consume 'start'
+        getNextUsefulToken();
         return (ast::SourcePart*)parseInitialExecutionBody();
     }
     return nullptr;
@@ -768,6 +772,7 @@ Parser::parseVariable()
 ast::Block*
 Parser::parseBlock()
 {
+    std::cout << "parse block\n";
     std::vector<ast::Statement*> statements;
 
     // consume '{'
@@ -775,10 +780,12 @@ Parser::parseBlock()
 
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
-
         ast::Statement* s = parseStatement();
         statements.push_back(s);
     }
+
+    // consume '}'
+    getNextUsefulToken();
 
     return new ast::Block(statements);
 }
@@ -792,6 +799,8 @@ Parser::parseBlock()
 ast::Statement*
 Parser::parseStatement()
 {
+    std::cout << "At Statement\n";
+    currentToken->display();
     std::string tk = currentToken->getValue();
 
     if (tk == "if")
@@ -801,12 +810,10 @@ Parser::parseStatement()
     }
     else if (tk == "{")
     {
-        getNextUsefulToken();
         return (ast::Statement*)parseBlock();
     }
     else if (tk == "return")
     {
-        getNextUsefulToken();
         return (ast::Statement*)parseReturnStatement();
     }
     else
@@ -828,9 +835,6 @@ Parser::parseIfStatement()
     getNextUsefulToken();
 
     ast::Block* ifStatements = parseBlock();
-
-    // move to next token
-    getNextUsefulToken();
 
     // skip 'else'
     getNextUsefulToken();
@@ -877,10 +881,14 @@ Parser::parseExpressionStatement()
 ast::ReturnStatement*
 Parser::parseReturnStatement()
 {
-    // skip 'return'
+    std::cout << "REYTRUNUNRUNR!\n";
+    // consume 'return'
     getNextUsefulToken();
 
     ast::Expression* expr = parseExpression();
+
+    // consume leftover
+    getNextUsefulToken();
 
     return new ast::ReturnStatement(expr);
 }

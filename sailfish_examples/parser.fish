@@ -52,7 +52,7 @@ start {
         
         // nest another block
        {
-
+           return 10
        }
     }
 }
