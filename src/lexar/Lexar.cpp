@@ -70,8 +70,6 @@ Lexar::getNextToken()
                         return new Token(Kind::UNDERSCORE_TOKEN, buffer);
                     case ',':
                         return new Token(Kind::COMMA_TOKEN, buffer);
-                    case '.':
-                        return new Token(Kind::DOT_TOKEN, buffer);
                     case '[':
                         return new Token(Kind::LBRACKET_TOKEN, buffer);
                     case ']':
@@ -125,6 +123,9 @@ Lexar::getNextToken()
                         break;
                     case '>':
                         state = State::GREATER_THAN;
+                        break;
+                    case '.':
+                        state = State::DOUBLE_DOT_PRESTATE;
                         break;
                     }
                 }
@@ -251,6 +252,21 @@ Lexar::getNextToken()
                 else
                     return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
                                               scanner);
+
+            case State::DOUBLE_DOT_PRESTATE:
+                if (c != '.')
+                    return createTokenPutback(Kind::DOT_TOKEN, c, buffer,
+                                              scanner);
+                else
+                    state = State::TRIPLE_DOT_PRESTATE;
+                break;
+
+            case State::TRIPLE_DOT_PRESTATE:
+                if (c != '.')
+                    return createTokenPutback(Kind::ERROR_TOKEN, c, buffer,
+                                              scanner);
+                else
+                    return new Token(Kind::TRIPLE_DOT_TOKEN, buffer);
             }
         }
     }

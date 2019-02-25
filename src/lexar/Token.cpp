@@ -66,6 +66,10 @@ kindToString(Kind k)
         return "Logic";
     case DOT_TOKEN:
         return "Dot";
+    case TRIPLE_DOT_TOKEN:
+        return "Triple Dot";
+    case COLON_TOKEN:
+        return "Colon";
     case ERROR_TOKEN:
         return "Error";
     case EOF_TOKEN:

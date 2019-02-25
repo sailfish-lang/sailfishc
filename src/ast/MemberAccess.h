@@ -4,32 +4,23 @@
  */
 #pragma once
 #include "Expression.h"
-#include "Identifier.h"
 
 namespace ast
 {
 class MemberAccess : public Expression
 {
-  private:
-    Identifier* member;
-
   public:
-    // constructor
-    MemberAccess(Identifier* i)
+    enum MemberAccessType
     {
-        member = i;
+        AttributeAccess,
+        MethodAccess,
     };
+    virtual MemberAccessType getMemberAccessType() = 0;
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()
     {
         return ExpressionType::MemberAccess;
-    }
-    // get method
-    Identifier*
-    getMember()
-    {
-        return member;
     }
 };
 }

@@ -13,7 +13,7 @@ class Expression
     {
         ArrayExpression,
         MemberAccess,
-        FunctionCall,
+        FunctionCallExpression,
         PrimaryExpression,
         Negation,
         Exponentiation,

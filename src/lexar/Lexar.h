@@ -29,6 +29,8 @@ enum State
     OR_PRESTATE,
     LESS_THAN,
     GREATER_THAN,
+    DOUBLE_DOT_PRESTATE,
+    TRIPLE_DOT_PRESTATE,
     ERROR
 };
 

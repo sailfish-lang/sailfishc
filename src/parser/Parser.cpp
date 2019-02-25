@@ -400,6 +400,7 @@ ast::Expression*
 Parser::parseExpression()
 {
     std::string tk = currentToken->getValue();
+
     if (tk == "new")
     {
         // consume 'new'
@@ -414,11 +415,8 @@ Parser::parseExpression()
 
         return (ast::Expression*)parseArrayExpression();
     }
-    else if (tk == ".")
+    else if (tk == "." || tk == "...")
     {
-        // consume '.'
-        getNextUsefulToken();
-
         return (ast::Expression*)parseMemberAccess();
     }
     else if (tk == "(")
@@ -618,8 +616,50 @@ Parser::parseArrayExpression()
 ast::MemberAccess*
 Parser::parseMemberAccess()
 {
-    ast::Identifier* member = new ast::Identifier(currentToken->getValue());
-    return new ast::MemberAccess(member);
+    Kind kind = currentToken->getKind();
+    switch (kind)
+    {
+    case Kind::DOT_TOKEN:
+        // consume '.'
+        getNextUsefulToken();
+
+        return (ast::MemberAccess*)parseAttributeAccess();
+    case Kind::TRIPLE_DOT_TOKEN:
+        // consume '...'
+        getNextUsefulToken();
+
+        return (ast::MemberAccess*)parseMethodAccess();
+    }
+}
+
+/**
+ *
+ */
+ast::AttributeAccess*
+Parser::parseAttributeAccess()
+{
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+
+    // consume identifier
+    getNextUsefulToken();
+
+    return new ast::AttributeAccess(name);
+}
+
+/**
+ *
+ */
+ast::MethodAccess*
+Parser::parseMethodAccess()
+{
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+
+    // consume identifier
+    getNextUsefulToken();
+
+    ast::FunctionCall* fc = parseFunctionCall();
+
+    return new ast::MethodAccess(name, fc);
 }
 
 /**
@@ -628,6 +668,9 @@ Parser::parseMemberAccess()
 ast::FunctionCall*
 Parser::parseFunctionCall()
 {
+    // consume '('
+    getNextUsefulToken();
+
     std::vector<ast::Expression*> exprs;
 
     while (currentToken->getKind() != Kind::RPAREN_TOKEN)
@@ -635,6 +678,10 @@ Parser::parseFunctionCall()
         exprs.push_back(parseExpression());
         getNextUsefulToken();
     }
+
+    // consume ')'
+    getNextUsefulToken();
+
     return new ast::FunctionCall();
 }
 
@@ -879,7 +926,8 @@ Parser::parseIfStatement()
 ast::ExpressionStatement*
 Parser::parseExpressionStatement()
 {
-    return new ast::ExpressionStatement();
+    ast::Expression* expr = parseExpression();
+    return new ast::ExpressionStatement(expr);
 }
 
 /**

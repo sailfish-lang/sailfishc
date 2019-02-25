@@ -137,7 +137,10 @@ NewExpression := New
 New := ListLiteral | DictionaryLiteral
 
 ArrayExpression := '[' Expression (',' Expression)* ']'  <br>
-MemberAccess := '.' Identifier  <br>
+
+MemberAccess := AttributeAccess | MethodAccess  <br>
+AttributeAccess := '...' Identifier 
+MethodAccess := '.' Identifier FunctionCall
 
 FunctionCall := '(' [Expression] (',' Expression)*')'  <br>
 

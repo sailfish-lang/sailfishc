@@ -31,6 +31,8 @@ class Visitor
     void visit(ast::NewExpression*);
     void visit(ast::ArrayExpression*);
     void visit(ast::MemberAccess*);
+    void visit(ast::AttributeAccess*);
+    void visit(ast::MethodAccess*);
     void visit(ast::FunctionCall*);
     void visit(ast::PrimaryExpression*);
     void visit(ast::BooleanLiteral*);

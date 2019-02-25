@@ -42,6 +42,7 @@
 
 // -------       Initial Execution Body       ------- //
 start {
+    /*
      dec flt someList = 10.0
 
      {
@@ -54,7 +55,12 @@ start {
          return ["Hello"]
      }
 
+     */
+
     //dec list someNonExportList = new [1,2,3]
     //dec dictionary someNonExportDict = new {1 : "hello", 2: "world"}
 
+    foo.bar
+
+    foo...bar()
 }

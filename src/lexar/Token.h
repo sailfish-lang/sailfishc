@@ -29,6 +29,7 @@ enum Kind
     KEYWORD_TOKEN,
     ERROR_TOKEN,
     DOT_TOKEN,
+    TRIPLE_DOT_TOKEN,
     COLON_TOKEN,
     EOF_TOKEN,
 };

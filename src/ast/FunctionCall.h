@@ -20,7 +20,7 @@ class FunctionCall : public Expression
     /* virtual*/ ExpressionType
     getExpressionType()
     {
-        return ExpressionType::FunctionCall;
+        return ExpressionType::FunctionCallExpression;
     }
 };
 }

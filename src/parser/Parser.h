@@ -49,10 +49,14 @@ class Parser
     ast::New* parseNew();
 
     ast::ArrayExpression* parseArrayExpression();
-    ast::MemberAccess* parseMemberAccess();
-    ast::FunctionCall* parseFunctionCall();
-    ast::PrimaryExpression* parsePrimaryExpression();
 
+    ast::MemberAccess* parseMemberAccess();
+    ast::AttributeAccess* parseAttributeAccess();
+    ast::MethodAccess* parseMethodAccess();
+
+    ast::FunctionCall* parseFunctionCall();
+
+    ast::PrimaryExpression* parsePrimaryExpression();
     ast::Primary* parsePrimary();
 
     ast::DictionaryLiteral* parseDictionaryLiteral();

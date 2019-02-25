@@ -12,16 +12,25 @@ namespace ast
 class ExpressionStatement : public Statement
 {
   private:
-    Expression* Expr;
+    Expression* expr;
 
   public:
     // constructor
-    ExpressionStatement(){};
+    ExpressionStatement(Expression* e)
+    {
+        expr = e;
+    };
     // implement Statement
     /* virtual */ StatementType
     getStatementType()
     {
         return StatementType::ExpressionStatement;
+    }
+    // get methods
+    Expression*
+    getExpression()
+    {
+        return expr;
     }
 };
 }

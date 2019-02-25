@@ -191,7 +191,7 @@ Visitor::visit(ast::Expression* node)
         visit(subnode);
         break;
     }
-    case ast::Expression::FunctionCall:
+    case ast::Expression::FunctionCallExpression:
     {
         ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
         visit(subnode);
@@ -468,6 +468,11 @@ Visitor::visit(ast::IfStatement* node)
 void
 Visitor::visit(ast::ExpressionStatement* node)
 {
+    std::cout << "At an Expression Statement\n";
+
+    ast::Expression* expr = node->getExpression();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::ReturnStatement* node)
@@ -522,6 +527,39 @@ void
 Visitor::visit(ast::MemberAccess* node)
 {
     std::cout << "At a Member Access\n";
+
+    ast::MemberAccess::MemberAccessType type = node->getMemberAccessType();
+
+    switch (type)
+    {
+    case ast::MemberAccess::AttributeAccess:
+    {
+        ast::AttributeAccess* subnode =
+            dynamic_cast<ast::AttributeAccess*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::MemberAccess::MethodAccess:
+    {
+        ast::MethodAccess* subnode = dynamic_cast<ast::MethodAccess*>(node);
+        visit(subnode);
+        break;
+    }
+    }
+}
+void
+Visitor::visit(ast::AttributeAccess* node)
+{
+    std::cout << "At an Attribute Access\n";
+
+    ast::Identifier* attribute = node->getAttribute();
+
+    visit(attribute);
+}
+void
+Visitor::visit(ast::MethodAccess* node)
+{
+    std::cout << "At a Method Access\n";
 }
 void
 Visitor::visit(ast::FunctionCall* node)
