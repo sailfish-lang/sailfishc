@@ -3,7 +3,9 @@
  * Sailfish Programming Language
  */
 
+#include "../src/ast/Ast.h"
 #include "../src/lexar/Lexar.h"
+#include "../src/parser/Parser.h"
 #include <gtest/gtest.h>
 
 TEST(LexarTest, HelloWorld)
@@ -62,6 +64,12 @@ TEST(LexarTest, Nonsense)
         t = lexar->getNextToken();
         ++i;
     }
+}
+
+TEST(ParserTest, AllTokens)
+{
+    Parser* parser = new Parser();
+    ast::Start* start = parser->parse("../sailfish_examples/parser.fish");
 }
 
 int

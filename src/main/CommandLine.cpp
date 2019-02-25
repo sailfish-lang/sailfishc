@@ -2,9 +2,10 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "../ast/Node.h"
+#include "../ast/Ast.h"
 #include "../lexar/Lexar.h"
 #include "../parser/Parser.h"
+#include "../visitor/InitialExecution.h"
 #include "../visitor/Visitor.h"
 #include <iostream>
 #include <string>
@@ -93,7 +94,7 @@ handleCommandLine(int argc, char* const* argv)
             Parser* p = new Parser();
             ast::Start* root = p->parse(filename);
 
-            Visitor* v = new Visitor();
+            InitialExecution* v = new InitialExecution();
             v->visit(root);
         }
 

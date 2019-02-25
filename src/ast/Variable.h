@@ -4,7 +4,6 @@
  */
 #pragma once
 #include "Identifier.h"
-#include "Node.h"
 #include "Typename.h"
 
 namespace ast

@@ -3,7 +3,7 @@
  * Sailfish Programming Language
  */
 #include "Parser.h"
-#include "../ast/Node.h"
+#include "../ast/Ast.h"
 #include <iostream>
 #include <vector>
 

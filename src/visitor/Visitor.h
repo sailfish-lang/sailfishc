@@ -3,7 +3,7 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "../ast/Node.h"
+#include "../ast/Ast.h"
 
 class Visitor
 {
