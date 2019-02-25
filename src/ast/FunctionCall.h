@@ -11,16 +11,25 @@ namespace ast
 class FunctionCall : public Expression
 {
   private:
-    std::vector<Expression*> args;
+    std::vector<Identifier*> args;
 
   public:
     // constructor
-    FunctionCall(){};
+    FunctionCall(std::vector<Identifier*> i)
+    {
+        args = i;
+    };
     // implement Expression
     /* virtual*/ ExpressionType
     getExpressionType()
     {
         return ExpressionType::FunctionCallExpression;
+    }
+    // get methods
+    std::vector<Identifier*>
+    getArguments()
+    {
+        return args;
     }
 };
 }

@@ -671,18 +671,20 @@ Parser::parseFunctionCall()
     // consume '('
     getNextUsefulToken();
 
-    std::vector<ast::Expression*> exprs;
+    std::vector<ast::Identifier*> idents;
 
     while (currentToken->getKind() != Kind::RPAREN_TOKEN)
     {
-        exprs.push_back(parseExpression());
+        idents.push_back(new ast::Identifier(currentToken->getValue()));
+
+        // consume identifier
         getNextUsefulToken();
     }
 
     // consume ')'
     getNextUsefulToken();
 
-    return new ast::FunctionCall();
+    return new ast::FunctionCall(idents);
 }
 
 /**

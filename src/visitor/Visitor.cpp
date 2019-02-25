@@ -560,11 +560,24 @@ void
 Visitor::visit(ast::MethodAccess* node)
 {
     std::cout << "At a Method Access\n";
+
+    ast::Identifier* name = node->getName();
+    ast::FunctionCall* funcCall = node->getFunctionCall();
+
+    visit(name);
+    visit(funcCall);
 }
 void
 Visitor::visit(ast::FunctionCall* node)
 {
     std::cout << "At a Function Call\n";
+
+    std::vector<ast::Identifier*> args = node->getArguments();
+
+    for (auto const& arg : args)
+    {
+        visit(arg);
+    }
 }
 void
 Visitor::visit(ast::PrimaryExpression* node)
