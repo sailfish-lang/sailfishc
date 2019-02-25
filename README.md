@@ -38,6 +38,48 @@ start {
 }
 ```
 
+**Fizz Buzz**
+```
+fun fizzBuzz
+<- int i
+-> void
+{
+    // since return needs a return value, this is the equivalent to not returning anything
+    if | i == 0 | { return void}
+    else { _fizzBuzz_(i-1)}
+}
+
+// surrounding underscores denote internal function
+fun _fuzzBuzz_
+<- int i
+-> void
+{
+    // write this ugly code since v1 does not allow for else if and thus else if is super nested
+    if | i % 15 == 0 | { 
+        display("FizzBuzz")
+        return void
+    }
+
+    if | i % 3 == 0 | { 
+        display("Fizz")
+        return void
+    }
+
+    if | i % 5 == 0 | {
+        display("Buzz")
+        return void
+    }
+
+    display(i)
+    return void // need a final return statement
+}
+
+start {
+    // will loop recursively from 100 -> 0 (based on this implementation)
+    fizzBuzz(100)
+}
+```
+
 ***
 
 ## Development
