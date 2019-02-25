@@ -57,11 +57,7 @@ Parser::parseSource()
     while (!currentToken->isEOF())
     {
         ast::SourcePart* srcPart = parseSourcePart();
-
-        if (srcPart != nullptr)
-        {
-            srcParts.push_back(srcPart);
-        }
+        srcParts.push_back(srcPart);
     }
 
     return new ast::Source(srcParts);
@@ -107,8 +103,11 @@ Parser::parseSourcePart()
         // consume 'start'
         getNextUsefulToken();
         return (ast::SourcePart*)parseInitialExecutionBody();
+    default:
+        throw std::invalid_argument(
+            "unexpected source level code. Expected function, var decleration, "
+            "structure definition, or initial execution statement.");
     }
-    return nullptr;
 }
 
 /**
@@ -142,6 +141,11 @@ Parser::parseExportable()
         getNextUsefulToken();
 
         return (ast::Exportable*)parseGeneralDecleration();
+    }
+    else
+    {
+        throw std::invalid_argument(
+            "expected a function or variable decleration");
     }
 }
 
@@ -248,6 +252,11 @@ Parser::parseGeneralDefinition()
              val == "void")
     {
         return (ast::GeneralDefinition*)parseNewVariableDefinition();
+    }
+    else
+    {
+        throw std::invalid_argument("expected a list, dictionary, bool, str, "
+                                    "int, flt, or void definition");
     }
 }
 
@@ -599,6 +608,10 @@ Parser::parseNew()
         getNextUsefulToken();
         return (ast::New*)parseDictionaryLiteral();
     }
+    else
+    {
+        throw std::invalid_argument("expected a '[' or a '{'");
+    }
 }
 
 /**
@@ -672,6 +685,8 @@ Parser::parseMemberAccess()
         getNextUsefulToken();
 
         return (ast::MemberAccess*)parseMethodAccess();
+    default:
+        throw std::invalid_argument("unexpected member accesser");
     }
 }
 
@@ -756,7 +771,7 @@ Parser::parsePrimary()
     // consume all since they are captured above
     getNextUsefulToken();
 
-    if (tk == "true" || tk == "false")
+    if (kind == Kind::BOOL_TOKEN)
     {
         return (ast::Primary*)new ast::BooleanLiteral(tk);
     }
@@ -779,6 +794,10 @@ Parser::parsePrimary()
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
         return (ast::Primary*)new ast::Identifier(tk);
+    }
+    else
+    {
+        throw std::invalid_argument("unexpected literal");
     }
 }
 
