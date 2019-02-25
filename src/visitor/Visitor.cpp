@@ -563,6 +563,9 @@ Visitor::visit(ast::PrimaryExpression* node)
 void
 Visitor::visit(ast::BooleanLiteral* node)
 {
+    std::cout << "At Boolean Literal\n";
+
+    std::cout << "VALUE: " << node->getValue() << '\n';
 }
 void
 Visitor::visit(ast::DictionaryLiteral* node)
