@@ -772,6 +772,10 @@ Parser::parsePrimary()
     {
         return (ast::Primary*)new ast::StringLiteral(tk);
     }
+    else if (kind == Kind::BYTE_TOKEN)
+    {
+        return (ast::Primary*)new ast::ByteLiteral(tk);
+    }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
         return (ast::Primary*)new ast::Identifier(tk);

@@ -38,26 +38,6 @@ start {
 }
 ```
 
-**Example of Multiple Files**
-*foo.fish*
-```
-// notes to export since functions within a file are unexported by default
-exp fun foo {
-    display ("Hello from another file")
-}
-```
-
-*sail.fish*
-```
-// denotes find in relative file path
-include ./foo
-
-start {
-    // utilizing the rust syntax here
-    foo::foo()
-}
-```
-
 ***
 
 ## Development
@@ -165,6 +145,7 @@ NumberLiteral := Integer | Decimal  <br>
 Integer := [0-9]+  <br>
 Decimal  := [0-9]+.[0-9]+  <br>
 StringLiteral := "' ([^"\r\n\\] | '\\' .)* '"'  <br>
+ByteLiteral := '[a-zA-Z]' # todo: fix this <br> 
 Identifier := [a-zA-Z] [a-zA-Z_0-9]*  <br>
 Typename := 'bool' | 'str' | 'int' | 'flt' | 'void'  <br>
 

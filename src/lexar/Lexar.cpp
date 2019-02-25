@@ -86,6 +86,8 @@ Lexar::getNextToken()
                         return new Token(Kind::OPERATION_TOKEN, buffer);
                     case ':':
                         return new Token(Kind::COLON_TOKEN, buffer);
+                    case '|':
+                        return new Token(Kind::PIPE_TOKEN, buffer);
                     case ';':
                         return new Token(Kind::ERROR_TOKEN,
                                          "No semi-colons in sailfish");
@@ -111,12 +113,6 @@ Lexar::getNextToken()
                         break;
                     case '*':
                         state = State::MULTIPLICATION;
-                        break;
-                    case '&':
-                        state = State::AND_PRESTATE;
-                        break;
-                    case '|':
-                        state = State::OR_PRESTATE;
                         break;
                     case '<':
                         state = State::LESS_THAN;
@@ -220,20 +216,6 @@ Lexar::getNextToken()
                 else
                     return createTokenPutback(Kind::OPERATION_TOKEN, c, buffer,
                                               scanner);
-
-            case State::AND_PRESTATE:
-                if (c != '&')
-                    return createTokenPutback(Kind::ERROR_TOKEN, c,
-                                              "& is not a valid token",
-                                              scanner);
-                else
-                    return new Token(Kind::LOGIC_TOKEN, buffer);
-
-            case State::OR_PRESTATE:
-                if (c != '|')
-                    return new Token(Kind::PIPE_TOKEN, buffer);
-                else
-                    return new Token(Kind::LOGIC_TOKEN, buffer);
 
             case State::LESS_THAN:
                 if (c == '=')

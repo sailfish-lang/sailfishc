@@ -564,6 +564,10 @@ Visitor::visit(ast::StringLiteral* node)
 {
 }
 void
+Visitor::visit(ast::ByteLiteral* node)
+{
+}
+void
 Visitor::visit(ast::Identifier* node)
 {
 }

@@ -16,6 +16,7 @@ class Primary
         BooleanLiteral,
         IntegerLiteral,
         FloatLiteral,
+        ByteLiteral,
     };
     virtual PrimaryType getPrimaryType() = 0;
 };

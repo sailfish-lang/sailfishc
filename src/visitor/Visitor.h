@@ -42,6 +42,7 @@ class Visitor
     void visit(ast::ListItem*);
     void visit(ast::IntegerLiteral*);
     void visit(ast::FloatLiteral*);
+    void visit(ast::ByteLiteral*);
     void visit(ast::ExpressionStatement);
     void visit(ast::StringLiteral*);
     void visit(ast::Identifier*);

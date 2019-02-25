@@ -16,6 +16,7 @@
 #include "BinaryLessThanOrEqual.h"
 #include "Block.h"
 #include "BooleanLiteral.h"
+#include "ByteLiteral.h"
 #include "DictionaryDefinition.h"
 #include "DictionaryItem.h"
 #include "DictionaryLiteral.h"
