@@ -178,6 +178,13 @@ Visitor::visit(ast::Expression* node)
         visit(subnode);
         break;
     }
+    case ast::Expression::BinaryExpression:
+    {
+        ast::BinaryExpression* subnode =
+            dynamic_cast<ast::BinaryExpression*>(node);
+        visit(subnode);
+        break;
+    }
     case ast::Expression::ArrayExpression:
     {
         ast::ArrayExpression* subnode =
@@ -464,6 +471,14 @@ void
 Visitor::visit(ast::IfStatement* node)
 {
     std::cout << "At an If Statement\n";
+
+    ast::Expression* ifConditional = node->getIfConditional();
+    ast::Block* ifStatements = node->getIfStatements();
+    ast::Block* elseStatements = node->getElseStatements();
+
+    visit(ifConditional);
+    visit(ifStatements);
+    visit(elseStatements);
 }
 void
 Visitor::visit(ast::ExpressionStatement* node)
@@ -724,76 +739,148 @@ void
 Visitor::visit(ast::Negation* node)
 {
     std::cout << "At a Negation\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Exponentiation* node)
 {
     std::cout << "At a Exponentiation\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Multiplication* node)
 {
-    std::cout << "At a Muktiplication\n";
+    std::cout << "At a Multiplication\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Division* node)
 {
     std::cout << "At a Division\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Modulo* node)
 {
     std::cout << "At a Modulo\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Addition* node)
 {
     std::cout << "At an Addition\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Subtraction* node)
 {
     std::cout << "At a Subtraction\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
+}
+void
+Visitor::visit(ast::BinaryExpression* node)
+{
+    std::cout << "At a BinaryExpression\n";
+
+    std::vector<ast::Expression*> exprs = node->getExpressionList();
+
+    for (auto const& expr : exprs)
+    {
+        visit(expr);
+    }
 }
 void
 Visitor::visit(ast::BinaryGreaterThan* node)
 {
     std::cout << "At a Binary Greater Than\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::BinaryLessThan* node)
 {
     std::cout << "At a Binary Less Than\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::BinaryGreaterThanOrEqual* node)
 {
     std::cout << "At a Binary Greater Than or Equal\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::BinaryLessThanOrEqual* node)
 {
     std::cout << "At a Binary Less Than or Equal\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::EquivalenceComparison* node)
 {
     std::cout << "At a Equivalence Comparison\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::NonEquivalenceComparison* node)
 {
     std::cout << "At a Non Equivalence Comparison\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::AndComparison* node)
 {
     std::cout << "At a And Comparison\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::OrComparison* node)
 {
     std::cout << "At a Or Comparison\n";
+
+    ast::Expression* expr = node->getExpr();
+
+    visit(expr);
 }
 void
 Visitor::visit(ast::Assignment* node)

@@ -9,6 +9,7 @@
 #include "ArrayExpression.h"
 #include "Assignment.h"
 #include "AttributeAccess.h"
+#include "BinaryExpression.h"
 #include "BinaryGreaterThan.h"
 #include "BinaryGreaterThanOrEqual.h"
 #include "BinaryLessThan.h"

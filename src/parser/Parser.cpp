@@ -391,8 +391,8 @@ Parser::parseNewVariableDefinition()
  *               ('+' | '-') Expression|
  *               ('>' | '<' | '>=' | '<=') Expression |
  *               ('==' | '!=') Expression|
- *               '&&' Expression |
- *               '||' Expression |
+ *               'and' Expression |
+ *               'or' Expression |
  *               '=' Expression |
  *               PrimaryExpression
  */
@@ -414,6 +414,13 @@ Parser::parseExpression()
         getNextUsefulToken();
 
         return (ast::Expression*)parseArrayExpression();
+    }
+    else if (tk == "|")
+    {
+        // consume '|'
+        getNextUsefulToken();
+
+        return (ast::Expression*)parseBinaryExpression();
     }
     else if (tk == "." || tk == "...")
     {
@@ -462,6 +469,23 @@ Parser::parseExpression()
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::Modulo(parseExpression());
+        }
+    }
+    else if (tk == "+" || tk == "-")
+    {
+        if (tk == "+")
+        {
+            // consume '+'
+            getNextUsefulToken();
+
+            return (ast::Expression*)new ast::Addition(parseExpression());
+        }
+        else if (tk == "-")
+        {
+            // consume '-'
+            getNextUsefulToken();
+
+            return (ast::Expression*)new ast::Subtraction(parseExpression());
         }
     }
     else if (tk == ">" || tk == "<" || tk == ">=" || tk == "<=")
@@ -517,16 +541,16 @@ Parser::parseExpression()
                 parseExpression());
         }
     }
-    else if (tk == "&&")
+    else if (tk == "and")
     {
-        // consume '&&'
+        // consume 'and'
         getNextUsefulToken();
 
         return (ast::Expression*)new ast::AndComparison(parseExpression());
     }
-    else if (tk == "||")
+    else if (tk == "or")
     {
-        // consume '||'
+        // consume 'or'
         getNextUsefulToken();
 
         return (ast::Expression*)new ast::OrComparison(parseExpression());
@@ -611,6 +635,25 @@ Parser::parseArrayExpression()
 }
 
 /**
+ * BinaryExpression := '|' Expression* '|'
+ */
+ast::BinaryExpression*
+Parser::parseBinaryExpression()
+{
+    std::vector<ast::Expression*> exprs;
+
+    while (currentToken->getKind() != Kind::PIPE_TOKEN)
+    {
+        exprs.push_back(parseExpression());
+    }
+
+    // consume '|'
+    getNextUsefulToken();
+
+    return new ast::BinaryExpression(exprs);
+}
+
+/**
  * MemberAccess := '.' Identifier
  */
 ast::MemberAccess*
@@ -633,7 +676,7 @@ Parser::parseMemberAccess()
 }
 
 /**
- *
+ * AttributeAccess := '...' Identifier
  */
 ast::AttributeAccess*
 Parser::parseAttributeAccess()
@@ -647,7 +690,7 @@ Parser::parseAttributeAccess()
 }
 
 /**
- *
+ * MethodAccess := '...' Identifier FunctionCall
  */
 ast::MethodAccess*
 Parser::parseMethodAccess()
@@ -910,13 +953,11 @@ Parser::parseIfStatement()
 {
     ast::Expression* ifExpr = parseExpression();
 
-    // move to next token
-    getNextUsefulToken();
-
     ast::Block* ifStatements = parseBlock();
 
     // skip 'else'
     getNextUsefulToken();
+
     ast::Block* elseStatements = parseBlock();
 
     return new ast::IfStatement(ifExpr, ifStatements, elseStatements);

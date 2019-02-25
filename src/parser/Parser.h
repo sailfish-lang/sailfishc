@@ -50,6 +50,8 @@ class Parser
 
     ast::ArrayExpression* parseArrayExpression();
 
+    ast::BinaryExpression* parseBinaryExpression();
+
     ast::MemberAccess* parseMemberAccess();
     ast::AttributeAccess* parseAttributeAccess();
     ast::MethodAccess* parseMethodAccess();

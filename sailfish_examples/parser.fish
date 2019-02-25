@@ -52,7 +52,7 @@ start {
      }
 
      {
-         return ["Hello"]
+         return ["Hello"]   
      }
 
      */
@@ -60,8 +60,9 @@ start {
     //dec list someNonExportList = new [1,2,3]
     //dec dictionary someNonExportDict = new {1 : "hello", 2: "world"}
 
-    foo.bar
+    // foo.bar
 
-    foo...bar(a, z, aiddjdjd,d jd,a)
+    // foo...bar(a, z, aiddjdjd,d jd,a)
+
+    a = 1 + 2 - 3
 }
-

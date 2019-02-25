@@ -231,9 +231,7 @@ Lexar::getNextToken()
 
             case State::OR_PRESTATE:
                 if (c != '|')
-                    return createTokenPutback(Kind::ERROR_TOKEN, c,
-                                              "| is not a valid token",
-                                              scanner);
+                    return new Token(Kind::PIPE_TOKEN, buffer);
                 else
                     return new Token(Kind::LOGIC_TOKEN, buffer);
 

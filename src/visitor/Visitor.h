@@ -54,6 +54,7 @@ class Visitor
     void visit(ast::Modulo*);
     void visit(ast::Addition*);
     void visit(ast::Subtraction*);
+    void visit(ast::BinaryExpression*);
     void visit(ast::BinaryGreaterThan*);
     void visit(ast::BinaryLessThan*);
     void visit(ast::BinaryGreaterThanOrEqual*);

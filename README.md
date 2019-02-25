@@ -120,6 +120,7 @@ ReturnStatement := 'return' Expression  <br>
 
 Expression := NewExpression |
               ArrayExpression |
+              BinaryExpression |
               MemberAccess |
               FunctionCall |
               '!' Expression |
@@ -128,9 +129,9 @@ Expression := NewExpression |
                ('+' | '-') Expression|
                ('>' | '<' | '>=' | '<=') Expression |
                ('==' | '!=') Expression|
-               '&&' Expression |
-               '||' Expression |
-               '=' Expression | 
+               'and' Expression |
+               'or' Expression |
+              Assignment | 
               PrimaryExpression  <br>
 
 NewExpression := New
@@ -138,11 +139,15 @@ New := ListLiteral | DictionaryLiteral
 
 ArrayExpression := '[' Expression (',' Expression)* ']'  <br>
 
+BinaryExpression := '|' Expression* '|'
+
 MemberAccess := AttributeAccess | MethodAccess  <br>
-AttributeAccess := '...' Identifier 
-MethodAccess := '.' Identifier FunctionCall
+AttributeAccess := '.' Identifier 
+MethodAccess := '...' Identifier FunctionCall
 
 FunctionCall := '(' [Expression] (',' Expression)*')'  <br>
+
+Assignment := '=' Expression
 
 PrimaryExpression := Primary  <br>
 

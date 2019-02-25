@@ -17,6 +17,10 @@ Token::Token(Kind k, std::string v)
             kind = KEYWORD_TOKEN;
         else if (v == "start")
             kind = START_TOKEN;
+        else if (v == "and" || v == "or")
+        {
+            kind = OPERATION_TOKEN;
+        }
     }
     value = v;
 }
@@ -70,6 +74,8 @@ kindToString(Kind k)
         return "Triple Dot";
     case COLON_TOKEN:
         return "Colon";
+    case PIPE_TOKEN:
+        return "Pipe";
     case ERROR_TOKEN:
         return "Error";
     case EOF_TOKEN:

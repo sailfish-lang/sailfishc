@@ -30,6 +30,7 @@ enum Kind
     ERROR_TOKEN,
     DOT_TOKEN,
     TRIPLE_DOT_TOKEN,
+    PIPE_TOKEN,
     COLON_TOKEN,
     EOF_TOKEN,
 };

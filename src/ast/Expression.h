@@ -12,6 +12,7 @@ class Expression
     enum ExpressionType
     {
         ArrayExpression,
+        BinaryExpression,
         MemberAccess,
         FunctionCallExpression,
         PrimaryExpression,
