@@ -7,7 +7,7 @@
 
 // -------       General Decleration       ------- //
 // dec flt someNonExportFlt = 10.0
-// dec list someNonExportList = new [1,2,3]
+ // dec list someNonExportList = new [1,2,3]
 // dec dictionary someNonExportDict = new {1 : "hello", 2: "world"}
 
 // -------       Function Definition       ------- //
@@ -42,17 +42,19 @@
 
 // -------       Initial Execution Body       ------- //
 start {
-    {
-        // nest two blocks
-       {
-           {
+     dec flt someList = 10.0
 
-           }
-       }
-        
-        // nest another block
-       {
-           return true
-       }
-    }
+     {
+         {
+
+         }
+     }
+
+     {
+         return ["Hello"]
+     }
+
+    //dec list someNonExportList = new [1,2,3]
+    //dec dictionary someNonExportDict = new {1 : "hello", 2: "world"}
+
 }

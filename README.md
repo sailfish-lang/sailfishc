@@ -113,14 +113,13 @@ InitialExecutionBody := 'start' 'Block  <br>
 
 Block := '{' Statement* '}'  <br>
 
-Statement := IfStatement |  Block | SimpleStatement  | ReturnStatement  <br>
+Statement := IfStatement |  Block  | ReturnStatement  | General Decleration | ExpressionStatement<br>
 IfStatement := 'if' Expression Block 'else' Block  <br>
-SimpleStatement := GeneralDefinition | ExpressionStatement  <br>
 ExpressionStatement := Expression  <br>
 ReturnStatement := 'return' Expression  <br>
 
 Expression := NewExpression |
-              IndexAccess |
+              ArrayExpression |
               MemberAccess |
               FunctionCall |
               '!' Expression |
@@ -137,7 +136,7 @@ Expression := NewExpression |
 NewExpression := New
 New := ListLiteral | DictionaryLiteral
 
-IndexAccess := '[' IntegerLiteral ']'  <br>
+ArrayExpression := '[' Expression (',' Expression)* ']'  <br>
 MemberAccess := '.' Identifier  <br>
 
 FunctionCall := '(' [Expression] (',' Expression)*')'  <br>

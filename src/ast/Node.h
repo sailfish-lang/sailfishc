@@ -6,6 +6,7 @@
 
 #include "Addition.h"
 #include "AndComparison.h"
+#include "ArrayExpression.h"
 #include "Assignment.h"
 #include "BinaryGreaterThan.h"
 #include "BinaryGreaterThanOrEqual.h"
@@ -30,7 +31,6 @@
 #include "GeneralDefinition.h"
 #include "Identifier.h"
 #include "IfStatement.h"
-#include "IndexAccess.h"
 #include "InitialExecutionBody.h"
 #include "Input.h"
 #include "IntegerLiteral.h"
@@ -51,7 +51,6 @@
 #include "Primary.h"
 #include "PrimaryExpression.h"
 #include "ReturnStatement.h"
-#include "SimpleStatement.h"
 #include "Source.h"
 #include "SourcePart.h"
 #include "Start.h"

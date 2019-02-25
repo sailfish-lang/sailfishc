@@ -21,8 +21,6 @@ Parser::getNextUsefulToken()
     {
         currentToken = lexar->getNextToken();
     }
-    std::cout << "\n HERE: ";
-    currentToken->display();
 }
 
 // public method utilized by external classes to parse a given file
@@ -64,8 +62,6 @@ Parser::parseSource()
         {
             srcParts.push_back(srcPart);
         }
-
-        getNextUsefulToken();
     }
 
     return new ast::Source(srcParts);
@@ -251,10 +247,6 @@ Parser::parseGeneralDefinition()
     else if (val == "bool" || val == "str" || val == "int" || val == "flt" ||
              val == "void")
     {
-        // since the lexar actually catches these types, we can consume the type
-        // keywords here
-        getNextUsefulToken();
-
         return (ast::GeneralDefinition*)parseNewVariableDefinition();
     }
 }
@@ -367,7 +359,7 @@ Parser::parseDictionaryDefinition()
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue());
 
-    // move to next token
+    // consume identifier
     getNextUsefulToken();
 
     ast::Expression* expr = parseExpression();
@@ -382,13 +374,14 @@ ast::NewVariableDefinition*
 Parser::parseNewVariableDefinition()
 {
     ast::Variable* var = parseVariable();
+
     ast::Expression* expr = (ast::Expression*)parseExpression();
 
     return new ast::NewVariableDefinition(var, expr);
 }
 
 /**
- * Expression := IndexAccess |
+ * Expression := ArrayExpression |
  *               MemberAccess |
  *               FunctionCall |
  *               '(' ')' |
@@ -409,42 +402,42 @@ Parser::parseExpression()
     std::string tk = currentToken->getValue();
     if (tk == "new")
     {
-        // skip 'new'
+        // consume 'new'
         getNextUsefulToken();
 
         return (ast::Expression*)parseNewExpression();
     }
     else if (tk == "[")
     {
-        // skip '['
+        // consume '['
         getNextUsefulToken();
 
-        return (ast::Expression*)parseIndexAccess();
+        return (ast::Expression*)parseArrayExpression();
     }
     else if (tk == ".")
     {
-        // skip '.'
+        // consume '.'
         getNextUsefulToken();
 
         return (ast::Expression*)parseMemberAccess();
     }
     else if (tk == "(")
     {
-        // skip '('
+        // consume '('
         getNextUsefulToken();
 
         return (ast::Expression*)parseFunctionCall();
     }
     else if (tk == "!")
     {
-        // skip '!'
+        // consume '!'
         getNextUsefulToken();
 
         return (ast::Expression*)new ast::Negation(parseExpression());
     }
     else if (tk == "**")
     {
-        // skip '**'
+        // consume '**'
         getNextUsefulToken();
 
         return (ast::Expression*)new ast::Exponentiation(parseExpression());
@@ -453,21 +446,21 @@ Parser::parseExpression()
     {
         if (tk == "*")
         {
-            // skip '*'
+            // consume '*'
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::Multiplication(parseExpression());
         }
         else if (tk == "/")
         {
-            // skip '/'
+            // consume '/'
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::Division(parseExpression());
         }
         else if (tk == "%")
         {
-            // skip '%'
+            // consume '%'
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::Modulo(parseExpression());
@@ -477,7 +470,7 @@ Parser::parseExpression()
     {
         if (tk == ">")
         {
-            // skip '=='
+            // consume '=='
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::BinaryGreaterThan(
@@ -492,7 +485,7 @@ Parser::parseExpression()
         }
         else if (tk == ">=")
         {
-            // skip '>='
+            // consume '>='
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::BinaryGreaterThanOrEqual(
@@ -500,7 +493,7 @@ Parser::parseExpression()
         }
         else if (tk == "<=")
         {
-            // skip '<='
+            // consume '<='
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::BinaryLessThanOrEqual(
@@ -511,7 +504,7 @@ Parser::parseExpression()
     {
         if (tk == "==")
         {
-            // skip '=='
+            // consume '=='
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::EquivalenceComparison(
@@ -519,7 +512,7 @@ Parser::parseExpression()
         }
         else
         {
-            // skip '!='
+            // consume '!='
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::NonEquivalenceComparison(
@@ -528,21 +521,21 @@ Parser::parseExpression()
     }
     else if (tk == "&&")
     {
-        // skip '&&'
+        // consume '&&'
         getNextUsefulToken();
 
         return (ast::Expression*)new ast::AndComparison(parseExpression());
     }
     else if (tk == "||")
     {
-        // skip '||'
+        // consume '||'
         getNextUsefulToken();
 
         return (ast::Expression*)new ast::OrComparison(parseExpression());
     }
     else if (tk == "=")
     {
-        // skip '=='
+        // consume '='
         getNextUsefulToken();
 
         return (ast::Expression*)new ast::Assignment(parseExpression());
@@ -570,37 +563,53 @@ Parser::parseNewExpression()
 ast::New*
 Parser::parseNew()
 {
-    std::string tk = currentToken->getValue();
+    Kind kind = currentToken->getKind();
 
-    // consume current token
-    getNextUsefulToken();
-
-    if (tk == "[")
+    if (kind == Kind::LBRACKET_TOKEN)
     {
+        // consume '['
+        getNextUsefulToken();
         return (ast::New*)parseListLiteral();
     }
-    else if (tk == "{")
+    else if (kind == Kind::LCURLEY_TOKEN)
     {
+        // consume '{'
+        getNextUsefulToken();
         return (ast::New*)parseDictionaryLiteral();
     }
 }
 
 /**
- * IndexAccess := '[' IntegerLiteral ']'
+ * ArrayExpression := '[' Expression (',' Expression)* ']'
  */
-ast::IndexAccess*
-Parser::parseIndexAccess()
+ast::ArrayExpression*
+Parser::parseArrayExpression()
 {
-    ast::IntegerLiteral* index =
-        new ast::IntegerLiteral(currentToken->getValue());
+    bool canBeIndex = true;
 
-    // move to next token
+    // if first element is not an integer it can't be an index access
+    if (currentToken->getKind() != Kind::INTEGER_TOKEN)
+    {
+        canBeIndex = false;
+    }
+
+    std::vector<ast::Expression*> exprs;
+
+    while (currentToken->getKind() != Kind::RBRACKET_TOKEN)
+    {
+        exprs.push_back(parseExpression());
+    }
+
+    // if more than one expression in list, it cannot be an index access
+    if (exprs.size() != 1)
+    {
+        canBeIndex = false;
+    }
+
+    // consume ']'
     getNextUsefulToken();
 
-    // skip closing bracker
-    getNextUsefulToken();
-
-    return new ast::IndexAccess(index);
+    return new ast::ArrayExpression(exprs, canBeIndex);
 }
 
 /**
@@ -652,25 +661,28 @@ Parser::parsePrimary()
     std::string tk = currentToken->getValue();
     Kind kind = currentToken->getKind();
 
+    // consume all since they are captured above
+    getNextUsefulToken();
+
     if (tk == "true" || tk == "false")
     {
         return (ast::Primary*)new ast::BooleanLiteral(tk);
     }
     else if (kind == Kind::INTEGER_TOKEN)
     {
-        return (ast::Primary*)new ast::IntegerLiteral(currentToken->getValue());
+        return (ast::Primary*)new ast::IntegerLiteral(tk);
     }
     else if (kind == Kind::FLOAT_TOKEN)
     {
-        return (ast::Primary*)new ast::FloatLiteral(currentToken->getValue());
+        return (ast::Primary*)new ast::FloatLiteral(tk);
     }
     else if (kind == Kind::STRING_TOKEN)
     {
-        return (ast::Primary*)new ast::StringLiteral(currentToken->getValue());
+        return (ast::Primary*)new ast::StringLiteral(tk);
     }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
-        return (ast::Primary*)new ast::Identifier(currentToken->getValue());
+        return (ast::Primary*)new ast::Identifier(tk);
     }
 }
 
@@ -686,6 +698,9 @@ Parser::parseDictionaryLiteral()
     {
         dictionaryItems.push_back(parseDictionaryItem());
     }
+
+    // consume '}'
+    getNextUsefulToken();
 
     return new ast::DictionaryLiteral(dictionaryItems);
 }
@@ -723,10 +738,10 @@ Parser::parseListLiteral()
     while (currentToken->getKind() != Kind::RBRACKET_TOKEN)
     {
         listItems.push_back(parseListItem());
-
-        // move on to next token
-        getNextUsefulToken();
     }
+
+    // consume ']'
+    getNextUsefulToken();
 
     return new ast::ListLiteral(listItems);
 }
@@ -738,6 +753,8 @@ ast::ListItem*
 Parser::parseListItem()
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    // move on to next token
+    getNextUsefulToken();
 
     return new ast::ListItem(name);
 }
@@ -759,9 +776,13 @@ Parser::parseVariable()
 
     ast::Typename* type = new ast::Typename(currentToken->getValue());
 
+    // consume typename
     getNextUsefulToken();
 
     ast::Identifier* id = new ast::Identifier(currentToken->getValue());
+
+    // consume identifier
+    getNextUsefulToken();
 
     return new ast::Variable(type, id);
 }
@@ -772,7 +793,6 @@ Parser::parseVariable()
 ast::Block*
 Parser::parseBlock()
 {
-    std::cout << "parse block\n";
     std::vector<ast::Statement*> statements;
 
     // consume '{'
@@ -794,18 +814,19 @@ Parser::parseBlock()
  * Statement := IfStatement |
  *              Block |
  *              ReturnStatement |
- *              SimpleStatement
+ *              GeneralDecleration |
+ *              ExpressionStatement
  */
 ast::Statement*
 Parser::parseStatement()
 {
-    std::cout << "At Statement\n";
-    currentToken->display();
     std::string tk = currentToken->getValue();
 
     if (tk == "if")
     {
+        // consume 'if'
         getNextUsefulToken();
+
         return (ast::Statement*)parseIfStatement();
     }
     else if (tk == "{")
@@ -814,12 +835,21 @@ Parser::parseStatement()
     }
     else if (tk == "return")
     {
+        // consume 'return'
+        getNextUsefulToken();
+
         return (ast::Statement*)parseReturnStatement();
+    }
+    else if (tk == "dec")
+    {
+        // consume 'dec'
+        getNextUsefulToken();
+
+        return (ast::Statement*)parseGeneralDecleration();
     }
     else
     {
-        getNextUsefulToken();
-        return (ast::Statement*)parseSimpleStatement();
+        return (ast::Statement*)parseExpressionStatement();
     }
 }
 
@@ -844,29 +874,6 @@ Parser::parseIfStatement()
 }
 
 /**
- * SimpleStatement := GeneralDefinition |
- *                    ExpressionStatement
- */
-ast::SimpleStatement*
-Parser::parseSimpleStatement()
-{
-    std::string tk = currentToken->getValue();
-    Kind kind = currentToken->getKind();
-
-    if (kind == Kind::KEYWORD_TOKEN && tk == "dec")
-    {
-        // move over 'dec'
-        getNextUsefulToken();
-
-        return (ast::SimpleStatement*)parseGeneralDefinition();
-    }
-    else
-    {
-        return (ast::SimpleStatement*)parseExpressionStatement();
-    }
-}
-
-/**
  *
  */
 ast::ExpressionStatement*
@@ -881,14 +888,7 @@ Parser::parseExpressionStatement()
 ast::ReturnStatement*
 Parser::parseReturnStatement()
 {
-    std::cout << "REYTRUNUNRUNR!\n";
-    // consume 'return'
-    getNextUsefulToken();
-
     ast::Expression* expr = parseExpression();
-
-    // consume leftover
-    getNextUsefulToken();
 
     return new ast::ReturnStatement(expr);
 }

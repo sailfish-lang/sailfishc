@@ -178,9 +178,10 @@ Visitor::visit(ast::Expression* node)
         visit(subnode);
         break;
     }
-    case ast::Expression::IndexAccess:
+    case ast::Expression::ArrayExpression:
     {
-        ast::IndexAccess* subnode = dynamic_cast<ast::IndexAccess*>(node);
+        ast::ArrayExpression* subnode =
+            dynamic_cast<ast::ArrayExpression*>(node);
         visit(subnode);
         break;
     }
@@ -436,16 +437,23 @@ Visitor::visit(ast::Block* node)
             visit(subnode);
             break;
         }
-        case ast::Statement::SimpleStatement:
-        {
-            ast::SimpleStatement* subnode =
-                dynamic_cast<ast::SimpleStatement*>(statement);
-            visit(subnode);
-            break;
-        }
         case ast::Statement::BlockStatement:
         {
             ast::Block* subnode = dynamic_cast<ast::Block*>(statement);
+            visit(subnode);
+            break;
+        }
+        case ast::Statement::GeneralDecleration:
+        {
+            ast::GeneralDecleration* subnode =
+                dynamic_cast<ast::GeneralDecleration*>(statement);
+            visit(subnode);
+            break;
+        }
+        case ast::Statement::ExpressionStatement:
+        {
+            ast::ExpressionStatement* subnode =
+                dynamic_cast<ast::ExpressionStatement*>(statement);
             visit(subnode);
             break;
         }
@@ -456,11 +464,6 @@ void
 Visitor::visit(ast::IfStatement* node)
 {
     std::cout << "At an If Statement\n";
-}
-void
-Visitor::visit(ast::SimpleStatement* node)
-{
-    std::cout << "At a Simple Statement\n";
 }
 void
 Visitor::visit(ast::ExpressionStatement* node)
@@ -501,9 +504,19 @@ Visitor::visit(ast::NewExpression* node)
     }
 }
 void
-Visitor::visit(ast::IndexAccess* node)
+Visitor::visit(ast::ArrayExpression* node)
 {
-    std::cout << "At a Index Access\n";
+    std::cout << "At an Array Expression\n";
+
+    bool canBeIndexAccess = node->getCanBeIndexAccess();
+    std::vector<ast::Expression*> expressionList = node->getExpressionList();
+
+    std::cout << "Possible indexing: " << canBeIndexAccess << '\n';
+
+    for (auto const& expression : expressionList)
+    {
+        visit(expression);
+    }
 }
 void
 Visitor::visit(ast::MemberAccess* node)

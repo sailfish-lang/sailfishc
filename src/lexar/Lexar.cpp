@@ -86,6 +86,8 @@ Lexar::getNextToken()
                         return new Token(Kind::RPAREN_TOKEN, buffer);
                     case '%':
                         return new Token(Kind::OPERATION_TOKEN, buffer);
+                    case ':':
+                        return new Token(Kind::COLON_TOKEN, buffer);
                     case ';':
                         return new Token(Kind::ERROR_TOKEN,
                                          "No semi-colons in sailfish");

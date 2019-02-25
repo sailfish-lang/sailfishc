@@ -12,8 +12,9 @@ class Statement
     {
         IfStatement,
         ReturnStatement,
-        SimpleStatement,
         BlockStatement,
+        GeneralDecleration,
+        ExpressionStatement,
     };
     virtual StatementType getStatementType() = 0;
 };

@@ -6,10 +6,13 @@
 #include "Exportable.h"
 #include "GeneralDefinition.h"
 #include "SourcePart.h"
+#include "Statement.h"
 
 namespace ast
 {
-class GeneralDecleration : public SourcePart, public Exportable
+class GeneralDecleration : public SourcePart,
+                           public Exportable,
+                           public Statement
 {
   private:
     GeneralDefinition* definition;
@@ -31,6 +34,12 @@ class GeneralDecleration : public SourcePart, public Exportable
     getExportableType()
     {
         return ExportableType::GeneralDecleration;
+    }
+    // implement Statement
+    /* virtual */ StatementType
+    getStatementType()
+    {
+        return StatementType::GeneralDecleration;
     }
     // get methods
     GeneralDefinition*

@@ -48,7 +48,7 @@ class Parser
     ast::NewExpression* parseNewExpression();
     ast::New* parseNew();
 
-    ast::IndexAccess* parseIndexAccess();
+    ast::ArrayExpression* parseArrayExpression();
     ast::MemberAccess* parseMemberAccess();
     ast::FunctionCall* parseFunctionCall();
     ast::PrimaryExpression* parsePrimaryExpression();
@@ -65,7 +65,6 @@ class Parser
 
     ast::Statement* parseStatement();
     ast::IfStatement* parseIfStatement();
-    ast::SimpleStatement* parseSimpleStatement();
     ast::ReturnStatement* parseReturnStatement();
     ast::ExpressionStatement* parseExpressionStatement();
 

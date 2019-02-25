@@ -11,7 +11,7 @@ class Expression
   public:
     enum ExpressionType
     {
-        IndexAccess,
+        ArrayExpression,
         MemberAccess,
         FunctionCall,
         PrimaryExpression,

@@ -4,12 +4,12 @@
  */
 #pragma once
 #include "Expression.h"
-#include "SimpleStatement.h"
+#include "Statement.h"
 #include <string>
 
 namespace ast
 {
-class ExpressionStatement : public SimpleStatement
+class ExpressionStatement : public Statement
 {
   private:
     Expression* Expr;
@@ -17,11 +17,11 @@ class ExpressionStatement : public SimpleStatement
   public:
     // constructor
     ExpressionStatement(){};
-    // implement SimpleStatement
-    /* virtual */ SimpleStatementType
-    getSimpleStatementType()
+    // implement Statement
+    /* virtual */ StatementType
+    getStatementType()
     {
-        return SimpleStatementType::ExpressionStatement;
+        return StatementType::ExpressionStatement;
     }
 };
 }

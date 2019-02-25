@@ -4,13 +4,12 @@
  */
 #pragma once
 #include "Exportable.h"
-#include "SimpleStatement.h"
 #include "SourcePart.h"
 #include <string>
 
 namespace ast
 {
-class ExportDefinition : public SourcePart, public SimpleStatement
+class ExportDefinition : public SourcePart
 {
   private:
     Exportable* exprt;
@@ -26,12 +25,6 @@ class ExportDefinition : public SourcePart, public SimpleStatement
     getSourcePartType()
     {
         return SourcePartType::ExportDefinition;
-    }
-    // implementation for SimpleStatement
-    /* virutal */ SimpleStatementType
-    getSimpleStatementType()
-    {
-        return SimpleStatementType::ExportDefinition;
     }
     // get methods
     Exportable*
