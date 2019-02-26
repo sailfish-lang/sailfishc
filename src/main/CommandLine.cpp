@@ -5,7 +5,6 @@
 #include "../ast/Ast.h"
 #include "../lexar/Lexar.h"
 #include "../parser/Parser.h"
-#include "../visitor/InitialExecution.h"
 #include "../visitor/Visitor.h"
 #include <iostream>
 #include <string>
@@ -94,7 +93,7 @@ handleCommandLine(int argc, char* const* argv)
             Parser* p = new Parser();
             ast::Start* root = p->parse(filename);
 
-            InitialExecution* v = new InitialExecution();
+            Visitor* v = new Visitor();
             v->visit(root);
         }
 

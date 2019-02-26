@@ -5,9 +5,7 @@
 #pragma once
 #include "../ast/Ast.h"
 #include "../lexar/Lexar.h"
-#include "../lexar/Token.h"
 #include <string>
-#include <vector>
 
 class Parser
 {
