@@ -5,7 +5,7 @@
 #include "../ast/Ast.h"
 #include "../lexar/Lexar.h"
 #include "../parser/Parser.h"
-#include "../visitor/Visitor.h"
+#include "../visitor/InitialExecution.h"
 #include <iostream>
 #include <string>
 
@@ -93,8 +93,9 @@ handleCommandLine(int argc, char* const* argv)
             Parser* p = new Parser();
             ast::Start* root = p->parse(filename);
 
-            Visitor* v = new Visitor();
-            v->visit(root);
+            InitialExecution* v = new InitialExecution();
+            std::cout << "Has an execution body: " << v->hasInitExecBody(root)
+                      << '\n';
         }
 
         return 1;
