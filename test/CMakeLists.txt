@@ -5,6 +5,9 @@ ADD_LIBRARY(SailfishcLibs
     ../src/lexar/Lexar.cpp
     ../src/lexar/Scanner.cpp
     ../src/lexar/Token.cpp
+    ../src/parser/Parser.cpp
+    ../src/visitor/InOrderTraversal.cpp
+    ../src/visitor/Visitor.cpp
 )
 
 # Locate GTest

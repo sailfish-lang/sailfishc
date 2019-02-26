@@ -170,9 +170,6 @@ Parser::parseFunctionDefintion()
     while (currentToken->getKind() != Kind::ARROW_TOKEN)
     {
         inputs.push_back(parseInput());
-
-        // consume leftover token from parseInput()
-        getNextUsefulToken();
     }
 
     // consume '->'
@@ -182,9 +179,6 @@ Parser::parseFunctionDefintion()
     while (currentToken->getKind() != Kind::LCURLEY_TOKEN)
     {
         outputs.push_back(parseOutput());
-
-        // consume leftover token from parseOutput()
-        getNextUsefulToken();
     }
 
     ast::Block* body = parseBlock();
@@ -210,6 +204,9 @@ ast::Output*
 Parser::parseOutput()
 {
     ast::Typename* type = new ast::Typename(currentToken->getValue());
+
+    // consume typename
+    getNextUsefulToken();
 
     return new ast::Output(type);
 }
@@ -291,7 +288,6 @@ Parser::UserDefinedTypeAttributes()
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
         attributes.push_back(parseVariable());
-        getNextUsefulToken();
     }
 
     // consume '}'
@@ -325,7 +321,7 @@ Parser::UserDefinedTypeMethods()
         methods.push_back(parseFunctionDefintion());
 
         // consume last token leftover from parseFunctionDefinition()
-        getNextUsefulToken();
+        // getNextUsefulToken();
     }
 
     // skip '}'
@@ -886,6 +882,10 @@ Parser::parseVariable()
     {
         ast::Typename* type = new ast::Typename("void");
         ast::Identifier* id = new ast::Identifier("void");
+
+        // consume void
+        getNextUsefulToken();
+
         return new ast::Variable(type, id);
     }
 

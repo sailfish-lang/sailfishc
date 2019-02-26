@@ -1,68 +1,34 @@
-/* Entirety here is source, made of source parts */
+// export definition
+exp dec dictionary someDict = new {1 : "hello"}
 
-// --------        Export Definition      ------- //
-// exp dec flt someFlt = 10.0
-// exp dec list someList = new [1,2,3]
-// exp dec dictionary someDict = new {1 : "hello", 2: "world"}
+// general decleration
+dec list someList = new [1, 2]
 
-// -------       General Decleration       ------- //
-// dec flt someNonExportFlt = 10.0
- // dec list someNonExportList = new [1,2,3]
-// dec dictionary someNonExportDict = new {1 : "hello", 2: "world"}
+// function
+fun someFunc
+<- int i
+-> void
+{}
 
-// -------       Function Definition       ------- //
-/*
-    fun foo
-        <- int i, flt f, str s
-        -> str, float
-    {}
-*/
-
-// -------       User Defined Type Definition       ------- //
-/*
-    Cat FooS {
-            int someInt
-            flt someFloat
-            str SomeString
-    }
-
-    Cfn FooS {
-   
-        fun bar
-            <- void
-            -> void
-            {}
-
-        fun baz
-            <- int inty, void, flt flty
-            -> void
-            {}
-    }
-*/
-
-// -------       Initial Execution Body       ------- //
-start {
-    /*
-     dec flt someList = 10.0
-
-     {
-         {
-
-         }
-     }
-
-     {
-         return ["Hello"]   
-     }
-
-     */
-
-    //dec list someNonExportList = new [1,2,3]
-    //dec dictionary someNonExportDict = new {1 : "hello", 2: "world"}
-
-    // foo.bar
-
-    // foo...bar(a, z, aiddjdjd,d jd,a)
-
-    a = 1 + 2 - 3
+// user defined type
+Cat Foo {
+    str s
 }
+Cfn Foo {
+    fun s
+    <- void
+    -> int
+    {}
+}
+
+// initial execution body
+start {
+    dec flt someFlt = 10.0
+    if |1 == 2 and true or '\n' > "Hello World" < 4 >= 5 <= 1 != 0| {
+        someFlt = 10 + 1 - 7 % 2 * 5 / someList[1]
+        return Foo.s
+    } else {
+        return Foo...s(someFlt)
+    }
+}
+

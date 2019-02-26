@@ -5,7 +5,7 @@
 #include "../ast/Ast.h"
 #include "../lexar/Lexar.h"
 #include "../parser/Parser.h"
-#include "../visitor/InitialExecution.h"
+#include "../visitor/InOrderTraversal.h"
 #include <iostream>
 #include <string>
 
@@ -93,9 +93,12 @@ handleCommandLine(int argc, char* const* argv)
             Parser* p = new Parser();
             ast::Start* root = p->parse(filename);
 
-            InitialExecution* v = new InitialExecution();
-            std::cout << "Has an execution body: " << v->hasInitExecBody(root)
-                      << '\n';
+            InOrderTraversal* v = new InOrderTraversal();
+
+            for (auto const& a : v->getInOrderTraversal(root))
+            {
+                std::cout << a << '\n';
+            }
         }
 
         return 1;

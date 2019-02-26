@@ -6,6 +6,7 @@
 #include "../src/ast/Ast.h"
 #include "../src/lexar/Lexar.h"
 #include "../src/parser/Parser.h"
+#include "../src/visitor/InOrderTraversal.h"
 #include <gtest/gtest.h>
 
 TEST(LexarTest, HelloWorld)
@@ -68,8 +69,118 @@ TEST(LexarTest, Nonsense)
 
 TEST(ParserTest, AllTokens)
 {
+    static const std::string expected[] = {
+        "Identifier",
+        "Identifier",
+        "Identifier",
+        "DictionaryItem",
+        "DictionaryLiteral",
+        "NewExpression",
+        "Assignment",
+        "DictionaryDefinition",
+        "ExportDefinition",
+        "Identifier",
+        "Identifier",
+        "ListItem",
+        "Identifier",
+        "ListItem",
+        "ListLiteral",
+        "NewExpression",
+        "Assignment",
+        "ListDefinition",
+        "Identifier",
+        "Identifier",
+        "Typename",
+        "Variable",
+        "Input",
+        "Typename",
+        "Output",
+        "FunctionDefinition",
+        "Identifier",
+        "Identifier",
+        "Typename",
+        "Variable",
+        "UserDefinedTypeAttributes",
+        "Identifier",
+        "Identifier",
+        "Identifier",
+        "Typename",
+        "Variable",
+        "Input",
+        "Typename",
+        "Output",
+        "FunctionDefinition",
+        "UserDefinedTypeMethods",
+        "UserDefinedTypeDefinition",
+        "Identifier",
+        "Typename",
+        "Variable",
+        "FloatLiteral",
+        "Assignment",
+        "NewVariableDefinition",
+        "IntegerLiteral",
+        "IntegerLiteral",
+        "EquivalenceComparison",
+        "BooleanLiteral",
+        "AndComparison",
+        "OrComparison",
+        "StringLiteral",
+        "BinaryGreaterThan",
+        "IntegerLiteral",
+        "BinaryLessThan",
+        "IntegerLiteral",
+        "BinaryGreaterThanOrEqual",
+        "IntegerLiteral",
+        "BinaryLessThanOrEqual",
+        "IntegerLiteral"
+        "NonEquivalenceComparison",
+        "Identifier",
+        "ExpressionStatement",
+        "IntegerLiteral",
+        "Assignment",
+        "ExpressionStatement",
+        "IntegerLiteral",
+        "Addition",
+        "ExpressionStatement",
+        "IntegerLiteral",
+        "Subtraction",
+        "ExpressionStatement",
+        "IntegerLiteral",
+        "Modulo",
+        "ExpressionStatement",
+        "IntegerLiteral",
+        "Multiplication",
+        "ExpressionStatement",
+        "IntegerLiteral",
+        "Division",
+        "ExpressionStatement",
+        "Identifier",
+        "ReturnStatement",
+        "Identifier",
+        "AttributeAccess",
+        "ExpressionStatement",
+        "IntegerLiteral",
+        "ArrayExpression",
+        "ExpressionStatement",
+        "Identifier",
+        "ReturnStatement",
+        "Identifier",
+        "Identifier",
+        "FunctionCall",
+        "MethodAccess",
+        "ExpressionStatement",
+        "IfStatement",
+        "InitialExecutionBody",
+    };
+
     Parser* parser = new Parser();
-    ast::Start* start = parser->parse("../sailfish_examples/parser.fish");
+    ast::Start* root = parser->parse("../sailfish_examples/parser.fish");
+
+    InOrderTraversal* v = new InOrderTraversal();
+
+    for (auto const& a : v->getInOrderTraversal(root))
+    {
+    }
 }
 
 int
