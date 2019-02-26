@@ -5,7 +5,7 @@
 #include "Token.h"
 #include <iostream>
 #include <string>
-Token::Token(Kind k, std::string v)
+Token::Token(Kind k, std::string v, int i, int c)
 {
     kind = k;
     // handle keywords and start tokens
@@ -23,6 +23,8 @@ Token::Token(Kind k, std::string v)
             kind = BOOL_TOKEN;
     }
     value = v;
+    lineNum = i;
+    colNum = c;
 }
 
 std::string
@@ -107,4 +109,16 @@ std::string
 Token::getValue()
 {
     return value;
+}
+
+int
+Token::getLineNum()
+{
+    return lineNum;
+}
+
+int
+Token::getColNum()
+{
+    return colNum;
 }

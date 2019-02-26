@@ -41,10 +41,12 @@ class Token
   private:
     std::string value;
     Kind kind;
+    int lineNum;
+    int colNum;
 
   public:
     // constructor
-    Token(Kind, std::string);
+    Token(Kind, std::string, int, int);
     // destructor
     ~Token(){};
     // debugging
@@ -55,4 +57,6 @@ class Token
     // basic get functions
     Kind getKind();
     std::string getValue();
+    int getLineNum();
+    int getColNum();
 };
