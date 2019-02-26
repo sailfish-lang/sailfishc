@@ -149,6 +149,18 @@ InOrderTraversal::visit(ast::UserDefinedTypeMethods* node)
 }
 
 void
+InOrderTraversal::visit(ast::UserDefinedType* node)
+{
+    visit(node->getName());
+    for (auto const& attribute : node->getAttributes())
+    {
+        visit(attribute);
+    }
+
+    push("UserDefinedType");
+}
+
+void
 InOrderTraversal::visit(ast::InitialExecutionBody* node)
 {
     visit(node->getBody());
@@ -209,6 +221,13 @@ InOrderTraversal::visit(ast::NewExpression* node)
     case ast::New::ListLiteral:
     {
         ast::ListLiteral* subnode = dynamic_cast<ast::ListLiteral*>(newVal);
+        visit(subnode);
+        break;
+    }
+    case ast::New::UserDefinedType:
+    {
+        ast::UserDefinedType* subnode =
+            dynamic_cast<ast::UserDefinedType*>(newVal);
         visit(subnode);
         break;
     }

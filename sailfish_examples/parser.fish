@@ -30,5 +30,7 @@ start {
     } else {
         return Foo...s(someFlt)
     }
+
+    dec Foo foo = new Foo { s: "Hello World" }
 }
 

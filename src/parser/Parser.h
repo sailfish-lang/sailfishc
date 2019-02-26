@@ -36,6 +36,7 @@ class Parser
 
     ast::UserDefinedTypeAttributes* UserDefinedTypeAttributes();
     ast::UserDefinedTypeMethods* UserDefinedTypeMethods();
+    ast::UserDefinedType* parseUserDefinedType();
 
     ast::DictionaryDefinition* parseDictionaryDefinition();
     ast::ListDefinition* parseListDefinition();

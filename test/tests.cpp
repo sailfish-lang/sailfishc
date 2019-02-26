@@ -170,6 +170,17 @@ TEST(ParserTest, AllTokens)
         "MethodAccess",
         "ExpressionStatement",
         "IfStatement",
+        "Identifier"
+        "Typename",
+        "Variable",
+        "Identifier",
+        "Identifier",
+        "Identifier",
+        "DictionaryItem",
+        "UserDefinedType",
+        "NewExpression",
+        "Assignment",
+        "NewVariableDefinition",
         "InitialExecutionBody",
     };
 

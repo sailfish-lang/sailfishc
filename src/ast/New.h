@@ -13,6 +13,7 @@ class New
     {
         ListLiteral,
         DictionaryLiteral,
+        UserDefinedType,
     };
     virtual NewType getNewType() = 0;
 };

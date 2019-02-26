@@ -61,6 +61,7 @@
 #include "StringLiteral.h"
 #include "Subtraction.h"
 #include "Typename.h"
+#include "UserDefinedType.h"
 #include "UserDefinedTypeAttributes.h"
 #include "UserDefinedTypeDefinition.h"
 #include "UserDefinedTypeMethods.h"

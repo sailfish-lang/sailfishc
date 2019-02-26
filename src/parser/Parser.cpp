@@ -231,6 +231,8 @@ ast::GeneralDefinition*
 Parser::parseGeneralDefinition()
 {
     std::string val = currentToken->getValue();
+
+    // list
     if (val == "list")
     {
         // consume 'list'
@@ -238,6 +240,8 @@ Parser::parseGeneralDefinition()
 
         return (ast::GeneralDefinition*)parseListDefinition();
     }
+
+    // dictionary
     else if (val == "dictionary")
     {
         // consume 'dictionary'
@@ -245,15 +249,18 @@ Parser::parseGeneralDefinition()
 
         return (ast::GeneralDefinition*)parseDictionaryDefinition();
     }
+
+    // primitives
     else if (val == "bool" || val == "str" || val == "int" || val == "flt" ||
              val == "void")
     {
         return (ast::GeneralDefinition*)parseNewVariableDefinition();
     }
+
+    // user defined types
     else
     {
-        throw std::invalid_argument("expected a list, dictionary, bool, str, "
-                                    "int, flt, or void definition");
+        return (ast::GeneralDefinition*)parseNewVariableDefinition();
     }
 }
 
@@ -328,6 +335,33 @@ Parser::UserDefinedTypeMethods()
     getNextUsefulToken();
 
     return new ast::UserDefinedTypeMethods(name, methods);
+}
+
+/**
+ * identifier'{' [DictionaryItem (',' DictionaryItem)] '}'
+ */
+ast::UserDefinedType*
+Parser::parseUserDefinedType()
+{
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+
+    // consume identifier
+    getNextUsefulToken();
+
+    // consume '{'
+    getNextUsefulToken();
+
+    std::vector<ast::DictionaryItem*> attributes;
+
+    while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
+    {
+        attributes.push_back(parseDictionaryItem());
+    }
+
+    // consume '}'
+    getNextUsefulToken();
+
+    return new ast::UserDefinedType(name, attributes);
 }
 
 /**
@@ -585,7 +619,7 @@ Parser::parseNewExpression()
 }
 
 /**
- * NewExpression := ListLiteral | DictionaryLiteral
+ * NewExpression := ListLiteral | DictionaryLiteral | UserDefinedType
  */
 ast::New*
 Parser::parseNew()
@@ -606,7 +640,7 @@ Parser::parseNew()
     }
     else
     {
-        throw std::invalid_argument("expected a '[' or a '{'");
+        return (ast::New*)parseUserDefinedType();
     }
 }
 

@@ -33,6 +33,7 @@ class InOrderTraversal : public Visitor
     void visit(ast::UserDefinedTypeDefinition*);
     void visit(ast::UserDefinedTypeAttributes*);
     void visit(ast::UserDefinedTypeMethods*);
+    void visit(ast::UserDefinedType*);
     void visit(ast::InitialExecutionBody*);
     void visit(ast::Variable*);
     void visit(ast::IfStatement*);

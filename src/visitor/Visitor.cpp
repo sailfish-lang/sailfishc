@@ -424,6 +424,13 @@ Visitor::visit(ast::NewExpression* node)
         visit(subnode);
         break;
     }
+    case ast::New::UserDefinedType:
+    {
+        ast::UserDefinedType* subnode =
+            dynamic_cast<ast::UserDefinedType*>(newVal);
+        visit(subnode);
+        break;
+    }
     }
 }
 void
@@ -474,6 +481,15 @@ Visitor::visit(ast::FunctionCall* node)
     for (auto const& arg : args)
     {
         visit(arg);
+    }
+}
+void
+Visitor::visit(ast::UserDefinedType* node)
+{
+    visit(node->getName());
+    for (auto const& attribute : node->getAttributes())
+    {
+        visit(attribute);
     }
 }
 void
