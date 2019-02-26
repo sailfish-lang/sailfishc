@@ -6,6 +6,7 @@
 #include "../ast/Ast.h"
 #include <vector>
 
+// Parser takes in no args, we use a parse function to take in the filename
 Parser::Parser()
 {
 }
@@ -935,34 +936,40 @@ ast::Statement*
 Parser::parseStatement()
 {
     std::string tk = currentToken->getValue();
+    Kind kind = currentToken->getKind();
 
-    if (tk == "if")
+    switch (kind)
     {
-        // consume 'if'
-        getNextUsefulToken();
 
-        return (ast::Statement*)parseIfStatement();
+    case Kind::KEYWORD_TOKEN:
+    {
+        if (tk == "if")
+        {
+            // consume 'if'
+            getNextUsefulToken();
+
+            return (ast::Statement*)parseIfStatement();
+        }
+        else if (tk == "return")
+        {
+            // consume 'return'
+            getNextUsefulToken();
+
+            return (ast::Statement*)parseReturnStatement();
+        }
+        else if (tk == "dec")
+        {
+            // consume 'dec'
+            getNextUsefulToken();
+
+            return (ast::Statement*)parseGeneralDecleration();
+        }
     }
-    else if (tk == "{")
-    {
+
+    case Kind::LCURLEY_TOKEN:
         return (ast::Statement*)parseBlock();
-    }
-    else if (tk == "return")
-    {
-        // consume 'return'
-        getNextUsefulToken();
 
-        return (ast::Statement*)parseReturnStatement();
-    }
-    else if (tk == "dec")
-    {
-        // consume 'dec'
-        getNextUsefulToken();
-
-        return (ast::Statement*)parseGeneralDecleration();
-    }
-    else
-    {
+    default:
         return (ast::Statement*)parseExpressionStatement();
     }
 }
