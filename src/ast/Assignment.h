@@ -18,6 +18,11 @@ class Assignment : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~Assignment()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

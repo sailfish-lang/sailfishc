@@ -19,6 +19,8 @@ class FunctionCall : public Expression
     {
         args = i;
     };
+    // destructor
+    ~FunctionCall(){};
     // implement Expression
     /* virtual*/ ExpressionType
     getExpressionType()

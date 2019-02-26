@@ -18,6 +18,11 @@ class AndComparison : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~AndComparison()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

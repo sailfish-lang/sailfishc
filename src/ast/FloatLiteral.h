@@ -19,6 +19,8 @@ class FloatLiteral : public Primary
     {
         num = s;
     };
+    // destructor
+    ~FloatLiteral(){};
     // implement Primary
     /* virtual */ PrimaryType
     getPrimaryType()

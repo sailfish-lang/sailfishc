@@ -42,6 +42,11 @@ class Lexar
   public:
     // constructor
     Lexar(std::string filename);
+    // destructor
+    ~Lexar()
+    {
+        delete scanner;
+    };
     // will return EOF_TOKEN indefinitely once done parsing
     Token* getNextToken();
 };

@@ -20,6 +20,8 @@ class DictionaryLiteral : public New
     {
         dictionaryItems = v;
     };
+    // destructor
+    ~DictionaryLiteral(){};
     // implement New
     /* virtual */ NewType
     getNewType()

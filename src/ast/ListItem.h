@@ -18,6 +18,11 @@ class ListItem
     {
         name = i;
     };
+    // destructor
+    ~ListItem()
+    {
+        delete name;
+    };
     // get methods
     Identifier*
     getName()

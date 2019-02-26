@@ -18,6 +18,11 @@ class Multiplication : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~Multiplication()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

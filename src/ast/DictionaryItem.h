@@ -20,6 +20,12 @@ class DictionaryItem
         key = k;
         value = v;
     };
+    // destructor
+    ~DictionaryItem()
+    {
+        delete key;
+        delete value;
+    };
     // get methods
     Identifier*
     getKey()

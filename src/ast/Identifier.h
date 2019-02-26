@@ -19,6 +19,8 @@ class Identifier : public Primary
     {
         identifier = s;
     };
+    // destructor
+    ~Identifier(){};
     // implement Primary
     /* virtual */ PrimaryType
     getPrimaryType()

@@ -18,6 +18,11 @@ class BinaryGreaterThanOrEqual : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~BinaryGreaterThanOrEqual()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

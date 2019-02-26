@@ -18,6 +18,11 @@ class Exponentiation : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~Exponentiation()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

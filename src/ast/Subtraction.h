@@ -18,6 +18,11 @@ class Subtraction : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~Subtraction()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

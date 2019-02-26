@@ -18,6 +18,11 @@ class InitialExecutionBody : public SourcePart
     {
         body = b;
     };
+    // destructor
+    ~InitialExecutionBody()
+    {
+        delete body;
+    };
     // implementation for SourcePart
     /* virtual */ SourcePartType
     getSourcePartType()

@@ -21,6 +21,12 @@ class Variable
         type = t;
         name = n;
     }
+    // destructor
+    ~Variable()
+    {
+        delete type;
+        delete name;
+    };
     // get methods
     Typename*
     getType()

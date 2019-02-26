@@ -22,6 +22,11 @@ class UserDefinedTypeMethods
         name = i;
         methods = v;
     };
+    // destructor
+    ~UserDefinedTypeMethods()
+    {
+        delete name;
+    };
     // get methods
     Identifier*
     getName()

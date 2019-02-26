@@ -19,6 +19,8 @@ class Source
     {
         srcParts = v;
     };
+    // destructor
+    ~Source(){};
     // get methods
     std::vector<SourcePart*>
     getSourceParts()

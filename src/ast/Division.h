@@ -18,6 +18,11 @@ class Division : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~Division()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

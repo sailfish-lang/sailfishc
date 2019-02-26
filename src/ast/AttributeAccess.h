@@ -19,6 +19,8 @@ class AttributeAccess : public MemberAccess
     {
         attribute = i;
     };
+    // destructor
+    ~AttributeAccess(){};
     // implement MemberAccess
     /* virtual */ MemberAccessType
     getMemberAccessType()

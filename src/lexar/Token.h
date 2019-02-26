@@ -45,6 +45,8 @@ class Token
   public:
     // constructor
     Token(Kind, std::string);
+    // destructor
+    ~Token(){};
     // debugging
     void display();
     // useful for looping through

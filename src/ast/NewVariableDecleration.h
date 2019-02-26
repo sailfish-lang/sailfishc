@@ -22,6 +22,12 @@ class NewVariableDefinition : public GeneralDefinition
         var = v;
         expr = e;
     };
+    // destructor
+    ~NewVariableDefinition()
+    {
+        delete expr;
+        delete var;
+    };
     // implement GeneralDefinition
     /* virtual */ GeneralDefinitionType
     getGeneralDefinitionType()

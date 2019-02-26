@@ -18,6 +18,11 @@ class Input
     {
         input = v;
     };
+    // destructor
+    ~Input()
+    {
+        delete input;
+    };
     // getMethods
     Variable*
     getInput()

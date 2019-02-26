@@ -19,6 +19,11 @@ class PrimaryExpression : public Expression
     {
         primary = p;
     };
+    // destructor
+    ~PrimaryExpression()
+    {
+        delete primary;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

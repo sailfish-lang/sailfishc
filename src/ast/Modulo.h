@@ -18,6 +18,11 @@ class Modulo : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~Modulo()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

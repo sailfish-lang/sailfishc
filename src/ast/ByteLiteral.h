@@ -19,6 +19,8 @@ class ByteLiteral : public Primary
     {
         string = s;
     };
+    // destructor
+    ~ByteLiteral(){};
     // implement Primary
     /* virtual */ PrimaryType
     getPrimaryType()

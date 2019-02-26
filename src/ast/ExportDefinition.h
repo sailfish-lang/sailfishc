@@ -12,13 +12,18 @@ namespace ast
 class ExportDefinition : public SourcePart
 {
   private:
-    Exportable* exprt;
+    Exportable* expr;
 
   public:
     // constructor
     ExportDefinition(Exportable* e)
     {
-        exprt = e;
+        expr = e;
+    };
+    // destructor
+    ~ExportDefinition()
+    {
+        delete expr;
     };
     // implementation for SourcePart
     /* virtual */ SourcePartType
@@ -30,7 +35,7 @@ class ExportDefinition : public SourcePart
     Exportable*
     getExport()
     {
-        return exprt;
+        return expr;
     }
 };
 }

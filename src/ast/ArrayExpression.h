@@ -24,6 +24,8 @@ class ArrayExpression : public Expression
         expressionList = e;
         canBeIndexAccess = c;
     };
+    // destructor
+    ~ArrayExpression(){};
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

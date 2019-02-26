@@ -31,6 +31,11 @@ class FunctionDefinition : public SourcePart, public Exportable
         outputList = out;
         body = b;
     };
+    // destructor
+    ~FunctionDefinition()
+    {
+        delete name;
+    };
     // implementation for SourcePart
     /* virtual */ SourcePartType
     getSourcePartType()

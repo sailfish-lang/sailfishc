@@ -22,6 +22,12 @@ class MethodAccess : public MemberAccess
         name = i;
         func = f;
     };
+    // destructor
+    ~MethodAccess()
+    {
+        delete name;
+        delete func;
+    };
     // implement MemberAccess
     /* virtual */ MemberAccessType
     getMemberAccessType()

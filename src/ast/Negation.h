@@ -18,6 +18,11 @@ class Negation : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~Negation()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

@@ -19,6 +19,8 @@ class IntegerLiteral : public Primary
     {
         num = s;
     };
+    // destructor
+    ~IntegerLiteral(){};
     // implement Primary
     /* virtual */ PrimaryType
     getPrimaryType()

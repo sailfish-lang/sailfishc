@@ -18,6 +18,11 @@ class OrComparison : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~OrComparison()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

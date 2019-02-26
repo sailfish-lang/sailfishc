@@ -18,6 +18,8 @@ class Typename
     {
         type = t;
     };
+    // destructor
+    ~Typename(){};
     // get method
     std::string
     getType()

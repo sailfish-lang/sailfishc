@@ -19,6 +19,8 @@ class Block : public Statement
     {
         statements = v;
     };
+    // destructor
+    ~Block(){};
     // implement Statement
     /* virtual */ StatementType
     getStatementType()

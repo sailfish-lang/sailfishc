@@ -82,6 +82,12 @@ class Parser
   public:
     // constructor
     Parser();
+    // destructor
+    ~Parser()
+    {
+        delete lexar;
+        delete currentToken;
+    };
     // actual parse function -- given filename returns the root of the ast
     ast::Start* parse(const std::string);
 };

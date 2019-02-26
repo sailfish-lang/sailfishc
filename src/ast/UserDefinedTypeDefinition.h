@@ -24,6 +24,12 @@ class UserDefinedTypeDefinition : public SourcePart
         attributes = a;
         methods = m;
     }
+    // destructor
+    ~UserDefinedTypeDefinition()
+    {
+        delete attributes;
+        delete methods;
+    };
     // implementation for SourcePart
     /* virtual */ SourcePartType
     getSourcePartType()

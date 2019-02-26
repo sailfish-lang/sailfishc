@@ -18,6 +18,11 @@ class Addition : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~Addition()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

@@ -22,6 +22,11 @@ class UserDefinedTypeAttributes
         name = i;
         attributes = v;
     }
+    // destructor
+    ~UserDefinedTypeAttributes()
+    {
+        delete name;
+    };
     // get methods
     Identifier*
     getName()

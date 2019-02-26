@@ -19,6 +19,11 @@ class Start
     {
         src = s;
     };
+    // destructor
+    ~Start()
+    {
+        delete src;
+    };
     // get methods
     Source*
     getSource()

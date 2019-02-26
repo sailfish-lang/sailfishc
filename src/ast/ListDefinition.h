@@ -22,6 +22,12 @@ class ListDefinition : public GeneralDefinition
         name = i;
         expr = e;
     };
+    // destructor
+    ~ListDefinition()
+    {
+        delete name;
+        delete expr;
+    };
     // implement GeneralDefinition
     /* virtual */ GeneralDefinitionType
     getGeneralDefinitionType()

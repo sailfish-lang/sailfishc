@@ -20,6 +20,11 @@ class ExpressionStatement : public Statement
     {
         expr = e;
     };
+    // destructor
+    ~ExpressionStatement()
+    {
+        delete expr;
+    };
     // implement Statement
     /* virtual */ StatementType
     getStatementType()

@@ -20,6 +20,8 @@ class BinaryExpression : public Expression
     {
         expressionList = e;
     };
+    // destructor
+    ~BinaryExpression(){};
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

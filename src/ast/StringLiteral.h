@@ -19,6 +19,8 @@ class StringLiteral : public Primary
     {
         string = s;
     };
+    // destructor
+    ~StringLiteral(){};
     // implement Primary
     /* virtual */ PrimaryType
     getPrimaryType()

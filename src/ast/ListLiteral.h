@@ -19,6 +19,8 @@ class ListLiteral : public New
     {
         listItems = v;
     };
+    // destructor
+    ~ListLiteral(){};
     // implement New
     /* virtual */ NewType
     getNewType()

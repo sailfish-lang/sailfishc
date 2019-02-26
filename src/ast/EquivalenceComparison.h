@@ -18,6 +18,11 @@ class EquivalenceComparison : public Expression
     {
         expr = e;
     };
+    // destructor
+    ~EquivalenceComparison()
+    {
+        delete expr;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

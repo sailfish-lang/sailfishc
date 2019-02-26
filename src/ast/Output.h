@@ -18,6 +18,11 @@ class Output
     {
         output = t;
     };
+    // destructor
+    ~Output()
+    {
+        delete output;
+    };
     // get methods
     Typename*
     getOutput()

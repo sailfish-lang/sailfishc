@@ -14,6 +14,8 @@ class Scanner
   public:
     // constructor takes in a filename
     Scanner(std::string);
+    // destructor
+    ~Scanner(){};
     // retreive next character from the ifstream
     char getNextChar();
     // putback char

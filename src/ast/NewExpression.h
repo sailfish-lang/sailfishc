@@ -19,6 +19,11 @@ class NewExpression : public Expression
     {
         newVal = n;
     };
+    // destructor
+    ~NewExpression()
+    {
+        delete newVal;
+    };
     // implement Expression
     /* virtual */ ExpressionType
     getExpressionType()

@@ -19,6 +19,8 @@ class BooleanLiteral : public Primary
     {
         value = s;
     };
+    // destructor
+    ~BooleanLiteral(){};
     // implement Primary
     /* virtual */ PrimaryType
     getPrimaryType()

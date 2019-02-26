@@ -23,6 +23,11 @@ class GeneralDecleration : public SourcePart,
     {
         definition = g;
     };
+    // destructor
+    ~GeneralDecleration()
+    {
+        delete definition;
+    };
     // implementation for SourcePart
     /* virtual */ SourcePartType
     getSourcePartType()

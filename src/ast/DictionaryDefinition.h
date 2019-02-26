@@ -22,6 +22,11 @@ class DictionaryDefinition : public GeneralDefinition
         name = i;
         expr = e;
     };
+    // destructor
+    ~DictionaryDefinition()
+    {
+        delete expr;
+    };
     // implement GeneralDefinition
     /* virtual */ GeneralDefinitionType
     getGeneralDefinitionType()

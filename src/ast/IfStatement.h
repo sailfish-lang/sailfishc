@@ -24,6 +24,13 @@ class IfStatement : public Statement
         ifStatements = b1;
         elseStatements = b2;
     };
+    // destructor
+    ~IfStatement()
+    {
+        delete ifConditional;
+        delete ifStatements;
+        delete elseStatements;
+    };
     // implement Statement
     /* virtual */ StatementType
     getStatementType()
