@@ -6,6 +6,7 @@
 #include "../src/ast/Ast.h"
 #include "../src/lexar/Lexar.h"
 #include "../src/parser/Parser.h"
+#include "../src/semant/symbol_table/ScopeStack.h"
 #include "../src/visitor/InOrderTraversal.h"
 #include <gtest/gtest.h>
 
@@ -78,7 +79,7 @@ TEST(ParserTest, AllTokens)
         "NewExpression",
         "Assignment",
         "DictionaryDefinition",
-        "ExportDefinition",
+        "ExportDefintion",
         "Identifier",
         "Identifier",
         "ListItem",
@@ -132,7 +133,7 @@ TEST(ParserTest, AllTokens)
         "BinaryGreaterThanOrEqual",
         "IntegerLiteral",
         "BinaryLessThanOrEqual",
-        "IntegerLiteral"
+        "IntegerLiteral",
         "NonEquivalenceComparison",
         "Identifier",
         "ExpressionStatement",
@@ -151,16 +152,16 @@ TEST(ParserTest, AllTokens)
         "IntegerLiteral",
         "Multiplication",
         "ExpressionStatement",
-        "IntegerLiteral",
+        "Identifier",
         "Division",
+        "ExpressionStatement",
+        "IntegerLiteral",
+        "ArrayExpression",
         "ExpressionStatement",
         "Identifier",
         "ReturnStatement",
         "Identifier",
         "AttributeAccess",
-        "ExpressionStatement",
-        "IntegerLiteral",
-        "ArrayExpression",
         "ExpressionStatement",
         "Identifier",
         "ReturnStatement",
@@ -170,7 +171,7 @@ TEST(ParserTest, AllTokens)
         "MethodAccess",
         "ExpressionStatement",
         "IfStatement",
-        "Identifier"
+        "Identifier",
         "Typename",
         "Variable",
         "Identifier",
@@ -189,9 +190,56 @@ TEST(ParserTest, AllTokens)
 
     InOrderTraversal* v = new InOrderTraversal();
 
+    int i = 0;
     for (auto const& a : v->getInOrderTraversal(root))
     {
+        std::cout << a << " : " << expected[i] << '\n';
+        ASSERT_EQ(expected[i], a);
+        ++i;
     }
+}
+
+TEST(ScopeStackDataStructureTest, ScopeStackNode)
+{
+    ScopeStackNode* a = new ScopeStackNode(1);
+    ASSERT_EQ(a->getLevel(), 1);
+
+    ScopeStackNode* b = new ScopeStackNode(2);
+    a->setPrev(b);
+    ASSERT_EQ(a->getPrev()->getLevel(), 2);
+    ASSERT_EQ(a->getPrev()->hasPrev(), false);
+}
+
+TEST(ScopeStackDataStructureTest, ScopeStack)
+{
+    ScopeStack* stack = new ScopeStack();
+
+    // test start size
+    ASSERT_EQ(stack->peek(), -1);
+
+    // test simple push
+    stack->push(1);
+    ASSERT_EQ(stack->peek(), 1);
+
+    // test simple pop
+    stack->pop();
+    ASSERT_EQ(stack->peek(), -1);
+
+    // test more complex case
+    stack->push(1);
+    stack->push(2);
+    stack->push(3);
+    stack->push(4);
+    stack->push(5);
+    stack->pop();
+    stack->pop();
+    stack->pop();
+    ASSERT_EQ(stack->peek(), 2);
+
+    // test popping of an empty stack
+    stack->clear();
+    stack->pop();
+    ASSERT_EQ(stack->peek(), -1);
 }
 
 int
