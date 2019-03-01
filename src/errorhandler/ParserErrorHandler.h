@@ -22,4 +22,4 @@ class ParserErrorHandler
     /* virtual */
     void handle(Error*);
     void end();
-}
+};

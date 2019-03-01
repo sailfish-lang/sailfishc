@@ -26,4 +26,4 @@ class SemanticErrorHandler
     /* virtual */
     void handle(Error*);
     void end();
-}
+};

@@ -6,7 +6,13 @@
 #include "../src/ast/Ast.h"
 #include "../src/lexar/Lexar.h"
 #include "../src/parser/Parser.h"
+#include "../src/semant/symbol_table/DictionarySymbol.h"
+#include "../src/semant/symbol_table/FunctionSymbol.h"
+#include "../src/semant/symbol_table/ListSymbol.h"
+#include "../src/semant/symbol_table/PrimitiveSymbol.h"
 #include "../src/semant/symbol_table/ScopeStack.h"
+#include "../src/semant/symbol_table/Symbol.h"
+#include "../src/semant/symbol_table/UDTSymbol.h"
 #include "../src/visitor/InOrderTraversal.h"
 #include <gtest/gtest.h>
 
@@ -240,6 +246,55 @@ TEST(ScopeStackDataStructureTest, ScopeStack)
     stack->clear();
     stack->pop();
     ASSERT_EQ(stack->peek(), -1);
+}
+
+TEST(SymbolDataStructure, Symbol)
+{
+    // test primitive and defaults of Symbol abstract class
+    Symbol* p = new PrimitiveSymbol("int");
+    ASSERT_EQ(p->getType(), "int");
+    ASSERT_EQ(p->hasMethods(), false);
+    ASSERT_EQ(p->hasAttributes(), false);
+    ASSERT_EQ(p->hasKeyType(), false);
+    ASSERT_EQ(p->hasValueType(), false);
+    ASSERT_EQ(p->hasInputTypes(), false);
+    ASSERT_EQ(p->hasOutputTypes(), false);
+    ASSERT_EQ(p->getMethods(), nullptr);
+    ASSERT_EQ(p->getAttributes(), nullptr);
+    ASSERT_EQ(p->getKeyType(), "");
+    ASSERT_EQ(p->getValueType(), "");
+    ASSERT_EQ(p->getInputTypes().size(), 0);
+    ASSERT_EQ(p->getOutputTypes().size(), 0);
+
+    // test list
+    Symbol* l = new ListSymbol("int[]");
+    ASSERT_EQ(l->getType(), "int[]");
+
+    // test dictionary
+    Symbol* d = new DictionarySymbol("dictionary", "str", "int");
+    ASSERT_EQ(d->getType(), "dictionary");
+    ASSERT_EQ(d->hasKeyType(), true);
+    ASSERT_EQ(d->hasValueType(), true);
+    ASSERT_EQ(d->getKeyType(), "str");
+    ASSERT_EQ(d->getValueType(), "int");
+
+    // test function
+    std::vector<std::string> inputs{"int", "bool"};
+    std::vector<std::string> outputs{"void"};
+    Symbol* f = new FunctionSymbol("function", inputs, outputs);
+    ASSERT_EQ(f->getType(), "function");
+    ASSERT_EQ(f->hasInputTypes(), true);
+    ASSERT_EQ(f->hasOutputTypes(), true);
+    ASSERT_EQ(f->getInputTypes().size(), 2);
+    ASSERT_EQ(f->getOutputTypes().size(), 1);
+
+    // test UDT -- SymbolTable will change thus just going nullptr for now
+    Symbol* u = new UDTSymbol("udt", nullptr, nullptr);
+    ASSERT_EQ(u->getType(), "udt");
+    ASSERT_EQ(u->hasAttributes(), true);
+    ASSERT_EQ(u->hasMethods(), true);
+    ASSERT_EQ(u->getAttributes(), nullptr);
+    ASSERT_EQ(u->getMethods(), nullptr);
 }
 
 int

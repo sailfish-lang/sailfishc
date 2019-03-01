@@ -16,4 +16,4 @@ class SymbolTable
     // add a symbol to the symbol table
     // check if a symbol is in the symbol table
     // retreive a symbol from the symbol table
-}
+};

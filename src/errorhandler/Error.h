@@ -40,4 +40,4 @@ class Error
         return "[" + errtype + " Error at line: " + std::to_string(line) +
                " ; column: " + std::to_string(col) + "]: " + msg + "\n";
     }
-}
+};

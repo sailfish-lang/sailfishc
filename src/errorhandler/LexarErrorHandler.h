@@ -22,4 +22,4 @@ class LexarErrorHandler
     /* virtual */
     void handle(Error*);
     void end();
-}
+};
