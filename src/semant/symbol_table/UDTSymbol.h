@@ -16,7 +16,7 @@ class UDTSymbol : public Symbol
   public:
     // constructor
     UDTSymbol(std::string t, SymbolTable* a, SymbolTable* m)
-        : Symbol(t, new ScopeStack())
+        : Symbol(t, new ScopeStack(), UDT)
     {
         attributes = a;
         methods = m;
@@ -28,8 +28,6 @@ class UDTSymbol : public Symbol
         delete methods;
     }
     // implements Symbol
-    /* virtual */ bool hasAttributes();
     /* virtual */ SymbolTable* getAttributes();
-    /* virtual */ bool hasMethods();
     /* virtual */ SymbolTable* getMethods();
 };

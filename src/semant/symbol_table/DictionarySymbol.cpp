@@ -4,22 +4,10 @@
  */
 #include "DictionarySymbol.h"
 
-bool
-DictionarySymbol::hasKeyType()
-{
-    return true;
-}
-
 std::string
 DictionarySymbol::getKeyType()
 {
     return keyType;
-}
-
-bool
-DictionarySymbol::hasValueType()
-{
-    return true;
 }
 
 std::string

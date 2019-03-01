@@ -10,7 +10,7 @@ class PrimitiveSymbol : public Symbol
 {
   public:
     // constructor
-    PrimitiveSymbol(std::string t) : Symbol(t, new ScopeStack())
+    PrimitiveSymbol(std::string t) : Symbol(t, new ScopeStack(), Primitive)
     {
     }
     // deconstructor

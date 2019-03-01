@@ -11,6 +11,7 @@ ADD_LIBRARY(SailfishcLibs
     ../src/semant/symbol_table/DictionarySymbol.cpp
     ../src/semant/symbol_table/FunctionSymbol.cpp
     ../src/semant/symbol_table/UDTSymbol.cpp
+    ../src/semant/symbol_table/SymbolTable.cpp
 )
 
 # Locate GTest

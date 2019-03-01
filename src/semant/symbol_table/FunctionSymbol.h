@@ -18,7 +18,7 @@ class FunctionSymbol : public Symbol
     // constructor
     FunctionSymbol(std::string t, std::vector<std::string> i,
                    std::vector<std::string> o)
-        : Symbol(t, new ScopeStack())
+        : Symbol(t, new ScopeStack(), Function)
     {
         inputs = i;
         outputs = o;
@@ -28,8 +28,6 @@ class FunctionSymbol : public Symbol
     {
     }
     // implements Symbol
-    /* virtual */ bool hasInputTypes();
     /* virtual */ std::vector<std::string> getInputTypes();
-    /* virtual */ bool hasOutputTypes();
     /* virtual */ std::vector<std::string> getOutputTypes();
 };

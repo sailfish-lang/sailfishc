@@ -10,7 +10,7 @@ class ListSymbol : public Symbol
 {
   public:
     // constructor
-    ListSymbol(std::string t) : Symbol(t, new ScopeStack())
+    ListSymbol(std::string t) : Symbol(t, new ScopeStack(), List)
     {
     }
     // deconstructor

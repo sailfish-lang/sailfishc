@@ -4,22 +4,10 @@
  */
 #include "UDTSymbol.h"
 
-bool
-UDTSymbol::hasAttributes()
-{
-    return true;
-}
-
 SymbolTable*
 UDTSymbol::getAttributes()
 {
     return attributes;
-}
-
-bool
-UDTSymbol::hasMethods()
-{
-    return true;
 }
 
 SymbolTable*

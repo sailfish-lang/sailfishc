@@ -3,19 +3,22 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include <string>
 #include <vector>
 
 class ScopeStackNode
 {
   private:
     int level;
+    std::string type;
     ScopeStackNode* prev;
 
   public:
     // constructor
-    ScopeStackNode(int l)
+    ScopeStackNode(int l, std::string t)
     {
         level = l;
+        type = t;
         prev = nullptr;
     }
     // destructor
@@ -40,6 +43,11 @@ class ScopeStackNode
     getLevel()
     {
         return level;
+    }
+    std::string
+    getType()
+    {
+        return type;
     }
     ScopeStackNode*
     getPrev()
@@ -69,9 +77,9 @@ class ScopeStack
     // helper methods for nicer code
     // append a node to the end
     void
-    push(int l)
+    push(int l, std::string t)
     {
-        ScopeStackNode* node = new ScopeStackNode(l);
+        ScopeStackNode* node = new ScopeStackNode(l, t);
         node->setPrev(cur);
         cur = node;
 
@@ -96,12 +104,20 @@ class ScopeStack
         cur = nullptr; // memory leak?
         size = 0;
     }
+    // helper method for nice code
+    bool
+    isEmpty()
+    {
+        return cur == nullptr;
+    }
     // getMethods
-    int
+    ScopeStackNode*
     peek()
     {
+        // unnecessary check, but in the future if we were to write better code,
+        // this would be a useful check
         if (size == 0)
-            return -1;
-        return cur->getLevel();
+            return nullptr;
+        return cur;
     }
 };

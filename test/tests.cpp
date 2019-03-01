@@ -207,12 +207,15 @@ TEST(ParserTest, AllTokens)
 
 TEST(ScopeStackDataStructureTest, ScopeStackNode)
 {
-    ScopeStackNode* a = new ScopeStackNode(1);
+    ScopeStackNode* a = new ScopeStackNode(1, "int");
     ASSERT_EQ(a->getLevel(), 1);
+    ASSERT_EQ(a->getType(), "int");
 
-    ScopeStackNode* b = new ScopeStackNode(2);
+    ScopeStackNode* b = new ScopeStackNode(2, "flt");
     a->setPrev(b);
     ASSERT_EQ(a->getPrev()->getLevel(), 2);
+    ASSERT_EQ(a->getPrev()->getType(), "flt");
+    ASSERT_EQ(a->hasPrev(), true);
     ASSERT_EQ(a->getPrev()->hasPrev(), false);
 }
 
@@ -221,31 +224,33 @@ TEST(ScopeStackDataStructureTest, ScopeStack)
     ScopeStack* stack = new ScopeStack();
 
     // test start size
-    ASSERT_EQ(stack->peek(), -1);
+    ASSERT_EQ(stack->peek(), nullptr);
 
     // test simple push
-    stack->push(1);
-    ASSERT_EQ(stack->peek(), 1);
+    stack->push(1, "int");
+    ASSERT_EQ(stack->peek()->getLevel(), 1);
+    ASSERT_EQ(stack->peek()->getType(), "int");
 
     // test simple pop
     stack->pop();
-    ASSERT_EQ(stack->peek(), -1);
+    ASSERT_EQ(stack->peek(), nullptr);
 
     // test more complex case
-    stack->push(1);
-    stack->push(2);
-    stack->push(3);
-    stack->push(4);
-    stack->push(5);
+    stack->push(1, "int");
+    stack->push(2, "flt");
+    stack->push(3, "str");
+    stack->push(4, "bool");
+    stack->push(5, "void");
     stack->pop();
     stack->pop();
     stack->pop();
-    ASSERT_EQ(stack->peek(), 2);
+    ASSERT_EQ(stack->peek()->getLevel(), 2);
+    ASSERT_EQ(stack->peek()->getType(), "flt");
 
     // test popping of an empty stack
     stack->clear();
     stack->pop();
-    ASSERT_EQ(stack->peek(), -1);
+    ASSERT_EQ(stack->peek(), nullptr);
 }
 
 TEST(SymbolDataStructure, Symbol)
@@ -253,12 +258,7 @@ TEST(SymbolDataStructure, Symbol)
     // test primitive and defaults of Symbol abstract class
     Symbol* p = new PrimitiveSymbol("int");
     ASSERT_EQ(p->getType(), "int");
-    ASSERT_EQ(p->hasMethods(), false);
-    ASSERT_EQ(p->hasAttributes(), false);
-    ASSERT_EQ(p->hasKeyType(), false);
-    ASSERT_EQ(p->hasValueType(), false);
-    ASSERT_EQ(p->hasInputTypes(), false);
-    ASSERT_EQ(p->hasOutputTypes(), false);
+    ASSERT_EQ(p->getSymbolType(), Symbol::Primitive);
     ASSERT_EQ(p->getMethods(), nullptr);
     ASSERT_EQ(p->getAttributes(), nullptr);
     ASSERT_EQ(p->getKeyType(), "");
@@ -269,12 +269,12 @@ TEST(SymbolDataStructure, Symbol)
     // test list
     Symbol* l = new ListSymbol("int[]");
     ASSERT_EQ(l->getType(), "int[]");
+    ASSERT_EQ(l->getSymbolType(), Symbol::List);
 
     // test dictionary
     Symbol* d = new DictionarySymbol("dictionary", "str", "int");
     ASSERT_EQ(d->getType(), "dictionary");
-    ASSERT_EQ(d->hasKeyType(), true);
-    ASSERT_EQ(d->hasValueType(), true);
+    ASSERT_EQ(d->getSymbolType(), Symbol::Dictionary);
     ASSERT_EQ(d->getKeyType(), "str");
     ASSERT_EQ(d->getValueType(), "int");
 
@@ -283,20 +283,17 @@ TEST(SymbolDataStructure, Symbol)
     std::vector<std::string> outputs{"void"};
     Symbol* f = new FunctionSymbol("function", inputs, outputs);
     ASSERT_EQ(f->getType(), "function");
-    ASSERT_EQ(f->hasInputTypes(), true);
-    ASSERT_EQ(f->hasOutputTypes(), true);
+    ASSERT_EQ(f->getSymbolType(), Symbol::Function);
     ASSERT_EQ(f->getInputTypes().size(), 2);
     ASSERT_EQ(f->getOutputTypes().size(), 1);
 
     // test UDT -- SymbolTable will change thus just going nullptr for now
     Symbol* u = new UDTSymbol("udt", nullptr, nullptr);
     ASSERT_EQ(u->getType(), "udt");
-    ASSERT_EQ(u->hasAttributes(), true);
-    ASSERT_EQ(u->hasMethods(), true);
+    ASSERT_EQ(u->getSymbolType(), Symbol::UDT);
     ASSERT_EQ(u->getAttributes(), nullptr);
     ASSERT_EQ(u->getMethods(), nullptr);
 }
-
 int
 main(int argc, char** argv)
 {

@@ -41,6 +41,8 @@
         "ctime": "cpp",
         "iomanip": "cpp",
         "__config": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "map": "cpp",
+        "cstdarg": "cpp"
     }
 }

@@ -15,7 +15,7 @@ class DictionarySymbol : public Symbol
   public:
     // constructor
     DictionarySymbol(std::string t, std::string k, std::string v)
-        : Symbol(t, new ScopeStack())
+        : Symbol(t, new ScopeStack(), Dictionary)
     {
 
         keyType = k;
@@ -26,8 +26,6 @@ class DictionarySymbol : public Symbol
     {
     }
     // implements Symbol
-    /* virtual */ bool hasKeyType();
     /* virtual */ std::string getKeyType();
-    /* virtual */ bool hasValueType();
     /* virtual */ std::string getValueType();
 };
