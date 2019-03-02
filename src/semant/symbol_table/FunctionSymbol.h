@@ -3,7 +3,6 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ScopeStack.h"
 #include "Symbol.h"
 #include <string>
 #include <vector>
@@ -16,9 +15,9 @@ class FunctionSymbol : public Symbol
 
   public:
     // constructor
-    FunctionSymbol(std::string t, std::vector<std::string> i,
+    FunctionSymbol(std::string type, std::vector<std::string> i,
                    std::vector<std::string> o)
-        : Symbol(t, new ScopeStack(), Function)
+        : Symbol(Function, type)
     {
         inputs = i;
         outputs = o;

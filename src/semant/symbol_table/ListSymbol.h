@@ -3,14 +3,13 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ScopeStack.h"
 #include "Symbol.h"
 
 class ListSymbol : public Symbol
 {
   public:
     // constructor
-    ListSymbol(std::string t) : Symbol(t, new ScopeStack(), List)
+    ListSymbol(std::string type) : Symbol(List, type)
     {
     }
     // deconstructor

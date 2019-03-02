@@ -3,7 +3,6 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ScopeStack.h"
 #include "Symbol.h"
 #include "SymbolTable.h"
 
@@ -15,8 +14,8 @@ class UDTSymbol : public Symbol
 
   public:
     // constructor
-    UDTSymbol(std::string t, SymbolTable* a, SymbolTable* m)
-        : Symbol(t, new ScopeStack(), UDT)
+    UDTSymbol(std::string type, SymbolTable* a, SymbolTable* m)
+        : Symbol(UDT, type)
     {
         attributes = a;
         methods = m;

@@ -9,21 +9,23 @@
 #include "PrimitiveSymbol.h"
 #include "Symbol.h"
 #include "UDTSymbol.h"
+#include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 class SymbolTable
 {
   private:
-    int scopeLevelCounter;
+    int scopeLevel;
     std::unordered_map<std::string, Symbol*> globalScopeTable;
+    std::vector<std::string> localCache;
 
   public:
     // constructor
     SymbolTable()
     {
-        // intial level is 0 to stay in computer science world
-        scopeLevelCounter = 0;
+        scopeLevel = 0;
         globalScopeTable.clear();
     }
     // destructor
@@ -35,7 +37,7 @@ class SymbolTable
 
     // exit the scope, decrementing the scope level counter and popping all
     // local scoped variables scopes
-    void exitScope(std::vector<std::string> localScopeCache);
+    void exitScope();
 
     // check if a symbol is in the symbol table
     bool hasVariable(std::string);
@@ -45,15 +47,14 @@ class SymbolTable
 
     // either push to the variables scope if exists or add variable
     // Primitive and List
-    void addSymbol(std::string varName, std::string t, Symbol::SymbolType st);
+    void addSymbol(std::string, std::string, Symbol::SymbolType);
     // Dictionary
-    void addSymbol(std::string varName, std::string t, std::string keyType,
-                   std::string valueType, Symbol::SymbolType st);
+    void addSymbol(std::string, std::string, std::string, std::string,
+                   Symbol::SymbolType);
     // Function
-    void addSymbol(std::string varName, std::string t,
-                   std::vector<std::string> inputs,
-                   std::vector<std::string> outputs, Symbol::SymbolType st);
+    void addSymbol(std::string, std::string, std::vector<std::string>,
+                   std::vector<std::string>, Symbol::SymbolType);
     // UDT
-    void addSymbol(std::string varName, std::string t, SymbolTable* attributes,
-                   SymbolTable* methods, Symbol::SymbolType st);
+    void addSymbol(std::string, std::string, SymbolTable*, SymbolTable*,
+                   Symbol::SymbolType);
 };

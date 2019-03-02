@@ -6,7 +6,6 @@
 // forward decleration for circular dependency
 // https://stackoverflow.com/questions/625799/resolve-build-errors-due-to-circular-dependency-amongst-classes
 class SymbolTable;
-#include "ScopeStack.h"
 #include <string>
 #include <vector>
 
@@ -24,41 +23,21 @@ class Symbol
     };
 
     // constructor
-    Symbol(std::string t, ScopeStack* ss, SymbolType st)
+    Symbol(SymbolType st, std::string t)
     {
-        type = t;
-        scopestack = ss;
         symbolType = st;
+        type = t;
     }
     // destructor
     ~Symbol()
     {
-        delete scopestack;
     }
-    // all related to scope
-    void
-    popScope()
-    {
-        scopestack->pop();
-    };
-    void
-    pushScope(int level)
-    {
-        scopestack->push(level, type);
-    };
-    int
-    getScopeLevel()
-    {
-        if (scopestack->isEmpty())
-            return -1;
-        return scopestack->peek()->getLevel();
-    };
     // all values, even UDT's and collections must have a type
     std::string
     getType()
     {
         return type;
-    };
+    }
     SymbolType
     getSymbolType()
     {
@@ -100,7 +79,6 @@ class Symbol
     }
 
   private:
-    std::string type;
-    ScopeStack* scopestack;
     SymbolType symbolType;
+    std::string type;
 };

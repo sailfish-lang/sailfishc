@@ -10,7 +10,6 @@
 #include "../src/semant/symbol_table/FunctionSymbol.h"
 #include "../src/semant/symbol_table/ListSymbol.h"
 #include "../src/semant/symbol_table/PrimitiveSymbol.h"
-#include "../src/semant/symbol_table/ScopeStack.h"
 #include "../src/semant/symbol_table/Symbol.h"
 #include "../src/semant/symbol_table/UDTSymbol.h"
 #include "../src/visitor/InOrderTraversal.h"
@@ -199,58 +198,9 @@ TEST(ParserTest, AllTokens)
     int i = 0;
     for (auto const& a : v->getInOrderTraversal(root))
     {
-        std::cout << a << " : " << expected[i] << '\n';
         ASSERT_EQ(expected[i], a);
         ++i;
     }
-}
-
-TEST(ScopeStackDataStructureTest, ScopeStackNode)
-{
-    ScopeStackNode* a = new ScopeStackNode(1, "int");
-    ASSERT_EQ(a->getLevel(), 1);
-    ASSERT_EQ(a->getType(), "int");
-
-    ScopeStackNode* b = new ScopeStackNode(2, "flt");
-    a->setPrev(b);
-    ASSERT_EQ(a->getPrev()->getLevel(), 2);
-    ASSERT_EQ(a->getPrev()->getType(), "flt");
-    ASSERT_EQ(a->hasPrev(), true);
-    ASSERT_EQ(a->getPrev()->hasPrev(), false);
-}
-
-TEST(ScopeStackDataStructureTest, ScopeStack)
-{
-    ScopeStack* stack = new ScopeStack();
-
-    // test start size
-    ASSERT_EQ(stack->peek(), nullptr);
-
-    // test simple push
-    stack->push(1, "int");
-    ASSERT_EQ(stack->peek()->getLevel(), 1);
-    ASSERT_EQ(stack->peek()->getType(), "int");
-
-    // test simple pop
-    stack->pop();
-    ASSERT_EQ(stack->peek(), nullptr);
-
-    // test more complex case
-    stack->push(1, "int");
-    stack->push(2, "flt");
-    stack->push(3, "str");
-    stack->push(4, "bool");
-    stack->push(5, "void");
-    stack->pop();
-    stack->pop();
-    stack->pop();
-    ASSERT_EQ(stack->peek()->getLevel(), 2);
-    ASSERT_EQ(stack->peek()->getType(), "flt");
-
-    // test popping of an empty stack
-    stack->clear();
-    stack->pop();
-    ASSERT_EQ(stack->peek(), nullptr);
 }
 
 TEST(SymbolDataStructure, Symbol)
@@ -294,6 +244,58 @@ TEST(SymbolDataStructure, Symbol)
     ASSERT_EQ(u->getAttributes(), nullptr);
     ASSERT_EQ(u->getMethods(), nullptr);
 }
+
+TEST(SymbolTableDataStructure, SymbolTable)
+{
+    SymbolTable* st = new SymbolTable();
+
+    // -- start in the global scope
+    // add a new primitive
+    st->addSymbol("primitive", "int", Symbol::SymbolType::Primitive);
+    ASSERT_EQ(st->hasVariable("primitive"), true);
+
+    // add a new function
+    std::vector<std::string> inputs{"int", "bool"};
+    std::vector<std::string> outputs{"void"};
+    st->addSymbol("somefunction", "function", inputs, outputs,
+                  Symbol::SymbolType::Function);
+
+    ASSERT_EQ(st->hasVariable("somefunction"), true);
+
+    // // -- start in a nested scope inside the function
+    st->enterScope();
+    // // add a new list
+    st->addSymbol("someArr", "int[]", Symbol::SymbolType::List);
+    ASSERT_EQ(st->hasVariable("someArr"), true);
+
+    // // -- exit nested scope
+    st->exitScope();
+    ASSERT_EQ(st->hasVariable("someArr"), false);
+
+    // // add a new dictionary
+    st->addSymbol("someDict", "dictionary", "int", "str",
+                  Symbol::SymbolType::Dictionary);
+    ASSERT_EQ(st->hasVariable("someDict"), true);
+
+    // -- enter a scope
+    st->enterScope();
+
+    // add a previously deleted list
+    st->addSymbol("someArr", "int[]", Symbol::SymbolType::List);
+    ASSERT_EQ(st->hasVariable("someArr"), true);
+
+    // construct a symbol table for UDT attributes
+    SymbolTable* st_atts = new SymbolTable();
+    st_atts->addSymbol("foo", "flt", Symbol::SymbolType::Primitive);
+    // construct a symbol table for UDT methods
+    SymbolTable* st_meths = new SymbolTable();
+    st_meths->addSymbol("somefunction", "function", inputs, outputs,
+                        Symbol::SymbolType::Function);
+    // add a UDT
+    st->addSymbol("FOOUDT", "FOO", st_atts, st_meths, Symbol::SymbolType::UDT);
+    ASSERT_EQ(st->hasVariable("FOOUDT"), true);
+}
+
 int
 main(int argc, char** argv)
 {

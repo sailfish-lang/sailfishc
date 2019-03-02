@@ -3,7 +3,6 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ScopeStack.h"
 #include "Symbol.h"
 
 class DictionarySymbol : public Symbol
@@ -14,8 +13,8 @@ class DictionarySymbol : public Symbol
 
   public:
     // constructor
-    DictionarySymbol(std::string t, std::string k, std::string v)
-        : Symbol(t, new ScopeStack(), Dictionary)
+    DictionarySymbol(std::string type, std::string k, std::string v)
+        : Symbol(Dictionary, type)
     {
 
         keyType = k;

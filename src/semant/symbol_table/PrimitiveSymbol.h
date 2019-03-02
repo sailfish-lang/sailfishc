@@ -3,14 +3,13 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ScopeStack.h"
 #include "Symbol.h"
 
 class PrimitiveSymbol : public Symbol
 {
   public:
     // constructor
-    PrimitiveSymbol(std::string t) : Symbol(t, new ScopeStack(), Primitive)
+    PrimitiveSymbol(std::string type) : Symbol(Primitive, type)
     {
     }
     // deconstructor

@@ -13,7 +13,7 @@ Token::Token(Kind k, std::string v, int i, int c)
     {
         if (v == "fun" || v == "Cat" || v == "Cfn" || v == "dec" ||
             v == "exp" || v == "if" || v == "else" || v == "return" ||
-            v == "include" || v == "import" || v == "over" || v == "new")
+            v == "import" || v == "over" || v == "new")
             kind = KEYWORD_TOKEN;
         else if (v == "start")
             kind = START_TOKEN;
