@@ -47,7 +47,7 @@
 #include "Negation.h"
 #include "New.h"
 #include "NewExpression.h"
-#include "NewVariableDecleration.h"
+#include "NewVariableDefinition.h"
 #include "NonEquivalenceComparison.h"
 #include "OrComparison.h"
 #include "Output.h"

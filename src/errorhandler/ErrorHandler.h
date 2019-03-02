@@ -17,4 +17,4 @@ class ErrorHandler
   public:
     virtual void handle(Error*) = 0;
     virtual void end() = 0;
-}
+};

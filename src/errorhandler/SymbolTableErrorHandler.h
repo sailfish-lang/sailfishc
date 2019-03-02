@@ -6,19 +6,19 @@
 #include "Error.h"
 #include "ErrorHandler.h"
 
-class LexarErrorHandler : public ErrorHandler
+class SymbolTableErrorHandler : public ErrorHandler
 {
   private:
     bool foundError;
 
   public:
     // constructor
-    LexarErrorHandler()
+    SymbolTableErrorHandler()
     {
         foundError = false;
     };
     // destructor
-    ~LexarErrorHandler(){};
+    ~SymbolTableErrorHandler(){};
     // implement ErrorHandler
     /* virtual */
     void handle(Error*);

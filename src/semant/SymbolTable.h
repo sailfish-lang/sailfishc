@@ -47,14 +47,14 @@ class SymbolTable
 
     // either push to the variables scope if exists or add variable
     // Primitive and List
-    void addSymbol(std::string, std::string, Symbol::SymbolType);
+    bool addSymbol(std::string, std::string, Symbol::SymbolType);
     // Dictionary
-    void addSymbol(std::string, std::string, std::string, std::string,
+    bool addSymbol(std::string, std::string, std::string, std::string,
                    Symbol::SymbolType);
     // Function
-    void addSymbol(std::string, std::string, std::vector<std::string>,
+    bool addSymbol(std::string, std::string, std::vector<std::string>,
                    std::vector<std::string>, Symbol::SymbolType);
     // UDT
-    void addSymbol(std::string, std::string, SymbolTable*, SymbolTable*,
+    bool addSymbol(std::string, std::string, SymbolTable*, SymbolTable*,
                    Symbol::SymbolType);
 };

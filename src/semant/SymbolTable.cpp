@@ -76,14 +76,14 @@ SymbolTable::getSymbol(std::string varName)
     return nullptr;
 }
 
-void
+bool
 SymbolTable::addSymbol(std::string varName, std::string type,
                        Symbol::SymbolType st)
 {
     if (hasVariable(varName))
     {
         // ERROR
-        return;
+        return false;
     }
 
     switch (st)
@@ -104,9 +104,10 @@ SymbolTable::addSymbol(std::string varName, std::string type,
     }
 
     localCache = addToLocalCache(varName, localCache);
+    return true;
 }
 
-void
+bool
 SymbolTable::addSymbol(std::string varName, std::string type,
                        std::string keyType, std::string valueType,
                        Symbol::SymbolType st)
@@ -114,7 +115,7 @@ SymbolTable::addSymbol(std::string varName, std::string type,
     if (hasVariable(varName))
     {
         // ERROR
-        return;
+        return false;
     }
 
     switch (st)
@@ -128,9 +129,10 @@ SymbolTable::addSymbol(std::string varName, std::string type,
     }
 
     localCache = addToLocalCache(varName, localCache);
+    return true;
 }
 
-void
+bool
 SymbolTable::addSymbol(std::string varName, std::string type,
                        std::vector<std::string> inputs,
                        std::vector<std::string> outputs, Symbol::SymbolType st)
@@ -138,7 +140,7 @@ SymbolTable::addSymbol(std::string varName, std::string type,
     if (hasVariable(varName))
     {
         // ERROR
-        return;
+        return false;
     }
 
     switch (st)
@@ -152,9 +154,10 @@ SymbolTable::addSymbol(std::string varName, std::string type,
     }
 
     localCache = addToLocalCache(varName, localCache);
+    return true;
 }
 
-void
+bool
 SymbolTable::addSymbol(std::string varName, std::string type,
                        SymbolTable* attributes, SymbolTable* methods,
                        Symbol::SymbolType st)
@@ -163,7 +166,7 @@ SymbolTable::addSymbol(std::string varName, std::string type,
     if (hasVariable(varName))
     {
         // ERROR
-        return;
+        return false;
     }
 
     switch (st)
@@ -177,4 +180,5 @@ SymbolTable::addSymbol(std::string varName, std::string type,
     }
 
     localCache = addToLocalCache(varName, localCache);
+    return true;
 }

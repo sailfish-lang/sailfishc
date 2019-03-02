@@ -4,8 +4,9 @@
  */
 #pragma once
 #include "Error.h"
+#include "ErrorHandler.h"
 
-class ParserErrorHandler
+class ParserErrorHandler : public ErrorHandler
 {
   private:
     bool foundError;

@@ -18,7 +18,6 @@ class InOrderTraversal : public Visitor
 
     // constructor
     InOrderTraversal(){};
-
     // destructor
     ~InOrderTraversal(){};
 
