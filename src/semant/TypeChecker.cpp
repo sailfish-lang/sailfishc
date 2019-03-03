@@ -34,9 +34,10 @@ void
 TypeChecker::visit(ast::ListDefinition* node)
 {
     std::string name = node->getName()->getValue();
+    std::string type = node->getType()->getType();
 
     bool isUnique =
-        symbolTable->addSymbol(name, "list", Symbol::SymbolType::List);
+        symbolTable->addSymbol(name, type + "[]", Symbol::SymbolType::List);
 
     if (!isUnique)
     {
@@ -49,24 +50,26 @@ TypeChecker::visit(ast::ListDefinition* node)
     visit(node->getExpression());
 }
 
-// void
-// TypeChecker::visit(ast::DictionaryDefinition* node)
-// {
-//     std::string name = node->getName()->getValue();
+void
+TypeChecker::visit(ast::DictionaryDefinition* node)
+{
+    std::string name = node->getName()->getValue();
+    std::string keyType = node->getKeyType()->getType();
+    std::string valueType = node->getValueType()->getType();
 
-//     bool isUnique =
-//         symbolTable->addSymbol(name, "list", Symbol::SymbolType::List);
+    bool isUnique = symbolTable->addSymbol(
+        name, "dictionary", keyType, valueType, Symbol::SymbolType::Dictionary);
 
-//     if (!isUnique)
-//     {
-//         symbolTableErrorHandler->handle(new Error(
-//             node->getName()->getLineNum(),
-//             "Invalid redecleration of a variable with name: " + name + "."));
-//     }
+    if (!isUnique)
+    {
+        symbolTableErrorHandler->handle(new Error(
+            node->getName()->getLineNum(),
+            "Invalid redecleration of a variable with name: " + name + "."));
+    }
 
-//     // visit expression
-//     visit(node->getExpression());
-// }
+    // visit expression
+    visit(node->getExpression());
+}
 
 // void
 // TypeChecker::visit(ast::UserDefinedTypeDefinition* node)

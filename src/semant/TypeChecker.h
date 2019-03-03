@@ -39,7 +39,7 @@ class TypeChecker : public Visitor
     virtual void visit(ast::ListDefinition*);
 
     // // dictionary
-    // virtual void visit(ast::DictionaryDefinition*);
+    virtual void visit(ast::DictionaryDefinition*);
 
     // // function
     // virtual void visit(ast::FunctionDefinition*);

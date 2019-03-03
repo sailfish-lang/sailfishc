@@ -20,4 +20,5 @@ start {
     or
     true
     false
+    <[]>
 }

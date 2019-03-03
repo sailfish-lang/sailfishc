@@ -1,8 +1,8 @@
 // export definition
-exp dec dictionary someDict = new {1 : "hello"}
+exp dec dictionary someDict <[ int : str ]> = new {1 : "hello"}
 
 // general decleration
-dec list someList = new [1, 2]
+dec list someList <[ int ]> = new [1, 2]
 
 // function
 fun someFunc

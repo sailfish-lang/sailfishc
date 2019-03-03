@@ -1,6 +1,8 @@
 start {
 
     
-    dec flt foo = 10.0
-    dec flt foo = 20.0
+    
+    dec dictionary foo <[int : flt]> = new { 10: 10.0 }
+
+    dec list foo <[int> = new [1,2,3]
 }
