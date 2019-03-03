@@ -4,7 +4,6 @@
  */
 #include "Parser.h"
 #include "../ast/Ast.h"
-#include <iostream>
 #include <vector>
 
 // Parser takes in no args, we use a parse function to take in the filename
@@ -633,9 +632,6 @@ Parser::parseExpression()
     }
     else if (tk == "|")
     {
-        // consume '|'
-        getNextUsefulToken();
-
         return (ast::Expression*)parseGroupingExpression();
     }
     else if (tk == "." || tk == "...")
@@ -743,6 +739,9 @@ Parser::parseArrayExpression()
 ast::GroupingExpression*
 Parser::parseGroupingExpression()
 {
+    // consume '|'
+    getNextUsefulToken();
+
     std::vector<ast::ExpressionStatement*> exprs;
 
     while (currentToken->getKind() != Kind::PIPE_TOKEN)
