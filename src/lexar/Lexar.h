@@ -38,6 +38,8 @@ class Lexar
 {
   private:
     Scanner* scanner;
+    int currentLineNum;
+    int currentColNum;
 
   public:
     // constructor

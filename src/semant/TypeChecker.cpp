@@ -22,7 +22,7 @@ TypeChecker::visit(ast::NewVariableDefinition* node)
     if (!isUnique)
     {
         symbolTableErrorHandler->handle(new Error(
-            0, 0,
+            var->getName()->getLineNum(),
             "Invalid redecleration of a variable with name: " + name + "."));
     }
 

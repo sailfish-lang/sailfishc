@@ -28,6 +28,8 @@ createTokenPutback(Kind k, char c, std::string buffer, Scanner* scanner,
 Lexar::Lexar(std::string filename)
 {
     scanner = new Scanner(filename);
+    currentLineNum = 0;
+    currentColNum = 0;
 }
 
 Token*
@@ -36,8 +38,6 @@ Lexar::getNextToken()
     char c;
     int state = State::START;
     std::string buffer = "";
-    int currentLineNum = 1;
-    int currentColNum = 1;
 
     while ((c = scanner->getNextChar()))
     {
