@@ -4,10 +4,11 @@
  */
 #pragma once
 #include "Identifier.h"
+#include "Node.h"
 
 namespace ast
 {
-class DictionaryItem
+class DictionaryItem : public Node
 {
   private:
     Identifier* key;
@@ -15,7 +16,7 @@ class DictionaryItem
 
   public:
     // constructor
-    DictionaryItem(Identifier* k, Identifier* v)
+    DictionaryItem(Identifier* k, Identifier* v, int lineNum) : Node(lineNum)
     {
         key = k;
         value = v;

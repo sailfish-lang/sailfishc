@@ -3,19 +3,20 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "Node.h"
 #include "Statement.h"
 #include <vector>
 
 namespace ast
 {
-class Block : public Statement
+class Block : public Statement, public Node
 {
   private:
     std::vector<Statement*> statements;
 
   public:
     // constructor
-    Block(std::vector<Statement*> v)
+    Block(std::vector<Statement*> v, int lineNum) : Node(lineNum)
     {
         statements = v;
     };

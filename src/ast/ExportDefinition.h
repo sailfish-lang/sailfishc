@@ -4,19 +4,20 @@
  */
 #pragma once
 #include "Exportable.h"
+#include "Node.h"
 #include "SourcePart.h"
 #include <string>
 
 namespace ast
 {
-class ExportDefinition : public SourcePart
+class ExportDefinition : public SourcePart, public Node
 {
   private:
     Exportable* expr;
 
   public:
     // constructor
-    ExportDefinition(Exportable* e)
+    ExportDefinition(Exportable* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };

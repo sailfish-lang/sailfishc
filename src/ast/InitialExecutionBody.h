@@ -4,17 +4,18 @@
  */
 #pragma once
 #include "Block.h"
+#include "Node.h"
 #include "SourcePart.h"
 
 namespace ast
 {
-class InitialExecutionBody : public SourcePart
+class InitialExecutionBody : public SourcePart, public Node
 {
     Block* body;
 
   public:
     // constructor
-    InitialExecutionBody(Block* b)
+    InitialExecutionBody(Block* b, int lineNum) : Node(lineNum)
     {
         body = b;
     };

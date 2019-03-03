@@ -5,11 +5,12 @@
 #pragma once
 #include "Expression.h"
 #include "GeneralDefinition.h"
+#include "Node.h"
 #include "Variable.h"
 
 namespace ast
 {
-class NewVariableDefinition : public GeneralDefinition
+class NewVariableDefinition : public GeneralDefinition, public Node
 {
   private:
     Variable* var;
@@ -17,7 +18,8 @@ class NewVariableDefinition : public GeneralDefinition
 
   public:
     // constructor
-    NewVariableDefinition(Variable* v, Expression* e)
+    NewVariableDefinition(Variable* v, Expression* e, int lineNum)
+        : Node(lineNum)
     {
         var = v;
         expr = e;

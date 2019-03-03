@@ -4,11 +4,12 @@
  */
 #pragma once
 #include "Expression.h"
+#include "Node.h"
 #include "Statement.h"
 
 namespace ast
 {
-class ReturnStatement : public Statement
+class ReturnStatement : public Statement, public Node
 {
   private:
     // optional
@@ -16,7 +17,7 @@ class ReturnStatement : public Statement
 
   public:
     // constructor
-    ReturnStatement(Expression* e)
+    ReturnStatement(Expression* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };

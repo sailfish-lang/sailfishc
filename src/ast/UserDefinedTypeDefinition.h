@@ -3,13 +3,14 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "Node.h"
 #include "SourcePart.h"
 #include "UserDefinedTypeAttributes.h"
 #include "UserDefinedTypeMethods.h"
 
 namespace ast
 {
-class UserDefinedTypeDefinition : public SourcePart
+class UserDefinedTypeDefinition : public SourcePart, public Node
 {
   private:
     UserDefinedTypeAttributes* attributes;
@@ -19,7 +20,8 @@ class UserDefinedTypeDefinition : public SourcePart
   public:
     // constructor
     UserDefinedTypeDefinition(UserDefinedTypeAttributes* a,
-                              UserDefinedTypeMethods* m)
+                              UserDefinedTypeMethods* m, int lineNum)
+        : Node(lineNum)
     {
         attributes = a;
         methods = m;

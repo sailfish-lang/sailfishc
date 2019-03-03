@@ -6,10 +6,11 @@
 #include "Expression.h"
 #include "GeneralDefinition.h"
 #include "Identifier.h"
+#include "Node.h"
 
 namespace ast
 {
-class DictionaryDefinition : public GeneralDefinition
+class DictionaryDefinition : public GeneralDefinition, public Node
 {
   private:
     Identifier* name;
@@ -17,7 +18,8 @@ class DictionaryDefinition : public GeneralDefinition
 
   public:
     // constructor
-    DictionaryDefinition(Identifier* i, Expression* e)
+    DictionaryDefinition(Identifier* i, Expression* e, int lineNum)
+        : Node(lineNum)
     {
         name = i;
         expr = e;

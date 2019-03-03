@@ -4,17 +4,18 @@
  */
 #pragma once
 #include "Expression.h"
+#include "Node.h"
 
 namespace ast
 {
-class NonEquivalenceComparison : public Expression
+class NonEquivalenceComparison : public Expression, public Node
 {
   private:
     Expression* expr;
 
   public:
     // constructor
-    NonEquivalenceComparison(Expression* e)
+    NonEquivalenceComparison(Expression* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };

@@ -3,19 +3,20 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "Node.h"
 #include "Primary.h"
 #include <string>
 
 namespace ast
 {
-class ByteLiteral : public Primary
+class ByteLiteral : public Primary, public Node
 {
   private:
     std::string string;
 
   public:
     // constructor
-    ByteLiteral(std::string s)
+    ByteLiteral(std::string s, int lineNum) : Node(lineNum)
     {
         string = s;
     };

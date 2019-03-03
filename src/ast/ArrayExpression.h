@@ -5,11 +5,12 @@
 #pragma once
 #include "Expression.h"
 #include "IntegerLiteral.h"
+#include "Node.h"
 #include <vector>
 
 namespace ast
 {
-class ArrayExpression : public Expression
+class ArrayExpression : public Expression, public Node
 {
   private:
     std::vector<Expression*> expressionList;
@@ -19,7 +20,8 @@ class ArrayExpression : public Expression
 
   public:
     // constructor
-    ArrayExpression(std::vector<Expression*> e, bool c)
+    ArrayExpression(std::vector<Expression*> e, bool c, int lineNum)
+        : Node(lineNum)
     {
         expressionList = e;
         canBeIndexAccess = c;

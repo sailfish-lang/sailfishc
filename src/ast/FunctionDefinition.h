@@ -7,13 +7,14 @@
 #include "Exportable.h"
 #include "Identifier.h"
 #include "Input.h"
+#include "Node.h"
 #include "Output.h"
 #include "SourcePart.h"
 #include <vector>
 
 namespace ast
 {
-class FunctionDefinition : public SourcePart, public Exportable
+class FunctionDefinition : public SourcePart, public Exportable, public Node
 {
   private:
     Identifier* name;
@@ -24,7 +25,8 @@ class FunctionDefinition : public SourcePart, public Exportable
   public:
     // constructor
     FunctionDefinition(Identifier* i, std::vector<Input*> in,
-                       std::vector<Output*> out, Block* b)
+                       std::vector<Output*> out, Block* b, int lineNum)
+        : Node(lineNum)
     {
         name = i;
         inputList = in;

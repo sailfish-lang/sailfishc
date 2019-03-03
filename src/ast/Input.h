@@ -3,18 +3,19 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "Node.h"
 #include "Variable.h"
 
 namespace ast
 {
-class Input
+class Input : public Node
 {
   private:
     Variable* input;
 
   public:
     // constructor
-    Input(Variable* v)
+    Input(Variable* v, int lineNum) : Node(lineNum)
     {
         input = v;
     };

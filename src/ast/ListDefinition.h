@@ -6,10 +6,11 @@
 #include "Expression.h"
 #include "GeneralDefinition.h"
 #include "Identifier.h"
+#include "Node.h"
 
 namespace ast
 {
-class ListDefinition : public GeneralDefinition
+class ListDefinition : public GeneralDefinition, public Node
 {
   private:
     Identifier* name;
@@ -17,7 +18,7 @@ class ListDefinition : public GeneralDefinition
 
   public:
     // constructor
-    ListDefinition(Identifier* i, Expression* e)
+    ListDefinition(Identifier* i, Expression* e, int lineNum) : Node(lineNum)
     {
         name = i;
         expr = e;

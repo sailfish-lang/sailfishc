@@ -4,12 +4,13 @@
  */
 #pragma once
 #include "Identifier.h"
+#include "Node.h"
 #include "Variable.h"
 #include <vector>
 
 namespace ast
 {
-class UserDefinedTypeAttributes
+class UserDefinedTypeAttributes : public Node
 {
   private:
     Identifier* name;
@@ -17,7 +18,9 @@ class UserDefinedTypeAttributes
 
   public:
     // constructor
-    UserDefinedTypeAttributes(Identifier* i, std::vector<Variable*> v)
+    UserDefinedTypeAttributes(Identifier* i, std::vector<Variable*> v,
+                              int lineNum)
+        : Node(lineNum)
     {
         name = i;
         attributes = v;

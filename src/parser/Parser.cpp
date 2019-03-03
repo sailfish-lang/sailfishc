@@ -42,7 +42,7 @@ Parser::parseStart()
 {
     ast::Source* src = parseSource();
 
-    return new ast::Start(src);
+    return new ast::Start(src, currentToken->getLineNum());
 }
 
 /**
@@ -60,7 +60,7 @@ Parser::parseSource()
         srcParts.push_back(srcPart);
     }
 
-    return new ast::Source(srcParts);
+    return new ast::Source(srcParts, currentToken->getLineNum());
 }
 
 /**
@@ -118,7 +118,7 @@ Parser::parseExportDefinition()
 {
     ast::Exportable* exprt = parseExportable();
 
-    return new ast::ExportDefinition(exprt);
+    return new ast::ExportDefinition(exprt, currentToken->getLineNum());
 }
 
 /**
@@ -159,7 +159,8 @@ Parser::parseExportable()
 ast::FunctionDefinition*
 Parser::parseFunctionDefintion()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
 
     // consume function name
     getNextUsefulToken();
@@ -183,7 +184,8 @@ Parser::parseFunctionDefintion()
 
     ast::Block* body = parseBlock();
 
-    return new ast::FunctionDefinition(name, inputs, outputs, body);
+    return new ast::FunctionDefinition(name, inputs, outputs, body,
+                                       currentToken->getLineNum());
 }
 
 /**
@@ -194,7 +196,7 @@ Parser::parseInput()
 {
     ast::Variable* var = parseVariable();
 
-    return new ast::Input(var);
+    return new ast::Input(var, currentToken->getLineNum());
 }
 
 /**
@@ -203,12 +205,13 @@ Parser::parseInput()
 ast::Output*
 Parser::parseOutput()
 {
-    ast::Typename* type = new ast::Typename(currentToken->getValue());
+    ast::Typename* type =
+        new ast::Typename(currentToken->getValue(), currentToken->getLineNum());
 
     // consume typename
     getNextUsefulToken();
 
-    return new ast::Output(type);
+    return new ast::Output(type, currentToken->getLineNum());
 }
 
 /**
@@ -219,7 +222,7 @@ Parser::parseGeneralDecleration()
 {
     ast::GeneralDefinition* gd = parseGeneralDefinition();
 
-    return new ast::GeneralDecleration(gd);
+    return new ast::GeneralDecleration(gd, currentToken->getLineNum());
 }
 
 /**
@@ -274,7 +277,8 @@ Parser::parseUserDefinedTypeDefinition()
     ast::UserDefinedTypeAttributes* attributes = UserDefinedTypeAttributes();
     ast::UserDefinedTypeMethods* methods = UserDefinedTypeMethods();
 
-    return new ast::UserDefinedTypeDefinition(attributes, methods);
+    return new ast::UserDefinedTypeDefinition(attributes, methods,
+                                              currentToken->getLineNum());
 }
 
 /**
@@ -283,7 +287,8 @@ Parser::parseUserDefinedTypeDefinition()
 ast::UserDefinedTypeAttributes*
 Parser::UserDefinedTypeAttributes()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
@@ -300,7 +305,8 @@ Parser::UserDefinedTypeAttributes()
     // consume '}'
     getNextUsefulToken();
 
-    return new ast::UserDefinedTypeAttributes(name, attributes);
+    return new ast::UserDefinedTypeAttributes(name, attributes,
+                                              currentToken->getLineNum());
 }
 
 /**
@@ -312,7 +318,8 @@ Parser::UserDefinedTypeMethods()
     // consume 'Cfn'
     getNextUsefulToken();
 
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
@@ -334,7 +341,8 @@ Parser::UserDefinedTypeMethods()
     // skip '}'
     getNextUsefulToken();
 
-    return new ast::UserDefinedTypeMethods(name, methods);
+    return new ast::UserDefinedTypeMethods(name, methods,
+                                           currentToken->getLineNum());
 }
 
 /**
@@ -343,7 +351,8 @@ Parser::UserDefinedTypeMethods()
 ast::UserDefinedType*
 Parser::parseUserDefinedType()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
@@ -361,7 +370,8 @@ Parser::parseUserDefinedType()
     // consume '}'
     getNextUsefulToken();
 
-    return new ast::UserDefinedType(name, attributes);
+    return new ast::UserDefinedType(name, attributes,
+                                    currentToken->getLineNum());
 }
 
 /**
@@ -371,7 +381,7 @@ ast::InitialExecutionBody*
 Parser::parseInitialExecutionBody()
 {
     ast::Block* body = parseBlock();
-    return new ast::InitialExecutionBody(body);
+    return new ast::InitialExecutionBody(body, currentToken->getLineNum());
 }
 
 /**
@@ -380,14 +390,15 @@ Parser::parseInitialExecutionBody()
 ast::ListDefinition*
 Parser::parseListDefinition()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
 
     // move to next token
     getNextUsefulToken();
 
     ast::Expression* expr = parseExpression();
 
-    return new ast::ListDefinition(name, expr);
+    return new ast::ListDefinition(name, expr, currentToken->getLineNum());
 }
 
 /**
@@ -396,14 +407,16 @@ Parser::parseListDefinition()
 ast::DictionaryDefinition*
 Parser::parseDictionaryDefinition()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
 
     ast::Expression* expr = parseExpression();
 
-    return new ast::DictionaryDefinition(name, expr);
+    return new ast::DictionaryDefinition(name, expr,
+                                         currentToken->getLineNum());
 }
 
 /**
@@ -416,7 +429,8 @@ Parser::parseNewVariableDefinition()
 
     ast::Expression* expr = (ast::Expression*)parseExpression();
 
-    return new ast::NewVariableDefinition(var, expr);
+    return new ast::NewVariableDefinition(var, expr,
+                                          currentToken->getLineNum());
 }
 
 /**
@@ -477,14 +491,16 @@ Parser::parseExpression()
         // consume '!'
         getNextUsefulToken();
 
-        return (ast::Expression*)new ast::Negation(parseExpression());
+        return (ast::Expression*)new ast::Negation(parseExpression(),
+                                                   currentToken->getLineNum());
     }
     else if (tk == "**")
     {
         // consume '**'
         getNextUsefulToken();
 
-        return (ast::Expression*)new ast::Exponentiation(parseExpression());
+        return (ast::Expression*)new ast::Exponentiation(
+            parseExpression(), currentToken->getLineNum());
     }
     else if (tk == "*" || tk == "/" || tk == "%")
     {
@@ -493,21 +509,24 @@ Parser::parseExpression()
             // consume '*'
             getNextUsefulToken();
 
-            return (ast::Expression*)new ast::Multiplication(parseExpression());
+            return (ast::Expression*)new ast::Multiplication(
+                parseExpression(), currentToken->getLineNum());
         }
         else if (tk == "/")
         {
             // consume '/'
             getNextUsefulToken();
 
-            return (ast::Expression*)new ast::Division(parseExpression());
+            return (ast::Expression*)new ast::Division(
+                parseExpression(), currentToken->getLineNum());
         }
         else if (tk == "%")
         {
             // consume '%'
             getNextUsefulToken();
 
-            return (ast::Expression*)new ast::Modulo(parseExpression());
+            return (ast::Expression*)new ast::Modulo(
+                parseExpression(), currentToken->getLineNum());
         }
     }
     else if (tk == "+" || tk == "-")
@@ -517,14 +536,16 @@ Parser::parseExpression()
             // consume '+'
             getNextUsefulToken();
 
-            return (ast::Expression*)new ast::Addition(parseExpression());
+            return (ast::Expression*)new ast::Addition(
+                parseExpression(), currentToken->getLineNum());
         }
         else if (tk == "-")
         {
             // consume '-'
             getNextUsefulToken();
 
-            return (ast::Expression*)new ast::Subtraction(parseExpression());
+            return (ast::Expression*)new ast::Subtraction(
+                parseExpression(), currentToken->getLineNum());
         }
     }
     else if (tk == ">" || tk == "<" || tk == ">=" || tk == "<=")
@@ -535,14 +556,15 @@ Parser::parseExpression()
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::BinaryGreaterThan(
-                parseExpression());
+                parseExpression(), currentToken->getLineNum());
         }
         else if (tk == "<")
         {
             // skip '<
             getNextUsefulToken();
 
-            return (ast::Expression*)new ast::BinaryLessThan(parseExpression());
+            return (ast::Expression*)new ast::BinaryLessThan(
+                parseExpression(), currentToken->getLineNum());
         }
         else if (tk == ">=")
         {
@@ -550,7 +572,7 @@ Parser::parseExpression()
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::BinaryGreaterThanOrEqual(
-                parseExpression());
+                parseExpression(), currentToken->getLineNum());
         }
         else if (tk == "<=")
         {
@@ -558,7 +580,7 @@ Parser::parseExpression()
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::BinaryLessThanOrEqual(
-                parseExpression());
+                parseExpression(), currentToken->getLineNum());
         }
     }
     else if (tk == "==" || tk == "!=")
@@ -569,7 +591,7 @@ Parser::parseExpression()
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::EquivalenceComparison(
-                parseExpression());
+                parseExpression(), currentToken->getLineNum());
         }
         else
         {
@@ -577,7 +599,7 @@ Parser::parseExpression()
             getNextUsefulToken();
 
             return (ast::Expression*)new ast::NonEquivalenceComparison(
-                parseExpression());
+                parseExpression(), currentToken->getLineNum());
         }
     }
     else if (tk == "and")
@@ -585,21 +607,24 @@ Parser::parseExpression()
         // consume 'and'
         getNextUsefulToken();
 
-        return (ast::Expression*)new ast::AndComparison(parseExpression());
+        return (ast::Expression*)new ast::AndComparison(
+            parseExpression(), currentToken->getLineNum());
     }
     else if (tk == "or")
     {
         // consume 'or'
         getNextUsefulToken();
 
-        return (ast::Expression*)new ast::OrComparison(parseExpression());
+        return (ast::Expression*)new ast::OrComparison(
+            parseExpression(), currentToken->getLineNum());
     }
     else if (tk == "=")
     {
         // consume '='
         getNextUsefulToken();
 
-        return (ast::Expression*)new ast::Assignment(parseExpression());
+        return (ast::Expression*)new ast::Assignment(
+            parseExpression(), currentToken->getLineNum());
     }
     else
     {
@@ -615,7 +640,7 @@ Parser::parseNewExpression()
 {
     ast::New* newVal = parseNew();
 
-    return new ast::NewExpression(newVal);
+    return new ast::NewExpression(newVal, currentToken->getLineNum());
 }
 
 /**
@@ -674,7 +699,8 @@ Parser::parseArrayExpression()
     // consume ']'
     getNextUsefulToken();
 
-    return new ast::ArrayExpression(exprs, canBeIndex);
+    return new ast::ArrayExpression(exprs, canBeIndex,
+                                    currentToken->getLineNum());
 }
 
 /**
@@ -693,7 +719,7 @@ Parser::parseBinaryExpression()
     // consume '|'
     getNextUsefulToken();
 
-    return new ast::BinaryExpression(exprs);
+    return new ast::BinaryExpression(exprs, currentToken->getLineNum());
 }
 
 /**
@@ -726,12 +752,13 @@ Parser::parseMemberAccess()
 ast::AttributeAccess*
 Parser::parseAttributeAccess()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
 
-    return new ast::AttributeAccess(name);
+    return new ast::AttributeAccess(name, currentToken->getLineNum());
 }
 
 /**
@@ -740,14 +767,15 @@ Parser::parseAttributeAccess()
 ast::MethodAccess*
 Parser::parseMethodAccess()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
 
     ast::FunctionCall* fc = parseFunctionCall();
 
-    return new ast::MethodAccess(name, fc);
+    return new ast::MethodAccess(name, fc, currentToken->getLineNum());
 }
 
 /**
@@ -763,7 +791,8 @@ Parser::parseFunctionCall()
 
     while (currentToken->getKind() != Kind::RPAREN_TOKEN)
     {
-        idents.push_back(new ast::Identifier(currentToken->getValue()));
+        idents.push_back(new ast::Identifier(currentToken->getValue(),
+                                             currentToken->getLineNum()));
 
         // consume identifier
         getNextUsefulToken();
@@ -772,7 +801,7 @@ Parser::parseFunctionCall()
     // consume ')'
     getNextUsefulToken();
 
-    return new ast::FunctionCall(idents);
+    return new ast::FunctionCall(idents, currentToken->getLineNum());
 }
 
 /**
@@ -781,7 +810,8 @@ Parser::parseFunctionCall()
 ast::PrimaryExpression*
 Parser::parsePrimaryExpression()
 {
-    return new ast::PrimaryExpression(parsePrimary());
+    return new ast::PrimaryExpression(parsePrimary(),
+                                      currentToken->getLineNum());
 }
 
 /**
@@ -803,27 +833,33 @@ Parser::parsePrimary()
 
     if (kind == Kind::BOOL_TOKEN)
     {
-        return (ast::Primary*)new ast::BooleanLiteral(tk);
+        return (ast::Primary*)new ast::BooleanLiteral(
+            tk, currentToken->getLineNum());
     }
     else if (kind == Kind::INTEGER_TOKEN)
     {
-        return (ast::Primary*)new ast::IntegerLiteral(tk);
+        return (ast::Primary*)new ast::IntegerLiteral(
+            tk, currentToken->getLineNum());
     }
     else if (kind == Kind::FLOAT_TOKEN)
     {
-        return (ast::Primary*)new ast::FloatLiteral(tk);
+        return (ast::Primary*)new ast::FloatLiteral(tk,
+                                                    currentToken->getLineNum());
     }
     else if (kind == Kind::STRING_TOKEN)
     {
-        return (ast::Primary*)new ast::StringLiteral(tk);
+        return (ast::Primary*)new ast::StringLiteral(
+            tk, currentToken->getLineNum());
     }
     else if (kind == Kind::BYTE_TOKEN)
     {
-        return (ast::Primary*)new ast::ByteLiteral(tk);
+        return (ast::Primary*)new ast::ByteLiteral(tk,
+                                                   currentToken->getLineNum());
     }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
-        return (ast::Primary*)new ast::Identifier(tk);
+        return (ast::Primary*)new ast::Identifier(tk,
+                                                  currentToken->getLineNum());
     }
     else
     {
@@ -847,7 +883,8 @@ Parser::parseDictionaryLiteral()
     // consume '}'
     getNextUsefulToken();
 
-    return new ast::DictionaryLiteral(dictionaryItems);
+    return new ast::DictionaryLiteral(dictionaryItems,
+                                      currentToken->getLineNum());
 }
 
 /**
@@ -856,7 +893,8 @@ Parser::parseDictionaryLiteral()
 ast::DictionaryItem*
 Parser::parseDictionaryItem()
 {
-    ast::Identifier* key = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* key = new ast::Identifier(currentToken->getValue(),
+                                               currentToken->getLineNum());
 
     // move on to next token
     getNextUsefulToken();
@@ -864,12 +902,13 @@ Parser::parseDictionaryItem()
     // skip ':'
     getNextUsefulToken();
 
-    ast::Identifier* value = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* value = new ast::Identifier(currentToken->getValue(),
+                                                 currentToken->getLineNum());
 
     // move on to next token
     getNextUsefulToken();
 
-    return new ast::DictionaryItem(key, value);
+    return new ast::DictionaryItem(key, value, currentToken->getLineNum());
 }
 
 /**
@@ -888,7 +927,7 @@ Parser::parseListLiteral()
     // consume ']'
     getNextUsefulToken();
 
-    return new ast::ListLiteral(listItems);
+    return new ast::ListLiteral(listItems, currentToken->getLineNum());
 }
 
 /**
@@ -897,11 +936,12 @@ Parser::parseListLiteral()
 ast::ListItem*
 Parser::parseListItem()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
     // move on to next token
     getNextUsefulToken();
 
-    return new ast::ListItem(name);
+    return new ast::ListItem(name, currentToken->getLineNum());
 }
 
 /**
@@ -914,26 +954,30 @@ Parser::parseVariable()
     // TODO: fix this hack for void input
     if (std::string("void").compare(currentToken->getValue()) == 0)
     {
-        ast::Typename* type = new ast::Typename("void");
-        ast::Identifier* id = new ast::Identifier("void");
+        ast::Typename* type =
+            new ast::Typename("void", currentToken->getLineNum());
+        ast::Identifier* id =
+            new ast::Identifier("void", currentToken->getLineNum());
 
         // consume void
         getNextUsefulToken();
 
-        return new ast::Variable(type, id);
+        return new ast::Variable(type, id, currentToken->getLineNum());
     }
 
-    ast::Typename* type = new ast::Typename(currentToken->getValue());
+    ast::Typename* type =
+        new ast::Typename(currentToken->getValue(), currentToken->getLineNum());
 
     // consume typename
     getNextUsefulToken();
 
-    ast::Identifier* id = new ast::Identifier(currentToken->getValue());
+    ast::Identifier* id = new ast::Identifier(currentToken->getValue(),
+                                              currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
 
-    return new ast::Variable(type, id);
+    return new ast::Variable(type, id, currentToken->getLineNum());
 }
 
 /**
@@ -956,7 +1000,7 @@ Parser::parseBlock()
     // consume '}'
     getNextUsefulToken();
 
-    return new ast::Block(statements);
+    return new ast::Block(statements, currentToken->getLineNum());
 }
 
 /**
@@ -1023,7 +1067,8 @@ Parser::parseIfStatement()
 
     ast::Block* elseStatements = parseBlock();
 
-    return new ast::IfStatement(ifExpr, ifStatements, elseStatements);
+    return new ast::IfStatement(ifExpr, ifStatements, elseStatements,
+                                currentToken->getLineNum());
 }
 
 /**
@@ -1033,7 +1078,7 @@ ast::ExpressionStatement*
 Parser::parseExpressionStatement()
 {
     ast::Expression* expr = parseExpression();
-    return new ast::ExpressionStatement(expr);
+    return new ast::ExpressionStatement(expr, currentToken->getLineNum());
 }
 
 /**
@@ -1044,5 +1089,5 @@ Parser::parseReturnStatement()
 {
     ast::Expression* expr = parseExpression();
 
-    return new ast::ReturnStatement(expr);
+    return new ast::ReturnStatement(expr, currentToken->getLineNum());
 }

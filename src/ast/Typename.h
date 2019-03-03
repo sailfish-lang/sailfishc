@@ -3,18 +3,19 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "Node.h"
 #include <string>
 
 namespace ast
 {
-class Typename
+class Typename : public Node
 {
   private:
     std::string type;
 
   public:
     // constructor
-    Typename(std::string t)
+    Typename(std::string t, int lineNum) : Node(lineNum)
     {
         type = t;
     };

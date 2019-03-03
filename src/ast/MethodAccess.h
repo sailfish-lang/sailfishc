@@ -6,10 +6,11 @@
 #include "FunctionCall.h"
 #include "Identifier.h"
 #include "MemberAccess.h"
+#include "Node.h"
 
 namespace ast
 {
-class MethodAccess : public MemberAccess
+class MethodAccess : public MemberAccess, public Node
 {
   private:
     Identifier* name;
@@ -17,7 +18,7 @@ class MethodAccess : public MemberAccess
 
   public:
     // constructor
-    MethodAccess(Identifier* i, FunctionCall* f)
+    MethodAccess(Identifier* i, FunctionCall* f, int lineNum) : Node(lineNum)
     {
         name = i;
         func = f;

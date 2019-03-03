@@ -5,6 +5,7 @@
 #pragma once
 #include "Exportable.h"
 #include "GeneralDefinition.h"
+#include "Node.h"
 #include "SourcePart.h"
 #include "Statement.h"
 
@@ -12,14 +13,15 @@ namespace ast
 {
 class GeneralDecleration : public SourcePart,
                            public Exportable,
-                           public Statement
+                           public Statement,
+                           public Node
 {
   private:
     GeneralDefinition* definition;
 
   public:
     // constructor
-    GeneralDecleration(GeneralDefinition* g)
+    GeneralDecleration(GeneralDefinition* g, int lineNum) : Node(lineNum)
     {
         definition = g;
     };

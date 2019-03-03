@@ -7,11 +7,12 @@
 #include "Expression.h"
 #include "Identifier.h"
 #include "New.h"
+#include "Node.h"
 #include <vector>
 
 namespace ast
 {
-class UserDefinedType : public New
+class UserDefinedType : public New, public Node
 {
   private:
     Identifier* name;
@@ -19,7 +20,8 @@ class UserDefinedType : public New
 
   public:
     // constructor
-    UserDefinedType(Identifier* i, std::vector<DictionaryItem*> a)
+    UserDefinedType(Identifier* i, std::vector<DictionaryItem*> a, int lineNum)
+        : Node(lineNum)
     {
         name = i;
         attributes = a;

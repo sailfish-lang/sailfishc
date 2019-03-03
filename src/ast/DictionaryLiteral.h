@@ -5,18 +5,20 @@
 #pragma once
 #include "DictionaryItem.h"
 #include "New.h"
+#include "Node.h"
 #include <vector>
 
 namespace ast
 {
-class DictionaryLiteral : public New
+class DictionaryLiteral : public New, public Node
 {
   private:
     std::vector<DictionaryItem*> dictionaryItems;
 
   public:
     // constructor
-    DictionaryLiteral(std::vector<DictionaryItem*> v)
+    DictionaryLiteral(std::vector<DictionaryItem*> v, int lineNum)
+        : Node(lineNum)
     {
         dictionaryItems = v;
     };

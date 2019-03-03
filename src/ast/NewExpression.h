@@ -5,17 +5,18 @@
 #pragma once
 #include "Expression.h"
 #include "New.h"
+#include "Node.h"
 
 namespace ast
 {
-class NewExpression : public Expression
+class NewExpression : public Expression, public Node
 {
   private:
     New* newVal;
 
   public:
     // constructor
-    NewExpression(New* n)
+    NewExpression(New* n, int lineNum) : Node(lineNum)
     {
         newVal = n;
     };

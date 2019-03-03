@@ -5,18 +5,19 @@
 #pragma once
 #include "Expression.h"
 #include "IntegerLiteral.h"
+#include "Node.h"
 #include <vector>
 
 namespace ast
 {
-class BinaryExpression : public Expression
+class BinaryExpression : public Expression, public Node
 {
   private:
     std::vector<Expression*> expressionList;
 
   public:
     // constructor
-    BinaryExpression(std::vector<Expression*> e)
+    BinaryExpression(std::vector<Expression*> e, int lineNum) : Node(lineNum)
     {
         expressionList = e;
     };

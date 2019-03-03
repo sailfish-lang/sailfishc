@@ -3,19 +3,20 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "Node.h"
 #include "Primary.h"
 #include <string>
 
 namespace ast
 {
-class Identifier : public Primary
+class Identifier : public Primary, public Node
 {
   private:
     std::string identifier;
 
   public:
     // constructor
-    Identifier(std::string s)
+    Identifier(std::string s, int lineNum) : Node(lineNum)
     {
         identifier = s;
     };

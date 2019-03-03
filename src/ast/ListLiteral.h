@@ -4,18 +4,19 @@
  */
 #pragma once
 #include "New.h"
+#include "Node.h"
 #include <vector>
 
 namespace ast
 {
-class ListLiteral : public New
+class ListLiteral : public New, public Node
 {
   private:
     std::vector<ListItem*> listItems;
 
   public:
     // constructor
-    ListLiteral(std::vector<ListItem*> v)
+    ListLiteral(std::vector<ListItem*> v, int lineNum) : Node(lineNum)
     {
         listItems = v;
     };

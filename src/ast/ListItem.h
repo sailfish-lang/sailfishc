@@ -4,17 +4,18 @@
  */
 #pragma once
 #include "Identifier.h"
+#include "Node.h"
 
 namespace ast
 {
-class ListItem
+class ListItem : public Node
 {
   private:
     Identifier* name;
 
   public:
     // constructor
-    ListItem(Identifier* i)
+    ListItem(Identifier* i, int lineNum) : Node(lineNum)
     {
         name = i;
     };

@@ -4,11 +4,12 @@
  */
 #pragma once
 #include "Identifier.h"
+#include "Node.h"
 #include "Typename.h"
 
 namespace ast
 {
-class Variable
+class Variable : public Node
 {
   private:
     Typename* type;
@@ -16,7 +17,7 @@ class Variable
 
   public:
     // constructor
-    Variable(Typename* t, Identifier* n)
+    Variable(Typename* t, Identifier* n, int lineNum) : Node(lineNum)
     {
         type = t;
         name = n;

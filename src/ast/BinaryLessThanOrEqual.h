@@ -4,17 +4,18 @@
  */
 #pragma once
 #include "Expression.h"
+#include "Node.h"
 
 namespace ast
 {
-class BinaryLessThanOrEqual : public Expression
+class BinaryLessThanOrEqual : public Expression, public Node
 {
   private:
     Expression* expr;
 
   public:
     // constructor
-    BinaryLessThanOrEqual(Expression* e)
+    BinaryLessThanOrEqual(Expression* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };

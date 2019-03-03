@@ -5,11 +5,12 @@
 #pragma once
 #include "FunctionDefinition.h"
 #include "Identifier.h"
+#include "Node.h"
 #include <vector>
 
 namespace ast
 {
-class UserDefinedTypeMethods
+class UserDefinedTypeMethods : public Node
 {
   private:
     Identifier* name;
@@ -17,7 +18,9 @@ class UserDefinedTypeMethods
 
   public:
     // constructor
-    UserDefinedTypeMethods(Identifier* i, std::vector<FunctionDefinition*> v)
+    UserDefinedTypeMethods(Identifier* i, std::vector<FunctionDefinition*> v,
+                           int lineNum)
+        : Node(lineNum)
     {
         name = i;
         methods = v;

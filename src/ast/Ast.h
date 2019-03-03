@@ -48,6 +48,7 @@
 #include "New.h"
 #include "NewExpression.h"
 #include "NewVariableDefinition.h"
+#include "Node.h"
 #include "NonEquivalenceComparison.h"
 #include "OrComparison.h"
 #include "Output.h"

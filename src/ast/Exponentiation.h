@@ -4,17 +4,18 @@
  */
 #pragma once
 #include "Expression.h"
+#include "Node.h"
 
 namespace ast
 {
-class Exponentiation : public Expression
+class Exponentiation : public Expression, public Node
 {
   private:
     Expression* expr;
 
   public:
     // constructor
-    Exponentiation(Expression* e)
+    Exponentiation(Expression* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };

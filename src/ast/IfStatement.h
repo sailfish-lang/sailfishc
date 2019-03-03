@@ -5,11 +5,12 @@
 #pragma once
 #include "Block.h"
 #include "Expression.h"
+#include "Node.h"
 #include "Statement.h"
 
 namespace ast
 {
-class IfStatement : public Statement
+class IfStatement : public Statement, public Node
 {
   private:
     Expression* ifConditional;
@@ -18,7 +19,8 @@ class IfStatement : public Statement
 
   public:
     // constructor
-    IfStatement(Expression* e, Block* b1, Block* b2)
+    IfStatement(Expression* e, Block* b1, Block* b2, int lineNum)
+        : Node(lineNum)
     {
         ifConditional = e;
         ifStatements = b1;

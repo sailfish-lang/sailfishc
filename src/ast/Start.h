@@ -3,11 +3,12 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "Node.h"
 #include "Source.h"
 
 namespace ast
 {
-class Start
+class Start : public Node
 {
   private:
     // FUTURE: imports
@@ -15,7 +16,7 @@ class Start
 
   public:
     // constructor
-    Start(Source* s)
+    Start(Source* s, int lineNum) : Node(lineNum)
     {
         src = s;
     };

@@ -4,17 +4,18 @@
  */
 #pragma once
 #include "Expression.h"
+#include "Node.h"
 
 namespace ast
 {
-class Assignment : public Expression
+class Assignment : public Expression, public Node
 {
   private:
     Expression* expr;
 
   public:
     // constructor
-    Assignment(Expression* e)
+    Assignment(Expression* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };

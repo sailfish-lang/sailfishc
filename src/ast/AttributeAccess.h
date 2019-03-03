@@ -5,17 +5,18 @@
 #pragma once
 #include "Identifier.h"
 #include "MemberAccess.h"
+#include "Node.h"
 
 namespace ast
 {
-class AttributeAccess : public MemberAccess
+class AttributeAccess : public MemberAccess, public Node
 {
   private:
     Identifier* attribute;
 
   public:
     // constructor
-    AttributeAccess(Identifier* i)
+    AttributeAccess(Identifier* i, int lineNum) : Node(lineNum)
     {
         attribute = i;
     };
