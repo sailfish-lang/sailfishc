@@ -17,10 +17,25 @@ Token*
 Parser::getNextUsefulToken()
 {
     currentToken = lexar->getNextToken();
+
+    // catch errors from the lexar
+    if (currentToken->getKind() == Kind::ERROR_TOKEN)
+    {
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(), currentToken->getValue()));
+    }
+
     while (currentToken->getKind() == COMMENT_TOKEN ||
            currentToken->getKind() == COMMA_TOKEN)
     {
         currentToken = lexar->getNextToken();
+
+        // catch errors from the lexar
+        if (currentToken->getKind() == Kind::ERROR_TOKEN)
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           currentToken->getValue()));
+        }
     }
 }
 

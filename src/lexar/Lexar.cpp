@@ -81,6 +81,10 @@ Lexar::getNextToken()
                 {
                     state = State::INTEGER;
                 }
+                else if (isspace(c))
+                {
+                    state = State::START;
+                }
                 else
                 {
                     switch (c)
@@ -158,6 +162,10 @@ Lexar::getNextToken()
                     case ']':
                         state = State::RBRACKET_PRESTATE;
                         break;
+                    default:
+                        return new Token(Kind::ERROR_TOKEN,
+                                         "Unrecognized character.",
+                                         currentLineNum, currentColNum);
                     }
                 }
                 break;
