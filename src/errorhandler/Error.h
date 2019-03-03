@@ -10,16 +10,14 @@ class Error
 {
   private:
     int line;
-    int col;
     std::string msg;
     std::string errtype;
 
   public:
     // constructor
-    Error(int l, int c, std::string m)
+    Error(int l, std::string m)
     {
         line = l;
-        col = c;
         msg = m;
     }
     // destructor
@@ -38,6 +36,6 @@ class Error
     getPrettyMessage()
     {
         return "[" + errtype + " Error at line: " + std::to_string(line) +
-               " ; column: " + std::to_string(col) + "]: " + msg + "\n";
+               "]: " + msg + "\n";
     }
 };
