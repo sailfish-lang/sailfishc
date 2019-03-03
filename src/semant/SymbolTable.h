@@ -57,4 +57,11 @@ class SymbolTable
     // UDT
     bool addSymbol(std::string, std::string, SymbolTable*, SymbolTable*,
                    Symbol::SymbolType);
+
+    // helper methods
+    bool
+    isGlobalScope()
+    {
+        return scopeLevel == 0;
+    }
 };

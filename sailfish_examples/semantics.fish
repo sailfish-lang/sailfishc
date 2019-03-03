@@ -1,8 +1,8 @@
-start {
-
+fun foo
+<- int i, flt f
+-> void 
+{
     
-    
-    dec dictionary foo <[int : flt]> = new { 10: 10.0 }
-
-    dec list foo <[int> = new [1,2,3]
 }
+
+ dec flt foo = 10.0

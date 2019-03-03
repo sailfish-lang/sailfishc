@@ -55,6 +55,12 @@ Lexar::getNextToken()
 
         if (c == EOF)
         {
+            if (buffer != "")
+            {
+                // add an extra line to clear out the buffer
+                scanner->putBackChar('\n');
+                continue;
+            }
             return new Token(Kind::EOF_TOKEN, buffer, currentLineNum,
                              currentColNum);
         }

@@ -71,6 +71,80 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     visit(node->getExpression());
 }
 
+void
+TypeChecker::visit(ast::FunctionDefinition* node)
+{
+
+    // ensure scope is global since functions cannot be in blocks
+    if (!symbolTable->isGlobalScope())
+    {
+        symbolTableErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Functions can only be declared at the global level, "
+                      "i.e. cannot be nested!"));
+    }
+
+    std::string name = node->getName()->getValue();
+
+    std::vector<std::string> inputs;
+    std::vector<std::string> outputs;
+
+    // enter a scope for this function, starting with the parameters
+    symbolTable->enterScope();
+
+    //  capture for the addition of the function to the symbol table
+    for (auto const& input : node->getInputList())
+    {
+        ast::Variable* var = input->getInput();
+        std::string inp_type = var->getType()->getType();
+
+        // add to list of function inputs
+        inputs.push_back(inp_type);
+    }
+
+    // capture for the addition of the function to the symbol table
+    for (auto const& output : node->getOutputList())
+    {
+        ast::Typename* var = output->getOutput();
+        std::string out_type = var->getType();
+
+        outputs.push_back(out_type);
+    }
+
+    symbolTable->addSymbol(name, "function", inputs, outputs,
+                           Symbol::SymbolType::Function);
+
+    // enter a scope for this function, starting with the parameters
+    symbolTable->enterScope();
+
+    // TODO: don't visit each param for a second time here!
+    //  add each input to the nested scope for the function
+    for (auto const& input : node->getInputList())
+    {
+        ast::Variable* var = input->getInput();
+        std::string inp_name = var->getName()->getValue();
+        std::string inp_type = var->getType()->getType();
+
+        // add to the symbol table
+        bool isUnique = symbolTable->addSymbol(inp_name, inp_type,
+                                               Symbol::SymbolType::Dictionary);
+
+        if (!isUnique)
+        {
+            symbolTableErrorHandler->handle(new Error(
+                node->getName()->getLineNum(),
+                "Invalid redecleration of a variable with name: " + name +
+                    "."));
+        }
+    }
+
+    // visit the function body
+    visit(node->getBody());
+
+    // exit scope once we exit the body
+    symbolTable->exitScope();
+}
+
 // void
 // TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
 // {
