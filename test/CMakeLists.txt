@@ -8,10 +8,10 @@ ADD_LIBRARY(SailfishcLibs
     ../src/parser/Parser.cpp
     ../src/visitor/InOrderTraversal.cpp
     ../src/visitor/Visitor.cpp
-    ../src/semant/symbol_table/DictionarySymbol.cpp
-    ../src/semant/symbol_table/FunctionSymbol.cpp
-    ../src/semant/symbol_table/UDTSymbol.cpp
-    ../src/semant/symbol_table/SymbolTable.cpp
+    ../src/semant/DictionarySymbol.cpp
+    ../src/semant/FunctionSymbol.cpp
+    ../src/semant/UDTSymbol.cpp
+    ../src/semant/SymbolTable.cpp
 )
 
 # Locate GTest

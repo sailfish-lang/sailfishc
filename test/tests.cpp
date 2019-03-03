@@ -6,12 +6,12 @@
 #include "../src/ast/Ast.h"
 #include "../src/lexar/Lexar.h"
 #include "../src/parser/Parser.h"
-#include "../src/semant/symbol_table/DictionarySymbol.h"
-#include "../src/semant/symbol_table/FunctionSymbol.h"
-#include "../src/semant/symbol_table/ListSymbol.h"
-#include "../src/semant/symbol_table/PrimitiveSymbol.h"
-#include "../src/semant/symbol_table/Symbol.h"
-#include "../src/semant/symbol_table/UDTSymbol.h"
+#include "../src/semant/DictionarySymbol.h"
+#include "../src/semant/FunctionSymbol.h"
+#include "../src/semant/ListSymbol.h"
+#include "../src/semant/PrimitiveSymbol.h"
+#include "../src/semant/Symbol.h"
+#include "../src/semant/UDTSymbol.h"
 #include "../src/visitor/InOrderTraversal.h"
 #include <gtest/gtest.h>
 
@@ -55,7 +55,7 @@ TEST(LexarTest, Nonsense)
         Kind::OPERATION_TOKEN,  Kind::COMMENT_TOKEN,    Kind::PIPE_TOKEN,
         Kind::PIPE_TOKEN,       Kind::TRIPLE_DOT_TOKEN, Kind::OPERATION_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::BOOL_TOKEN,       Kind::BOOL_TOKEN,
-        Kind::RCURLEY_TOKEN,
+        Kind::LFISH_TAIL_TOKEN, Kind::RFISH_TAIL_TOKEN, Kind::RCURLEY_TOKEN,
     };
 
     Lexar* lexar = new Lexar("../sailfish_examples/nonsense_lexar.fish");

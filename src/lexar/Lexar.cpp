@@ -92,9 +92,6 @@ Lexar::getNextToken()
                     case '[':
                         return new Token(Kind::LBRACKET_TOKEN, buffer,
                                          currentLineNum, currentColNum);
-                    case ']':
-                        return new Token(Kind::RBRACKET_TOKEN, buffer,
-                                         currentLineNum, currentColNum);
                     case '{':
                         return new Token(Kind::LCURLEY_TOKEN, buffer,
                                          currentLineNum, currentColNum);
@@ -151,6 +148,9 @@ Lexar::getNextToken()
                         break;
                     case '.':
                         state = State::DOUBLE_DOT_PRESTATE;
+                        break;
+                    case ']':
+                        state = State::RBRACKET_PRESTATE;
                         break;
                     }
                 }
@@ -269,6 +269,9 @@ Lexar::getNextToken()
                 else if (c == '-')
                     return new Token(Kind::ARROW_TOKEN, buffer, currentLineNum,
                                      currentColNum);
+                else if (c == '[')
+                    return new Token(Kind::LFISH_TAIL_TOKEN, buffer,
+                                     currentLineNum, currentColNum);
                 else
                     return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
                                               scanner, currentLineNum,
@@ -299,6 +302,15 @@ Lexar::getNextToken()
                                               currentColNum);
                 else
                     return new Token(Kind::TRIPLE_DOT_TOKEN, buffer,
+                                     currentLineNum, currentColNum);
+
+            case State::RBRACKET_PRESTATE:
+                if (c != '>')
+                    return createTokenPutback(Kind::RBRACKET_TOKEN, c, buffer,
+                                              scanner, currentLineNum,
+                                              currentColNum);
+                else
+                    return new Token(Kind::RFISH_TAIL_TOKEN, buffer,
                                      currentLineNum, currentColNum);
             }
         }

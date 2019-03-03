@@ -385,7 +385,7 @@ Parser::parseInitialExecutionBody()
 }
 
 /**
- * ListDefinition := 'list' Identifier = Expression
+ * ListDefinition := 'list' Identifier '<[' Typename ']>' = Expression
  */
 ast::ListDefinition*
 Parser::parseListDefinition()
@@ -396,13 +396,27 @@ Parser::parseListDefinition()
     // move to next token
     getNextUsefulToken();
 
+    // consume fishtail
+    getNextUsefulToken();
+
+    ast::Typename* type =
+        new ast::Typename(currentToken->getValue(), currentToken->getLineNum());
+
+    // consume typename
+    getNextUsefulToken();
+
+    // consume fishtail
+    getNextUsefulToken();
+
     ast::Expression* expr = parseExpression();
 
-    return new ast::ListDefinition(name, expr, currentToken->getLineNum());
+    return new ast::ListDefinition(name, type, expr,
+                                   currentToken->getLineNum());
 }
 
 /**
- * DictionaryDefinition := ''dictionary' Identifier = Expression
+ * DictionaryDefinition := ''dictionary' Identifier '<[' Typename : Typename
+ * ']>' = Expression
  */
 ast::DictionaryDefinition*
 Parser::parseDictionaryDefinition()
@@ -413,9 +427,30 @@ Parser::parseDictionaryDefinition()
     // consume identifier
     getNextUsefulToken();
 
+    // consume fishtail
+    getNextUsefulToken();
+
+    ast::Typename* keyType =
+        new ast::Typename(currentToken->getValue(), currentToken->getLineNum());
+
+    // consume typename
+    getNextUsefulToken();
+
+    // consume colon
+    getNextUsefulToken();
+
+    ast::Typename* valueType =
+        new ast::Typename(currentToken->getValue(), currentToken->getLineNum());
+
+    // consume typename
+    getNextUsefulToken();
+
+    // consume fishtail
+    getNextUsefulToken();
+
     ast::Expression* expr = parseExpression();
 
-    return new ast::DictionaryDefinition(name, expr,
+    return new ast::DictionaryDefinition(name, keyType, valueType, expr,
                                          currentToken->getLineNum());
 }
 

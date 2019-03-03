@@ -7,6 +7,7 @@
 #include "GeneralDefinition.h"
 #include "Identifier.h"
 #include "Node.h"
+#include "Typename.h"
 
 namespace ast
 {
@@ -14,13 +15,16 @@ class ListDefinition : public GeneralDefinition, public Node
 {
   private:
     Identifier* name;
+    Typename* type;
     Expression* expr;
 
   public:
     // constructor
-    ListDefinition(Identifier* i, Expression* e, int lineNum) : Node(lineNum)
+    ListDefinition(Identifier* i, Typename* t, Expression* e, int lineNum)
+        : Node(lineNum)
     {
         name = i;
+        type = t;
         expr = e;
     };
     // destructor
@@ -40,6 +44,11 @@ class ListDefinition : public GeneralDefinition, public Node
     getName()
     {
         return name;
+    }
+    Typename*
+    getType()
+    {
+        return type;
     }
     Expression*
     getExpression()

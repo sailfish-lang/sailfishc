@@ -58,6 +58,10 @@ kindToString(Kind k)
         return "Left Parenthesis";
     case RPAREN_TOKEN:
         return "Right Parenthesis";
+    case LFISH_TAIL_TOKEN:
+        return "Left fish tail";
+    case RFISH_TAIL_TOKEN:
+        return "Right fish tail";
     case KEYWORD_TOKEN:
         return "Keyword";
     case ARROW_TOKEN:
