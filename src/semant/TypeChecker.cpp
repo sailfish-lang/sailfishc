@@ -27,7 +27,7 @@ TypeChecker::visit(ast::NewVariableDefinition* node)
     }
 
     // visit expression
-    visit(node->getExpression());
+    visit(node->getExpressionStatement());
 }
 
 void

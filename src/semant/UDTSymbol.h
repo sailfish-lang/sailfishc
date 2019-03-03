@@ -4,7 +4,7 @@
  */
 #pragma once
 #include "Symbol.h"
-#include "SymbolTable.h"
+// #include "SymbolTable.h"
 
 class UDTSymbol : public Symbol
 {
@@ -23,8 +23,9 @@ class UDTSymbol : public Symbol
     // deconstructor
     ~UDTSymbol()
     {
-        delete attributes;
-        delete methods;
+        // source of memory leaks probably
+        // delete attributes;
+        // delete methods;
     }
     // implements Symbol
     /* virtual */ SymbolTable* getAttributes();

@@ -3,38 +3,49 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "BinaryExpression.h"
 #include "Expression.h"
+#include "ExpressionStatement.h"
 #include "Node.h"
 
 namespace ast
 {
-class NonEquivalenceComparison : public Expression, public Node
+class NonEquivalenceComparison : public BinaryExpression, public Node
 {
   private:
-    Expression* expr;
+    Expression* leftExpr;
+    ExpressionStatement* rightExpr;
 
   public:
     // constructor
-    NonEquivalenceComparison(Expression* e, int lineNum) : Node(lineNum)
+    NonEquivalenceComparison(Expression* l, ExpressionStatement* r, int lineNum)
+        : Node(lineNum)
     {
-        expr = e;
+        leftExpr = l;
+        rightExpr = r;
     };
     // destructor
     ~NonEquivalenceComparison()
     {
-        delete expr;
+        delete leftExpr;
+        delete rightExpr;
     };
-    // implement Expression
-    /* virtual */ ExpressionType
-    getExpressionType()
+    // implement BinaryExpression
+    /* virtual */ BinaryExpressionType
+    getBinaryExpressionType()
     {
-        return ExpressionType::NonEquivalenceComparison;
+        return BinaryExpressionType::NonEquivalenceComparison;
     }
     // get methods
     Expression*
-    getExpr()
+    getLeftExpr()
     {
-        return expr;
+        return leftExpr;
+    }
+    ExpressionStatement*
+    getRightExpr()
+    {
+        return rightExpr;
     }
 };
 }

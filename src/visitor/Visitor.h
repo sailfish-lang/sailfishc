@@ -35,6 +35,7 @@ class Visitor
     virtual void visit(ast::AttributeAccess*);
     virtual void visit(ast::MethodAccess*);
     virtual void visit(ast::FunctionCall*);
+    virtual void visit(ast::UnaryExpression*);
     virtual void visit(ast::PrimaryExpression*);
     virtual void visit(ast::BooleanLiteral*);
     virtual void visit(ast::DictionaryLiteral*);
@@ -55,7 +56,9 @@ class Visitor
     virtual void visit(ast::Modulo*);
     virtual void visit(ast::Addition*);
     virtual void visit(ast::Subtraction*);
+    virtual void visit(ast::GroupingExpression*);
     virtual void visit(ast::BinaryExpression*);
+    virtual void visit(ast::ExpressionOnlyStatement*);
     virtual void visit(ast::BinaryGreaterThan*);
     virtual void visit(ast::BinaryLessThan*);
     virtual void visit(ast::BinaryGreaterThanOrEqual*);

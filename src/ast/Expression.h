@@ -12,27 +12,12 @@ class Expression
     enum ExpressionType
     {
         ArrayExpression,
-        BinaryExpression,
+        GroupingExpression,
         MemberAccess,
         FunctionCallExpression,
-        PrimaryExpression,
-        Negation,
-        Exponentiation,
-        Multiplication,
-        Division,
-        Modulo,
-        Addition,
-        Subtraction,
-        BinaryGreaterThan,
-        BinaryLessThan,
-        BinaryGreaterThanOrEqual,
-        BinaryLessThanOrEqual,
-        EquivalenceComparison,
-        NonEquivalenceComparison,
-        AndComparison,
-        OrComparison,
-        Assignment,
         NewExpression,
+        UnaryExpression,
+        PrimaryExpression,
     };
     virtual ExpressionType getExpressionType() = 0;
 };

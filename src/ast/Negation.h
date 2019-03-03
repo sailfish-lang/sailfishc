@@ -4,18 +4,20 @@
  */
 #pragma once
 #include "Expression.h"
+#include "ExpressionStatement.h"
 #include "Node.h"
+#include "UnaryExpression.h"
 
 namespace ast
 {
-class Negation : public Expression, public Node
+class Negation : public UnaryExpression, public Node
 {
   private:
-    Expression* expr;
+    ExpressionStatement* expr;
 
   public:
     // constructor
-    Negation(Expression* e, int lineNum) : Node(lineNum)
+    Negation(ExpressionStatement* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };
@@ -24,15 +26,15 @@ class Negation : public Expression, public Node
     {
         delete expr;
     };
-    // implement Expression
-    /* virtual */ ExpressionType
-    getExpressionType()
+    // implement UnaryExpression
+    /* virtual */ UnaryExpressionType
+    getUnaryExpressionype()
     {
-        return ExpressionType::Negation;
+        return UnaryExpressionType::Negation;
     }
     // get methods
-    Expression*
-    getExpr()
+    ExpressionStatement*
+    getExpressionStatement()
     {
         return expr;
     }

@@ -3,8 +3,8 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "BinaryExpression.h"
 #include "Block.h"
-#include "Expression.h"
 #include "Node.h"
 #include "Statement.h"
 
@@ -13,13 +13,13 @@ namespace ast
 class IfStatement : public Statement, public Node
 {
   private:
-    Expression* ifConditional;
+    GroupingExpression* ifConditional;
     Block* ifStatements;
     Block* elseStatements;
 
   public:
     // constructor
-    IfStatement(Expression* e, Block* b1, Block* b2, int lineNum)
+    IfStatement(GroupingExpression* e, Block* b1, Block* b2, int lineNum)
         : Node(lineNum)
     {
         ifConditional = e;
@@ -40,7 +40,7 @@ class IfStatement : public Statement, public Node
         return StatementType::IfStatement;
     }
     // get methods
-    Expression*
+    GroupingExpression*
     getIfConditional()
     {
         return ifConditional;

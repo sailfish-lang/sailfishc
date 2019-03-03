@@ -3,38 +3,49 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "BinaryExpression.h"
 #include "Expression.h"
+#include "ExpressionStatement.h"
 #include "Node.h"
 
 namespace ast
 {
-class BinaryLessThanOrEqual : public Expression, public Node
+class BinaryLessThanOrEqual : public BinaryExpression, public Node
 {
   private:
-    Expression* expr;
+    Expression* leftExpr;
+    ExpressionStatement* rightExpr;
 
   public:
     // constructor
-    BinaryLessThanOrEqual(Expression* e, int lineNum) : Node(lineNum)
+    BinaryLessThanOrEqual(Expression* l, ExpressionStatement* r, int lineNum)
+        : Node(lineNum)
     {
-        expr = e;
+        leftExpr = l;
+        rightExpr = r;
     };
     // destructor
     ~BinaryLessThanOrEqual()
     {
-        delete expr;
+        delete leftExpr;
+        delete rightExpr;
     };
-    // implement Expression
-    /* virtual */ ExpressionType
-    getExpressionType()
+    // implement BinaryExpression
+    /* virtual */ BinaryExpressionType
+    getBinaryExpressionType()
     {
-        return ExpressionType::BinaryLessThanOrEqual;
+        return BinaryExpressionType::BinaryLessThanOrEqual;
     }
     // get methods
     Expression*
-    getExpr()
+    getLeftExpr()
     {
-        return expr;
+        return leftExpr;
+    }
+    ExpressionStatement*
+    getRightExpr()
+    {
+        return rightExpr;
     }
 };
 }

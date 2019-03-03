@@ -3,38 +3,49 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "BinaryExpression.h"
 #include "Expression.h"
+#include "ExpressionStatement.h"
 #include "Node.h"
 
 namespace ast
 {
-class Assignment : public Expression, public Node
+class Assignment : public BinaryExpression, public Node
 {
   private:
-    Expression* expr;
+    Expression* leftExpr;
+    ExpressionStatement* rightExpr;
 
   public:
     // constructor
-    Assignment(Expression* e, int lineNum) : Node(lineNum)
+    Assignment(Expression* l, ExpressionStatement* r, int lineNum)
+        : Node(lineNum)
     {
-        expr = e;
+        leftExpr = l;
+        rightExpr = r;
     };
     // destructor
     ~Assignment()
     {
-        delete expr;
+        delete leftExpr;
+        delete rightExpr;
     };
-    // implement Expression
-    /* virtual */ ExpressionType
-    getExpressionType()
+    // implement BinaryExpression
+    /* virtual */ BinaryExpressionType
+    getBinaryExpressionType()
     {
-        return ExpressionType::Assignment;
+        return BinaryExpressionType::Assignment;
     }
     // get methods
     Expression*
-    getExpr()
+    getLeftExpr()
     {
-        return expr;
+        return leftExpr;
+    }
+    ExpressionStatement*
+    getRightExpr()
+    {
+        return rightExpr;
     }
 };
 }

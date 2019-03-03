@@ -6,6 +6,7 @@
 #include "../lexar/Lexar.h"
 #include "../parser/Parser.h"
 #include "../semant/SemanticAnalyzer.h"
+#include "../visitor/InOrderTraversal.h"
 #include <iostream>
 #include <string>
 
@@ -87,11 +88,24 @@ handleCommandLine(int argc, char* const* argv)
         }
         else if (std::string("--parse_only").compare(argv[1]) == 0)
         {
-            std::string filename = argv[2];
-            std::cout << "Parsing " << filename << ".\n\n";
 
-            Parser* p = new Parser();
-            ast::Start* root = p->parse(filename);
+            try
+            {
+                std::string filename = argv[2];
+                std::cout << "Parsing " << filename << ".\n\n";
+
+                Parser* p = new Parser();
+                ast::Start* root = p->parse(filename);
+                InOrderTraversal* iot = new InOrderTraversal();
+                for (auto const& n : iot->getInOrderTraversal(root))
+                {
+                    std::cout << n << "\n";
+                }
+            }
+            catch (const std::string msg)
+            {
+                std::cerr << msg;
+            }
         }
         else if (std::string("--semantic_analysis_only").compare(argv[1]) == 0)
         {

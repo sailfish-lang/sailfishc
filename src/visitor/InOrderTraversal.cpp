@@ -72,7 +72,7 @@ void
 InOrderTraversal::visit(ast::NewVariableDefinition* node)
 {
     visit(node->getVariable());
-    visit(node->getExpression());
+    visit(node->getExpressionStatement());
 
     push("NewVariableDefinition");
 }
@@ -190,7 +190,7 @@ InOrderTraversal::visit(ast::IfStatement* node)
 void
 InOrderTraversal::visit(ast::ExpressionStatement* node)
 {
-    visit(node->getExpression());
+    visit(node->getBinaryExpression());
 
     push("ExpressionStatement");
 }
@@ -198,7 +198,7 @@ InOrderTraversal::visit(ast::ExpressionStatement* node)
 void
 InOrderTraversal::visit(ast::ReturnStatement* node)
 {
-    visit(node->getExpr());
+    visit(node->getExpressionStatement());
 
     push("ReturnStatement");
 }
@@ -322,43 +322,43 @@ InOrderTraversal::visit(ast::ListItem* node)
 void
 InOrderTraversal::visit(ast::IntegerLiteral* node)
 {
-    push("IntegerLiteral");
+    push("IntegerLiteral: " + node->getNum());
 }
 
 void
 InOrderTraversal::visit(ast::FloatLiteral* node)
 {
-    push("FloatLiteral");
+    push("FloatLiteral: " + node->getNum());
 }
 
 void
 InOrderTraversal::visit(ast::ByteLiteral* node)
 {
-    push("ByteLiteral");
+    push("ByteLiteral: " + node->getString());
 }
 
 void
 InOrderTraversal::visit(ast::StringLiteral* node)
 {
-    push("StringLiteral");
+    push("StringLiteral: " + node->getString());
 }
 
 void
 InOrderTraversal::visit(ast::Identifier* node)
 {
-    push("Identifier");
+    push("Identifier: " + node->getValue());
 }
 
 void
 InOrderTraversal::visit(ast::Typename* node)
 {
-    push("Typename");
+    push("Typename: " + node->getType());
 }
 
 void
 InOrderTraversal::visit(ast::Negation* node)
 {
-    visit(node->getExpr());
+    visit(node->getExpressionStatement());
 
     push("Negation");
 }
@@ -366,7 +366,8 @@ InOrderTraversal::visit(ast::Negation* node)
 void
 InOrderTraversal::visit(ast::Exponentiation* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("Exponentiation");
 }
@@ -374,7 +375,8 @@ InOrderTraversal::visit(ast::Exponentiation* node)
 void
 InOrderTraversal::visit(ast::Multiplication* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("Multiplication");
 }
@@ -382,7 +384,8 @@ InOrderTraversal::visit(ast::Multiplication* node)
 void
 InOrderTraversal::visit(ast::Division* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("Division");
 }
@@ -390,7 +393,8 @@ InOrderTraversal::visit(ast::Division* node)
 void
 InOrderTraversal::visit(ast::Modulo* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("Modulo");
 }
@@ -398,7 +402,8 @@ InOrderTraversal::visit(ast::Modulo* node)
 void
 InOrderTraversal::visit(ast::Addition* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("Addition");
 }
@@ -406,15 +411,16 @@ InOrderTraversal::visit(ast::Addition* node)
 void
 InOrderTraversal::visit(ast::Subtraction* node)
 {
-    visit(node->getExpr());
-
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
     push("Subtraction");
 }
 
 void
 InOrderTraversal::visit(ast::BinaryGreaterThan* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("BinaryGreaterThan");
 }
@@ -422,7 +428,8 @@ InOrderTraversal::visit(ast::BinaryGreaterThan* node)
 void
 InOrderTraversal::visit(ast::BinaryLessThan* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("BinaryLessThan");
 }
@@ -430,7 +437,8 @@ InOrderTraversal::visit(ast::BinaryLessThan* node)
 void
 InOrderTraversal::visit(ast::BinaryGreaterThanOrEqual* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("BinaryGreaterThanOrEqual");
 }
@@ -438,7 +446,8 @@ InOrderTraversal::visit(ast::BinaryGreaterThanOrEqual* node)
 void
 InOrderTraversal::visit(ast::BinaryLessThanOrEqual* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("BinaryLessThanOrEqual");
 }
@@ -446,7 +455,8 @@ InOrderTraversal::visit(ast::BinaryLessThanOrEqual* node)
 void
 InOrderTraversal::visit(ast::EquivalenceComparison* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("EquivalenceComparison");
 }
@@ -454,7 +464,8 @@ InOrderTraversal::visit(ast::EquivalenceComparison* node)
 void
 InOrderTraversal::visit(ast::NonEquivalenceComparison* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("NonEquivalenceComparison");
 }
@@ -462,7 +473,8 @@ InOrderTraversal::visit(ast::NonEquivalenceComparison* node)
 void
 InOrderTraversal::visit(ast::AndComparison* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("AndComparison");
 }
@@ -470,7 +482,8 @@ InOrderTraversal::visit(ast::AndComparison* node)
 void
 InOrderTraversal::visit(ast::OrComparison* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("OrComparison");
 }
@@ -478,7 +491,8 @@ InOrderTraversal::visit(ast::OrComparison* node)
 void
 InOrderTraversal::visit(ast::Assignment* node)
 {
-    visit(node->getExpr());
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
 
     push("Assignment");
 }

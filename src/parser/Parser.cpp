@@ -4,11 +4,13 @@
  */
 #include "Parser.h"
 #include "../ast/Ast.h"
+#include <iostream>
 #include <vector>
 
 // Parser takes in no args, we use a parse function to take in the filename
 Parser::Parser()
 {
+    errorHandler = new ParserErrorHandler();
 }
 
 // helper function to get next non comment token
@@ -98,15 +100,27 @@ Parser::parseSourcePart()
         {
             return (ast::SourcePart*)parseUserDefinedTypeDefinition();
         }
+        else
+        {
+            errorHandler->handle(new Error(
+                currentToken->getLineNum(),
+                "Expected an export statement (exp), a function (fun), a "
+                "decleration (dec), or a UDT (Cat). Those are the only "
+                "valid source parts at global source level. Received: " +
+                    currentToken->getValue() + "."));
+        }
         break;
     case Kind::START_TOKEN:
         // consume 'start'
         getNextUsefulToken();
         return (ast::SourcePart*)parseInitialExecutionBody();
     default:
-        throw std::invalid_argument(
-            "unexpected source level code. Expected function, var decleration, "
-            "structure definition, or initial execution statement.");
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(),
+                      "Expected an export statement (exp), a function (fun), a "
+                      "decleration (dec), or a UDT (Cat). Those are the only "
+                      "valid source parts at global source level. Received: " +
+                          currentToken->getValue() + "."));
     }
 }
 
@@ -144,8 +158,10 @@ Parser::parseExportable()
     }
     else
     {
-        throw std::invalid_argument(
-            "expected a function or variable decleration");
+        errorHandler->handle(new Error(
+            currentToken->getLineNum(),
+            "Expected a function (fun) or a decleration (dec). Received: " +
+                currentToken->getValue() + "."));
     }
 }
 
@@ -164,6 +180,15 @@ Parser::parseFunctionDefintion()
 
     // consume function name
     getNextUsefulToken();
+
+    // check for '<-'
+    if (currentToken->getKind() != Kind::ARROW_TOKEN)
+    {
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(),
+                      "Expected a left arrow token. Received: " +
+                          currentToken->getValue() + "."));
+    }
     // consume '<-'
     getNextUsefulToken();
 
@@ -171,6 +196,13 @@ Parser::parseFunctionDefintion()
     while (currentToken->getKind() != Kind::ARROW_TOKEN)
     {
         inputs.push_back(parseInput());
+
+        // if arrow forgotten, will parse until EOF
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right arrow token."));
+        }
     }
 
     // consume '->'
@@ -180,6 +212,13 @@ Parser::parseFunctionDefintion()
     while (currentToken->getKind() != Kind::LCURLEY_TOKEN)
     {
         outputs.push_back(parseOutput());
+
+        // if left curley forgotten, will parse until EOF
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a left curley."));
+        }
     }
 
     ast::Block* body = parseBlock();
@@ -277,6 +316,16 @@ Parser::parseUserDefinedTypeDefinition()
     ast::UserDefinedTypeAttributes* attributes = UserDefinedTypeAttributes();
     ast::UserDefinedTypeMethods* methods = UserDefinedTypeMethods();
 
+    if (attributes->getName()->getValue() != methods->getName()->getValue())
+    {
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(),
+                      "Expected UDT method declerations for " +
+                          methods->getName()->getValue() +
+                          " to follow UDT attribute declerations for " +
+                          attributes->getName()->getValue() + "."));
+    }
+
     return new ast::UserDefinedTypeDefinition(attributes, methods,
                                               currentToken->getLineNum());
 }
@@ -292,6 +341,14 @@ Parser::UserDefinedTypeAttributes()
 
     // consume identifier
     getNextUsefulToken();
+
+    // check for '{'
+    if (currentToken->getKind() != Kind::LCURLEY_TOKEN)
+    {
+        errorHandler->handle(new Error(currentToken->getLineNum(),
+                                       "Expected a left curley. Received: " +
+                                           currentToken->getValue() + "."));
+    }
     // consume '{'
     getNextUsefulToken();
 
@@ -300,6 +357,13 @@ Parser::UserDefinedTypeAttributes()
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
         attributes.push_back(parseVariable());
+
+        // if right curley forgotten, will parse until EOF
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right curley."));
+        }
     }
 
     // consume '}'
@@ -323,6 +387,14 @@ Parser::UserDefinedTypeMethods()
 
     // consume identifier
     getNextUsefulToken();
+
+    // check for '{'
+    if (currentToken->getKind() != Kind::LCURLEY_TOKEN)
+    {
+        errorHandler->handle(new Error(currentToken->getLineNum(),
+                                       "Expected a left curley. Received: " +
+                                           currentToken->getValue() + "."));
+    }
     // consume '{'
     getNextUsefulToken();
 
@@ -334,8 +406,11 @@ Parser::UserDefinedTypeMethods()
 
         methods.push_back(parseFunctionDefintion());
 
-        // consume last token leftover from parseFunctionDefinition()
-        // getNextUsefulToken();
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right curley."));
+        }
     }
 
     // skip '}'
@@ -357,6 +432,13 @@ Parser::parseUserDefinedType()
     // consume identifier
     getNextUsefulToken();
 
+    // check for '{'
+    if (currentToken->getKind() != Kind::LCURLEY_TOKEN)
+    {
+        errorHandler->handle(new Error(currentToken->getLineNum(),
+                                       "Expected a left curley. Received: " +
+                                           currentToken->getValue() + "."));
+    }
     // consume '{'
     getNextUsefulToken();
 
@@ -365,6 +447,12 @@ Parser::parseUserDefinedType()
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
         attributes.push_back(parseDictionaryItem());
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right curley."));
+        }
     }
 
     // consume '}'
@@ -385,7 +473,7 @@ Parser::parseInitialExecutionBody()
 }
 
 /**
- * ListDefinition := 'list' Identifier '<[' Typename ']>' = Expression
+ * ListDefinition := 'list' Identifier '<[' Typename ']>' Expression
  */
 ast::ListDefinition*
 Parser::parseListDefinition()
@@ -396,6 +484,13 @@ Parser::parseListDefinition()
     // move to next token
     getNextUsefulToken();
 
+    // check for '<['
+    if (currentToken->getKind() != Kind::LFISH_TAIL_TOKEN)
+    {
+        errorHandler->handle(new Error(currentToken->getLineNum(),
+                                       "Expected a left fish tail. Received: " +
+                                           currentToken->getValue() + "."));
+    }
     // consume fishtail
     getNextUsefulToken();
 
@@ -405,6 +500,14 @@ Parser::parseListDefinition()
     // consume typename
     getNextUsefulToken();
 
+    // check for ']>'
+    if (currentToken->getKind() != Kind::RFISH_TAIL_TOKEN)
+    {
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(),
+                      "Expected a right fish tail. Received: " +
+                          currentToken->getValue() + "."));
+    }
     // consume fishtail
     getNextUsefulToken();
 
@@ -416,7 +519,7 @@ Parser::parseListDefinition()
 
 /**
  * DictionaryDefinition := ''dictionary' Identifier '<[' Typename : Typename
- * ']>' = Expression
+ * ']>' Expression
  */
 ast::DictionaryDefinition*
 Parser::parseDictionaryDefinition()
@@ -427,6 +530,13 @@ Parser::parseDictionaryDefinition()
     // consume identifier
     getNextUsefulToken();
 
+    // check for '<['
+    if (currentToken->getKind() != Kind::LFISH_TAIL_TOKEN)
+    {
+        errorHandler->handle(new Error(currentToken->getLineNum(),
+                                       "Expected a left fish tail. Received: " +
+                                           currentToken->getValue() + "."));
+    }
     // consume fishtail
     getNextUsefulToken();
 
@@ -436,6 +546,13 @@ Parser::parseDictionaryDefinition()
     // consume typename
     getNextUsefulToken();
 
+    // check for ':'
+    if (currentToken->getKind() != Kind::COLON_TOKEN)
+    {
+        errorHandler->handle(new Error(
+            currentToken->getLineNum(),
+            "Expected a colon. Received: " + currentToken->getValue() + "."));
+    }
     // consume colon
     getNextUsefulToken();
 
@@ -445,6 +562,14 @@ Parser::parseDictionaryDefinition()
     // consume typename
     getNextUsefulToken();
 
+    // check for ']>'
+    if (currentToken->getKind() != Kind::RFISH_TAIL_TOKEN)
+    {
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(),
+                      "Expected a right fish tail. Received: " +
+                          currentToken->getValue() + "."));
+    }
     // consume fishtail
     getNextUsefulToken();
 
@@ -455,33 +580,36 @@ Parser::parseDictionaryDefinition()
 }
 
 /**
- * NewVariableDefinition := Variable '=' Expression
+ * NewVariableDefinition := Variable '=' ExpressionStatement
  */
 ast::NewVariableDefinition*
 Parser::parseNewVariableDefinition()
 {
     ast::Variable* var = parseVariable();
 
-    ast::Expression* expr = (ast::Expression*)parseExpression();
+    // check for '='
+    if (currentToken->getValue() != "=")
+    {
+        errorHandler->handle(new Error(currentToken->getLineNum(),
+                                       "Expected an equals sign. Received: " +
+                                           currentToken->getValue() + "."));
+    }
+    // consume '='
+    getNextUsefulToken();
+
+    ast::ExpressionStatement* expr = parseExpressionStatement();
 
     return new ast::NewVariableDefinition(var, expr,
                                           currentToken->getLineNum());
 }
 
 /**
- * Expression := ArrayExpression |
+ * Expression := NewExpression |
+ *               ArrayExpression |
+ *               GroupingExpression |
  *               MemberAccess |
  *               FunctionCall |
- *               '(' ')' |
- *               '!' Expression |
- *               '**' Expression |
- *               ('*' | '/' | '%') Expression |
- *               ('+' | '-') Expression|
- *               ('>' | '<' | '>=' | '<=') Expression |
- *               ('==' | '!=') Expression|
- *               'and' Expression |
- *               'or' Expression |
- *               '=' Expression |
+ *               UnaryExpression |
  *               PrimaryExpression
  */
 ast::Expression*
@@ -508,7 +636,7 @@ Parser::parseExpression()
         // consume '|'
         getNextUsefulToken();
 
-        return (ast::Expression*)parseBinaryExpression();
+        return (ast::Expression*)parseGroupingExpression();
     }
     else if (tk == "." || tk == "...")
     {
@@ -523,143 +651,8 @@ Parser::parseExpression()
     }
     else if (tk == "!")
     {
-        // consume '!'
-        getNextUsefulToken();
-
-        return (ast::Expression*)new ast::Negation(parseExpression(),
-                                                   currentToken->getLineNum());
-    }
-    else if (tk == "**")
-    {
-        // consume '**'
-        getNextUsefulToken();
-
-        return (ast::Expression*)new ast::Exponentiation(
-            parseExpression(), currentToken->getLineNum());
-    }
-    else if (tk == "*" || tk == "/" || tk == "%")
-    {
-        if (tk == "*")
-        {
-            // consume '*'
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::Multiplication(
-                parseExpression(), currentToken->getLineNum());
-        }
-        else if (tk == "/")
-        {
-            // consume '/'
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::Division(
-                parseExpression(), currentToken->getLineNum());
-        }
-        else if (tk == "%")
-        {
-            // consume '%'
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::Modulo(
-                parseExpression(), currentToken->getLineNum());
-        }
-    }
-    else if (tk == "+" || tk == "-")
-    {
-        if (tk == "+")
-        {
-            // consume '+'
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::Addition(
-                parseExpression(), currentToken->getLineNum());
-        }
-        else if (tk == "-")
-        {
-            // consume '-'
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::Subtraction(
-                parseExpression(), currentToken->getLineNum());
-        }
-    }
-    else if (tk == ">" || tk == "<" || tk == ">=" || tk == "<=")
-    {
-        if (tk == ">")
-        {
-            // consume '=='
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::BinaryGreaterThan(
-                parseExpression(), currentToken->getLineNum());
-        }
-        else if (tk == "<")
-        {
-            // skip '<
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::BinaryLessThan(
-                parseExpression(), currentToken->getLineNum());
-        }
-        else if (tk == ">=")
-        {
-            // consume '>='
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::BinaryGreaterThanOrEqual(
-                parseExpression(), currentToken->getLineNum());
-        }
-        else if (tk == "<=")
-        {
-            // consume '<='
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::BinaryLessThanOrEqual(
-                parseExpression(), currentToken->getLineNum());
-        }
-    }
-    else if (tk == "==" || tk == "!=")
-    {
-        if (tk == "==")
-        {
-            // consume '=='
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::EquivalenceComparison(
-                parseExpression(), currentToken->getLineNum());
-        }
-        else
-        {
-            // consume '!='
-            getNextUsefulToken();
-
-            return (ast::Expression*)new ast::NonEquivalenceComparison(
-                parseExpression(), currentToken->getLineNum());
-        }
-    }
-    else if (tk == "and")
-    {
-        // consume 'and'
-        getNextUsefulToken();
-
-        return (ast::Expression*)new ast::AndComparison(
-            parseExpression(), currentToken->getLineNum());
-    }
-    else if (tk == "or")
-    {
-        // consume 'or'
-        getNextUsefulToken();
-
-        return (ast::Expression*)new ast::OrComparison(
-            parseExpression(), currentToken->getLineNum());
-    }
-    else if (tk == "=")
-    {
-        // consume '='
-        getNextUsefulToken();
-
-        return (ast::Expression*)new ast::Assignment(
-            parseExpression(), currentToken->getLineNum());
+        // only one case of unary right now
+        return (ast::Expression*)parseUnaryExpression();
     }
     else
     {
@@ -723,6 +716,12 @@ Parser::parseArrayExpression()
     while (currentToken->getKind() != Kind::RBRACKET_TOKEN)
     {
         exprs.push_back(parseExpression());
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right bracket."));
+        }
     }
 
     // if more than one expression in list, it cannot be an index access
@@ -739,22 +738,28 @@ Parser::parseArrayExpression()
 }
 
 /**
- * BinaryExpression := '|' Expression* '|'
+ * GroupingExpression := '|' ExpressionStatement* '|'
  */
-ast::BinaryExpression*
-Parser::parseBinaryExpression()
+ast::GroupingExpression*
+Parser::parseGroupingExpression()
 {
-    std::vector<ast::Expression*> exprs;
+    std::vector<ast::ExpressionStatement*> exprs;
 
     while (currentToken->getKind() != Kind::PIPE_TOKEN)
     {
-        exprs.push_back(parseExpression());
+        exprs.push_back(parseExpressionStatement());
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(
+                new Error(currentToken->getLineNum(), "Missing a pipe."));
+        }
     }
 
     // consume '|'
     getNextUsefulToken();
 
-    return new ast::BinaryExpression(exprs, currentToken->getLineNum());
+    return new ast::GroupingExpression(exprs, currentToken->getLineNum());
 }
 
 /**
@@ -831,12 +836,252 @@ Parser::parseFunctionCall()
 
         // consume identifier
         getNextUsefulToken();
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right parenthesis."));
+        }
     }
 
     // consume ')'
     getNextUsefulToken();
 
     return new ast::FunctionCall(idents, currentToken->getLineNum());
+}
+
+/**
+ * UnaryExpression := Negation
+ */
+ast::UnaryExpression*
+Parser::parseUnaryExpression()
+{
+    std::string tk = currentToken->getValue();
+    if (tk == "!")
+    {
+        // consume '!'
+        getNextUsefulToken();
+
+        return (ast::UnaryExpression*)new ast::Negation(
+            parseExpressionStatement(), currentToken->getLineNum());
+    }
+}
+
+/**
+ * BinaryExpression := Exponentiation |
+ *                     MultDivMod |
+ *                     Arithmetic |
+ *                     Comparison |
+ *                     Equivalence |
+ *                     LogicalComparison |
+ *                     Assignment |
+ *                     ExpressionOnlyStatement
+ */
+ast::BinaryExpression*
+Parser::parseBinaryExpression()
+{
+    ast::Expression* leftExpr = parseExpression();
+
+    std::string tk = currentToken->getValue();
+    int lineNum = currentToken->getLineNum();
+
+    // if at the end of the file, just return a PrimaryExpression
+    if (currentToken->isEOF())
+    {
+        return (ast::BinaryExpression*)new ast::ExpressionOnlyStatement(
+            leftExpr, lineNum);
+    }
+
+    // Expression ** Expression
+    if (tk == "**")
+    {
+        // consume '**'
+        getNextUsefulToken();
+
+        ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+        return (ast::BinaryExpression*)new ast::Exponentiation(
+            leftExpr, rightExpr, lineNum);
+    }
+
+    // Expression ['*' | '/' | '%'] Expression
+    if (tk == "*" || tk == "/" || tk == "%")
+    {
+        if (tk == "*")
+        {
+            // consume '*'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::Multiplication(
+                leftExpr, rightExpr, lineNum);
+        }
+
+        if (tk == "/")
+        {
+            // consume '/'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::Division(
+                leftExpr, rightExpr, lineNum);
+        }
+
+        if (tk == "%")
+        {
+            // consume '%'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::Modulo(leftExpr, rightExpr,
+                                                           lineNum);
+        }
+    }
+
+    // Expression ['+' | '-'] Expression
+    if (tk == "+" || tk == "-")
+    {
+        if (tk == "+")
+        {
+            // consume '+'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::Addition(
+                leftExpr, rightExpr, lineNum);
+        }
+
+        if (tk == "-")
+        {
+            // consume '-'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::Subtraction(
+                leftExpr, rightExpr, lineNum);
+        }
+    }
+
+    // Expression ['>', '>=', '<', '<='] Expression
+    if (tk == ">" || tk == ">=" || tk == "<" || tk == "<=")
+    {
+        if (tk == ">")
+        {
+            // consume '>'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::BinaryGreaterThan(
+                leftExpr, rightExpr, lineNum);
+        }
+
+        if (tk == ">=")
+        {
+            // consume '>='
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::BinaryGreaterThanOrEqual(
+                leftExpr, rightExpr, lineNum);
+        }
+
+        if (tk == "<")
+        {
+            // consume '<'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::BinaryLessThan(
+                leftExpr, rightExpr, lineNum);
+        }
+
+        if (tk == "<=")
+        {
+            // consume '<='
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::BinaryLessThanOrEqual(
+                leftExpr, rightExpr, lineNum);
+        }
+    }
+
+    // Expression ['==' | '!='] Expression
+    if (tk == "==" || tk == "!=")
+    {
+        if (tk == "==")
+        {
+            // consume '=='
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::EquivalenceComparison(
+                leftExpr, rightExpr, lineNum);
+        }
+
+        if (tk == "!=")
+        {
+            // consume '!='
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::NonEquivalenceComparison(
+                leftExpr, rightExpr, lineNum);
+        }
+    }
+
+    // Expression ['and' | 'or'] Expression
+    if (tk == "and" || tk == "or")
+    {
+        if (tk == "and")
+        {
+            // consume 'and'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::AndComparison(
+                leftExpr, rightExpr, lineNum);
+        }
+
+        if (tk == "or")
+        {
+            // consume 'or'
+            getNextUsefulToken();
+
+            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+            return (ast::BinaryExpression*)new ast::OrComparison(
+                leftExpr, rightExpr, lineNum);
+        }
+    }
+
+    // Expression '=' Expression
+    if (tk == "=")
+    {
+        // consume '='
+        getNextUsefulToken();
+
+        ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+
+        return (ast::BinaryExpression*)new ast::Assignment(leftExpr, rightExpr,
+                                                           lineNum);
+    }
+
+    // PrimaryExpression
+    return (ast::BinaryExpression*)new ast::ExpressionOnlyStatement(leftExpr,
+                                                                    lineNum);
 }
 
 /**
@@ -898,7 +1143,11 @@ Parser::parsePrimary()
     }
     else
     {
-        throw std::invalid_argument("unexpected literal");
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(),
+                      "Expected a literal of type bool, int, flt, str, byte, "
+                      "or a UDT. Instead received: " +
+                          currentToken->getValue() + "."));
     }
 }
 
@@ -913,6 +1162,12 @@ Parser::parseDictionaryLiteral()
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
         dictionaryItems.push_back(parseDictionaryItem());
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right curley."));
+        }
     }
 
     // consume '}'
@@ -931,16 +1186,23 @@ Parser::parseDictionaryItem()
     ast::Identifier* key = new ast::Identifier(currentToken->getValue(),
                                                currentToken->getLineNum());
 
-    // move on to next token
+    // consume identifier
     getNextUsefulToken();
 
-    // skip ':'
+    // check for ':'
+    if (currentToken->getKind() != Kind::COLON_TOKEN)
+    {
+        errorHandler->handle(new Error(
+            currentToken->getLineNum(),
+            "Expected a colon. Received: " + currentToken->getValue() + "."));
+    }
+    // consume ':'
     getNextUsefulToken();
 
     ast::Identifier* value = new ast::Identifier(currentToken->getValue(),
                                                  currentToken->getLineNum());
 
-    // move on to next token
+    // consume identifier
     getNextUsefulToken();
 
     return new ast::DictionaryItem(key, value, currentToken->getLineNum());
@@ -957,6 +1219,12 @@ Parser::parseListLiteral()
     while (currentToken->getKind() != Kind::RBRACKET_TOKEN)
     {
         listItems.push_back(parseListItem());
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right bracket."));
+        }
     }
 
     // consume ']'
@@ -973,7 +1241,7 @@ Parser::parseListItem()
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
                                                 currentToken->getLineNum());
-    // move on to next token
+    // consume identifier
     getNextUsefulToken();
 
     return new ast::ListItem(name, currentToken->getLineNum());
@@ -1030,6 +1298,12 @@ Parser::parseBlock()
     {
         ast::Statement* s = parseStatement();
         statements.push_back(s);
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right curley."));
+        }
     }
 
     // consume '}'
@@ -1077,6 +1351,13 @@ Parser::parseStatement()
 
             return (ast::Statement*)parseGeneralDecleration();
         }
+        else
+        {
+            errorHandler->handle(
+                new Error(currentToken->getLineNum(),
+                          "Expected if, return, or dec. Received: " +
+                              currentToken->getValue() + "."));
+        }
     }
 
     case Kind::LCURLEY_TOKEN:
@@ -1088,15 +1369,21 @@ Parser::parseStatement()
 }
 
 /**
- * IfStatement := 'if' Expression Block 'else' Block
+ * IfStatement := 'if' GroupingExpression Block 'else' Block
  */
 ast::IfStatement*
 Parser::parseIfStatement()
 {
-    ast::Expression* ifExpr = parseExpression();
+    ast::GroupingExpression* ifExpr = parseGroupingExpression();
 
     ast::Block* ifStatements = parseBlock();
 
+    if (currentToken->getValue() != "else")
+    {
+        errorHandler->handle(new Error(
+            currentToken->getLineNum(),
+            "Expected else. Received: " + currentToken->getValue() + "."));
+    }
     // skip 'else'
     getNextUsefulToken();
 
@@ -1107,22 +1394,23 @@ Parser::parseIfStatement()
 }
 
 /**
- *
+ * ExpressionStatement := BinaryExpression
  */
 ast::ExpressionStatement*
 Parser::parseExpressionStatement()
 {
-    ast::Expression* expr = parseExpression();
+    ast::BinaryExpression* expr = parseBinaryExpression();
+
     return new ast::ExpressionStatement(expr, currentToken->getLineNum());
 }
 
 /**
- * ReturnStatement := 'return' Expression
+ * ReturnStatement := 'return' ExpressionStatement
  */
 ast::ReturnStatement*
 Parser::parseReturnStatement()
 {
-    ast::Expression* expr = parseExpression();
+    ast::BinaryExpression* expr = parseBinaryExpression();
 
     return new ast::ReturnStatement(expr, currentToken->getLineNum());
 }

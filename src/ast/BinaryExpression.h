@@ -3,37 +3,31 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Expression.h"
-#include "IntegerLiteral.h"
-#include "Node.h"
-#include <vector>
 
 namespace ast
 {
-class BinaryExpression : public Expression, public Node
+class BinaryExpression
 {
-  private:
-    std::vector<Expression*> expressionList;
-
   public:
-    // constructor
-    BinaryExpression(std::vector<Expression*> e, int lineNum) : Node(lineNum)
+    enum BinaryExpressionType
     {
-        expressionList = e;
+        Exponentiation,
+        Multiplication,
+        Division,
+        Modulo,
+        Addition,
+        Subtraction,
+        BinaryGreaterThan,
+        BinaryLessThan,
+        BinaryGreaterThanOrEqual,
+        BinaryLessThanOrEqual,
+        EquivalenceComparison,
+        NonEquivalenceComparison,
+        AndComparison,
+        OrComparison,
+        Assignment,
+        ExpressionOnlyStatement,
     };
-    // destructor
-    ~BinaryExpression(){};
-    // implement Expression
-    /* virtual */ ExpressionType
-    getExpressionType()
-    {
-        return ExpressionType::BinaryExpression;
-    }
-    // get method
-    std::vector<Expression*>
-    getExpressionList()
-    {
-        return expressionList;
-    }
+    virtual BinaryExpressionType getBinaryExpressionType() = 0;
 };
 }

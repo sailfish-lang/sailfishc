@@ -4,6 +4,9 @@
  */
 #pragma once
 #include "../ast/Ast.h"
+#include "../errorhandler/Error.h"
+#include "../errorhandler/ErrorHandler.h"
+#include "../errorhandler/ParserErrorHandler.h"
 #include "../lexar/Lexar.h"
 #include <string>
 
@@ -12,6 +15,7 @@ class Parser
   private:
     Lexar* lexar;
     Token* currentToken; // LL(1)
+    ErrorHandler* errorHandler;
 
     // helper function for ignoring extraneous tokens
     Token* getNextUsefulToken();
@@ -49,13 +53,16 @@ class Parser
 
     ast::ArrayExpression* parseArrayExpression();
 
-    ast::BinaryExpression* parseBinaryExpression();
+    ast::GroupingExpression* parseGroupingExpression();
 
     ast::MemberAccess* parseMemberAccess();
     ast::AttributeAccess* parseAttributeAccess();
     ast::MethodAccess* parseMethodAccess();
 
     ast::FunctionCall* parseFunctionCall();
+
+    ast::UnaryExpression* parseUnaryExpression();
+    ast::BinaryExpression* parseBinaryExpression();
 
     ast::PrimaryExpression* parsePrimaryExpression();
     ast::Primary* parsePrimary();

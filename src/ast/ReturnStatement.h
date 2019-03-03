@@ -3,7 +3,7 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Expression.h"
+#include "ExpressionStatement.h"
 #include "Node.h"
 #include "Statement.h"
 
@@ -12,12 +12,11 @@ namespace ast
 class ReturnStatement : public Statement, public Node
 {
   private:
-    // optional
-    Expression* expr;
+    BinaryExpression* expr;
 
   public:
     // constructor
-    ReturnStatement(Expression* e, int lineNum) : Node(lineNum)
+    ReturnStatement(BinaryExpression* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };
@@ -33,8 +32,8 @@ class ReturnStatement : public Statement, public Node
         return StatementType::ReturnStatement;
     }
     // get methods
-    Expression*
-    getExpr()
+    BinaryExpression*
+    getExpressionStatement()
     {
         return expr;
     }
