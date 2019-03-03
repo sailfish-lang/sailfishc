@@ -56,9 +56,7 @@ Parser::parse(const std::string filename)
 ast::Start*
 Parser::parseStart()
 {
-    ast::Source* src = parseSource();
-
-    return new ast::Start(src, currentToken->getLineNum());
+    return new ast::Start(parseSource(), currentToken->getLineNum());
 }
 
 /**
@@ -144,9 +142,8 @@ Parser::parseSourcePart()
 ast::ExportDefinition*
 Parser::parseExportDefinition()
 {
-    ast::Exportable* exprt = parseExportable();
-
-    return new ast::ExportDefinition(exprt, currentToken->getLineNum());
+    return new ast::ExportDefinition(parseExportable(),
+                                     currentToken->getLineNum());
 }
 
 /**
@@ -247,9 +244,7 @@ Parser::parseFunctionDefintion()
 ast::Input*
 Parser::parseInput()
 {
-    ast::Variable* var = parseVariable();
-
-    return new ast::Input(var, currentToken->getLineNum());
+    return new ast::Input(parseVariable(), currentToken->getLineNum());
 }
 
 /**
@@ -273,9 +268,8 @@ Parser::parseOutput()
 ast::GeneralDecleration*
 Parser::parseGeneralDecleration()
 {
-    ast::GeneralDefinition* gd = parseGeneralDefinition();
-
-    return new ast::GeneralDecleration(gd, currentToken->getLineNum());
+    return new ast::GeneralDecleration(parseGeneralDefinition(),
+                                       currentToken->getLineNum());
 }
 
 /**
@@ -482,8 +476,8 @@ Parser::parseUserDefinedType()
 ast::InitialExecutionBody*
 Parser::parseInitialExecutionBody()
 {
-    ast::Block* body = parseBlock();
-    return new ast::InitialExecutionBody(body, currentToken->getLineNum());
+    return new ast::InitialExecutionBody(parseBlock(),
+                                         currentToken->getLineNum());
 }
 
 /**
@@ -1413,9 +1407,8 @@ Parser::parseIfStatement()
 ast::ExpressionStatement*
 Parser::parseExpressionStatement()
 {
-    ast::BinaryExpression* expr = parseBinaryExpression();
-
-    return new ast::ExpressionStatement(expr, currentToken->getLineNum());
+    return new ast::ExpressionStatement(parseBinaryExpression(),
+                                        currentToken->getLineNum());
 }
 
 /**
@@ -1424,7 +1417,6 @@ Parser::parseExpressionStatement()
 ast::ReturnStatement*
 Parser::parseReturnStatement()
 {
-    ast::BinaryExpression* expr = parseBinaryExpression();
-
-    return new ast::ReturnStatement(expr, currentToken->getLineNum());
+    return new ast::ReturnStatement(parseBinaryExpression(),
+                                    currentToken->getLineNum());
 }
