@@ -32,18 +32,22 @@ class TypeChecker : public Visitor
     // visit all nodes and analyze
     void check(ast::Start*);
 
-    // // primitives
+    // primitives
     void visit(ast::NewVariableDefinition*);
 
-    // // list
-    virtual void visit(ast::ListDefinition*);
+    // list
+    void visit(ast::ListDefinition*);
 
-    // // dictionary
-    virtual void visit(ast::DictionaryDefinition*);
+    // dictionary
+    void visit(ast::DictionaryDefinition*);
 
-    // // function
-    virtual void visit(ast::FunctionDefinition*);
+    // function
+    void visit(ast::FunctionDefinition*);
 
-    // // udt
-    // virtual void visit(ast::UserDefinedTypeDefinition*);
+    // udt
+    void visit(ast::UserDefinedTypeDefinition*);
+
+    // all nodes containing block statements must create enter/exit scopes
+    virtual void visit(ast::InitialExecutionBody*);
+    virtual void visit(ast::IfStatement*);
 };

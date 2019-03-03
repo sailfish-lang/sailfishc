@@ -89,9 +89,6 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     std::vector<std::string> inputs;
     std::vector<std::string> outputs;
 
-    // enter a scope for this function, starting with the parameters
-    symbolTable->enterScope();
-
     //  capture for the addition of the function to the symbol table
     for (auto const& input : node->getInputList())
     {
@@ -145,75 +142,110 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     symbolTable->exitScope();
 }
 
-// void
-// TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
-// {
-//     ast::UserDefinedTypeAttributes* attributes = node->getAttributes();
-//     ast::UserDefinedTypeMethods* methods = node->getMethods();
+void
+TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
+{
 
-//     // check that the names match
-//     std::string name_a = attributes->getName()->getValue();
-//     std::string name_m = methods->getName()->getValue();
+    // ensure scope is global since functions cannot be in blocks
+    if (!symbolTable->isGlobalScope())
+    {
+        symbolTableErrorHandler->handle(
+            new Error(node->getAttributes()->getName()->getLineNum(),
+                      "UDT's can only be declared at the global level, "
+                      "i.e. cannot be nested!"));
+    }
 
-//     if (name_a != name_m)
-//     {
-//         symbolTableErrorHandler->handle(new Error(
-//             attributes->getLineNum(),
-//             "Expected UDT attributes and methods to be for same UDT, i.e.
-//             name " "of attributes: " +
-//                 name_a + " and name of methods: " + name_m + "don't
-//                 match."));
-//     }
+    ast::UserDefinedTypeAttributes* attributes = node->getAttributes();
+    ast::UserDefinedTypeMethods* methods = node->getMethods();
 
-//     // otherwise capture the name
-//     std::string udt_name = name_a;
+    // check that the names match
+    // TODO: check this elsewhere
+    std::string name_a = attributes->getName()->getValue();
+    std::string name_m = methods->getName()->getValue();
 
-//     // create a symbol table for the attributes
-//     SymbolTable* st_a = new SymbolTable();
+    if (name_a != name_m)
+    {
+        symbolTableErrorHandler->handle(new Error(
+            attributes->getLineNum(),
+            "Expected UDT attributes and methods to be for same UDT, i.e. name "
+            "of attributes: " +
+                name_a + " and name of methods: " + name_m + "don't  match."));
+    }
 
-//     for (auto const& var : attributes->getAttributes())
-//     {
-//         std::string name = var->getName()->getValue();
-//         std::string type = var->getType()->getType();
+    // otherwise capture the name
+    std::string udt_name = name_a;
 
-//         bool isUnique =
-//             st_a->addSymbol(name, type, Symbol::SymbolType::Primitive);
+    // create a symbol table for the attributes
+    SymbolTable* st_a = new SymbolTable();
 
-//         if (!isUnique)
-//         {
-//             symbolTableErrorHandler->handle(new Error(
-//                 var->getName()->getLineNum(),
-//                 "Invalid redecleration of attribute with name: " + name +
-//                     " in UDT named: " + udt_name + "."));
-//         }
-//     }
+    // temporarilly set the symbolTable field to the attribute one so that I can
+    // properly create this
+    SymbolTable* tempTable = symbolTable;
+    symbolTable = st_a;
 
-//     // create a symbol table for the methods
-//     SymbolTable* st_m = new SymbolTable();
+    for (auto const& var : attributes->getAttributes())
+    {
+        std::string name = var->getName()->getValue();
+        std::string type = var->getType()->getType();
 
-//     for (auto const& func : methods->getMethods())
-//     {
-//         std::string func_name = func->getName()->getValue();
-//         for (auto const& inp : func->getInputList())
-//         {
-//             // capture var
-//             ast::Variable* var = inp->getInput();
+        bool isUnique =
+            symbolTable->addSymbol(name, type, Symbol::SymbolType::Primitive);
 
-//             std::string name = var->getName()->getValue();
-//             std::string type = var->getType()->getType();
+        if (!isUnique)
+        {
+            symbolTableErrorHandler->handle(new Error(
+                var->getName()->getLineNum(),
+                "Invalid redecleration of attribute with name: " + name +
+                    " in UDT named: " + udt_name + "."));
+        }
+    }
 
-//             bool isUnique =
-//                 st_a->addSymbol(name, type,
-//                 Symbol::SymbolType::Primitive);
+    // capture the decorated symbol table and reset the class field back
+    st_a = symbolTable;
+    symbolTable = tempTable;
 
-//             if (!isUnique)
-//             {
-//                 symbolTableErrorHandler->handle(new Error(
-//                     var->getName()->getLineNum(),
-//                     "Invalid duplication of parameter with name: " + name
-//                     +
-//                         " in function named: " + func_name + "."));
-//             }
-//         }
-//     }
-// }
+    // create a symbol table for the methods
+    SymbolTable* st_m = new SymbolTable();
+
+    // temporarilly set the symbolTable field to the attribute one so that I can
+    // properly create this
+    tempTable = symbolTable;
+    symbolTable = st_m;
+
+    for (auto const& func : methods->getMethods())
+    {
+        visit(func);
+    }
+
+    // capture the decorated symbol table and reset the class field back
+    st_m = symbolTable;
+    symbolTable = tempTable;
+
+    symbolTable->addSymbol(udt_name, "udt", st_a, st_m,
+                           Symbol::SymbolType::UDT);
+}
+
+void
+TypeChecker::visit(ast::InitialExecutionBody* node)
+{
+    // enter and exit scope for initial execution body
+    symbolTable->enterScope();
+    visit(node->getBody());
+    symbolTable->exitScope();
+}
+
+void
+TypeChecker::visit(ast::IfStatement* node)
+{
+    visit(node->getIfConditional());
+
+    // enter and exit scope for if statement body
+    symbolTable->enterScope();
+    visit(node->getIfStatements());
+    symbolTable->exitScope();
+
+    // enter and exit scope for else statement body
+    symbolTable->enterScope();
+    visit(node->getElseStatements());
+    symbolTable->exitScope();
+}
