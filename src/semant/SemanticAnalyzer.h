@@ -28,5 +28,6 @@ class SemanticAnalyzer
     {
         TypeChecker* tc = new TypeChecker();
         tc->check(root);
+        tc->end();
     }
 };

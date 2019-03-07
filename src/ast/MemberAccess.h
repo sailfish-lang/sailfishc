@@ -3,11 +3,12 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "BinaryExpression.h"
 #include "Expression.h"
 
 namespace ast
 {
-class MemberAccess : public Expression
+class MemberAccess : public BinaryExpression
 {
   public:
     enum MemberAccessType
@@ -16,11 +17,11 @@ class MemberAccess : public Expression
         MethodAccess,
     };
     virtual MemberAccessType getMemberAccessType() = 0;
-    // implement Expression
-    /* virtual */ ExpressionType
-    getExpressionType()
+    // implement BinaryExpression
+    /* virtual */ BinaryExpressionType
+    getBinaryExpressionType()
     {
-        return ExpressionType::MemberAccess;
+        return BinaryExpression::MemberAccess;
     }
 };
 }

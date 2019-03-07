@@ -23,7 +23,7 @@ SemanticErrorHandler::end()
     else
     {
         std::cout
-            << "Performed Semantuc Analysis and found one or more errors:\n";
+            << "Performed Semantic Analysis and found one or more errors:\n";
 
         for (auto const error : errors)
         {

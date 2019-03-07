@@ -429,7 +429,7 @@ Parser::UserDefinedTypeMethods()
 }
 
 /**
- * identifier'{' [DictionaryItem (',' DictionaryItem)] '}'
+ * UserDefinedType := identifier '{' [DictionaryItem (',' DictionaryItem)*] '}'
  */
 ast::UserDefinedType*
 Parser::parseUserDefinedType()
@@ -481,7 +481,7 @@ Parser::parseInitialExecutionBody()
 }
 
 /**
- * ListDefinition := 'list' Identifier '<[' Typename ']>' Expression
+ * ListDefinition := 'list' Identifier '<[' Typename ']>' NewExpression
  */
 ast::ListDefinition*
 Parser::parseListDefinition()
@@ -519,7 +519,7 @@ Parser::parseListDefinition()
     // consume fishtail
     getNextUsefulToken();
 
-    ast::Expression* expr = parseExpression();
+    ast::NewExpression* expr = parseNewExpression();
 
     return new ast::ListDefinition(name, type, expr,
                                    currentToken->getLineNum());
@@ -527,7 +527,7 @@ Parser::parseListDefinition()
 
 /**
  * DictionaryDefinition := ''dictionary' Identifier '<[' Typename : Typename
- * ']>' Expression
+ * ']>' NewExpression
  */
 ast::DictionaryDefinition*
 Parser::parseDictionaryDefinition()
@@ -581,7 +581,7 @@ Parser::parseDictionaryDefinition()
     // consume fishtail
     getNextUsefulToken();
 
-    ast::Expression* expr = parseExpression();
+    ast::NewExpression* expr = parseNewExpression();
 
     return new ast::DictionaryDefinition(name, keyType, valueType, expr,
                                          currentToken->getLineNum());
@@ -615,8 +615,6 @@ Parser::parseNewVariableDefinition()
  * Expression := NewExpression |
  *               ArrayExpression |
  *               GroupingExpression |
- *               MemberAccess |
- *               FunctionCall |
  *               UnaryExpression |
  *               PrimaryExpression
  */
@@ -627,9 +625,6 @@ Parser::parseExpression()
 
     if (tk == "new")
     {
-        // consume 'new'
-        getNextUsefulToken();
-
         return (ast::Expression*)parseNewExpression();
     }
     else if (tk == "[")
@@ -642,17 +637,6 @@ Parser::parseExpression()
     else if (tk == "|")
     {
         return (ast::Expression*)parseGroupingExpression();
-    }
-    else if (tk == "." || tk == "...")
-    {
-        return (ast::Expression*)parseMemberAccess();
-    }
-    else if (tk == "(")
-    {
-        // consume '('
-        getNextUsefulToken();
-
-        return (ast::Expression*)parseFunctionCall();
     }
     else if (tk == "!")
     {
@@ -682,8 +666,10 @@ Parser::parseNewExpression()
 ast::New*
 Parser::parseNew()
 {
-    Kind kind = currentToken->getKind();
+    // consume 'new'
+    getNextUsefulToken();
 
+    Kind kind = currentToken->getKind();
     if (kind == Kind::LBRACKET_TOKEN)
     {
         // consume '['
@@ -771,34 +757,10 @@ Parser::parseGroupingExpression()
 }
 
 /**
- * MemberAccess := '.' Identifier
- */
-ast::MemberAccess*
-Parser::parseMemberAccess()
-{
-    Kind kind = currentToken->getKind();
-    switch (kind)
-    {
-    case Kind::DOT_TOKEN:
-        // consume '.'
-        getNextUsefulToken();
-
-        return (ast::MemberAccess*)parseAttributeAccess();
-    case Kind::TRIPLE_DOT_TOKEN:
-        // consume '...'
-        getNextUsefulToken();
-
-        return (ast::MemberAccess*)parseMethodAccess();
-    default:
-        throw std::invalid_argument("unexpected member accesser");
-    }
-}
-
-/**
  * AttributeAccess := '...' Identifier
  */
 ast::AttributeAccess*
-Parser::parseAttributeAccess()
+Parser::parseAttributeAccess(ast::Expression* e)
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
                                                 currentToken->getLineNum());
@@ -806,14 +768,14 @@ Parser::parseAttributeAccess()
     // consume identifier
     getNextUsefulToken();
 
-    return new ast::AttributeAccess(name, currentToken->getLineNum());
+    return new ast::AttributeAccess(name, e, currentToken->getLineNum());
 }
 
 /**
  * MethodAccess := '...' Identifier FunctionCall
  */
 ast::MethodAccess*
-Parser::parseMethodAccess()
+Parser::parseMethodAccess(ast::Expression* e)
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
                                                 currentToken->getLineNum());
@@ -823,7 +785,7 @@ Parser::parseMethodAccess()
 
     ast::FunctionCall* fc = parseFunctionCall();
 
-    return new ast::MethodAccess(name, fc, currentToken->getLineNum());
+    return new ast::MethodAccess(name, fc, e, currentToken->getLineNum());
 }
 
 /**
@@ -883,6 +845,9 @@ Parser::parseUnaryExpression()
  *                     Equivalence |
  *                     LogicalComparison |
  *                     Assignment |
+ *                     FunctionCall |
+ *                     MemberAccess |
+ *                     MethodAcess
  *                     ExpressionOnlyStatement
  */
 ast::BinaryExpression*
@@ -1085,6 +1050,37 @@ Parser::parseBinaryExpression()
 
         return (ast::BinaryExpression*)new ast::Assignment(leftExpr, rightExpr,
                                                            lineNum);
+    }
+
+    // Expression MemberAccess
+    if (tk == "." || tk == "...")
+    {
+        Kind kind = currentToken->getKind();
+        switch (kind)
+        {
+        case Kind::DOT_TOKEN:
+            // consume '.'
+            getNextUsefulToken();
+
+            return (ast::MemberAccess*)parseAttributeAccess(leftExpr);
+        case Kind::TRIPLE_DOT_TOKEN:
+            // consume '...'
+            getNextUsefulToken();
+
+            return (ast::MemberAccess*)parseMethodAccess(leftExpr);
+        default:
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Unexpected member accessor."));
+        }
+    }
+
+    // Expression FunctionCall
+    if (tk == "(")
+    {
+        // consume '('
+        getNextUsefulToken();
+
+        return (ast::BinaryExpression*)parseFunctionCall();
     }
 
     // PrimaryExpression

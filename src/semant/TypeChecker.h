@@ -4,7 +4,9 @@
  */
 #pragma once
 #include "../ast/Ast.h"
+#include "../errorhandler/Error.h"
 #include "../errorhandler/ErrorHandler.h"
+#include "../errorhandler/SemanticErrorHandler.h"
 #include "../errorhandler/SymbolTableErrorHandler.h"
 #include "../visitor/Visitor.h"
 #include "SymbolTable.h"
@@ -13,6 +15,7 @@ class TypeChecker : public Visitor
 {
   private:
     ErrorHandler* symbolTableErrorHandler;
+    ErrorHandler* semanticErrorHandler;
     SymbolTable* symbolTable;
 
   public:
@@ -22,11 +25,20 @@ class TypeChecker : public Visitor
     TypeChecker()
     {
         symbolTableErrorHandler = (ErrorHandler*)new SymbolTableErrorHandler();
+        semanticErrorHandler = (ErrorHandler*)new SemanticErrorHandler();
         symbolTable = new SymbolTable();
     }
     // destructor
     ~TypeChecker()
     {
+    }
+
+    // TODO: move this somewhere more reasonable
+    void
+    end()
+    {
+        symbolTableErrorHandler->end();
+        semanticErrorHandler->end();
     }
 
     // visit all nodes and analyze
@@ -44,10 +56,28 @@ class TypeChecker : public Visitor
     // function
     void visit(ast::FunctionDefinition*);
 
-    // udt
-    void visit(ast::UserDefinedTypeDefinition*);
-
     // all nodes containing block statements must create enter/exit scopes
-    virtual void visit(ast::InitialExecutionBody*);
-    virtual void visit(ast::IfStatement*);
+    void visit(ast::InitialExecutionBody*);
+    void visit(ast::IfStatement*);
+
+    // binary logic and comparison
+    void visit(ast::BinaryGreaterThan*);
+    void visit(ast::BinaryLessThan*);
+    void visit(ast::BinaryGreaterThanOrEqual*);
+    void visit(ast::BinaryLessThanOrEqual*);
+    void visit(ast::EquivalenceComparison*);
+    void visit(ast::NonEquivalenceComparison*);
+    void visit(ast::AndComparison*);
+    void visit(ast::OrComparison*);
+
+    // all arith
+    virtual void visit(ast::Exponentiation*);
+    virtual void visit(ast::Multiplication*);
+    virtual void visit(ast::Division*);
+    virtual void visit(ast::Modulo*);
+    virtual void visit(ast::Addition*);
+    virtual void visit(ast::Subtraction*);
+
+    // unary
+    void visit(ast::Negation* node);
 };

@@ -55,9 +55,8 @@ class Parser
 
     ast::GroupingExpression* parseGroupingExpression();
 
-    ast::MemberAccess* parseMemberAccess();
-    ast::AttributeAccess* parseAttributeAccess();
-    ast::MethodAccess* parseMethodAccess();
+    ast::AttributeAccess* parseAttributeAccess(ast::Expression* e);
+    ast::MethodAccess* parseMethodAccess(ast::Expression* e);
 
     ast::FunctionCall* parseFunctionCall();
 

@@ -3,9 +3,9 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Expression.h"
 #include "GeneralDefinition.h"
 #include "Identifier.h"
+#include "NewExpression.h"
 #include "Node.h"
 #include "Typename.h"
 
@@ -16,11 +16,11 @@ class ListDefinition : public GeneralDefinition, public Node
   private:
     Identifier* name;
     Typename* type;
-    Expression* expr;
+    NewExpression* expr;
 
   public:
     // constructor
-    ListDefinition(Identifier* i, Typename* t, Expression* e, int lineNum)
+    ListDefinition(Identifier* i, Typename* t, NewExpression* e, int lineNum)
         : Node(lineNum)
     {
         name = i;
@@ -50,7 +50,7 @@ class ListDefinition : public GeneralDefinition, public Node
     {
         return type;
     }
-    Expression*
+    NewExpression*
     getExpression()
     {
         return expr;

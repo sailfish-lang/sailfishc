@@ -15,13 +15,16 @@ class MethodAccess : public MemberAccess, public Node
   private:
     Identifier* name;
     FunctionCall* func;
+    Expression* expr;
 
   public:
     // constructor
-    MethodAccess(Identifier* i, FunctionCall* f, int lineNum) : Node(lineNum)
+    MethodAccess(Identifier* i, FunctionCall* f, Expression* e, int lineNum)
+        : Node(lineNum)
     {
         name = i;
         func = f;
+        expr = e;
     };
     // destructor
     ~MethodAccess()
@@ -45,6 +48,11 @@ class MethodAccess : public MemberAccess, public Node
     getFunctionCall()
     {
         return func;
+    }
+    Expression*
+    getExpression()
+    {
+        return expr;
     }
 };
 }

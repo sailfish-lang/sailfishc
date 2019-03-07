@@ -229,6 +229,18 @@ Visitor::visit(ast::BinaryExpression* node)
         visit(subnode);
         break;
     }
+    case ast::BinaryExpression::MemberAccess:
+    {
+        ast::MemberAccess* subnode = dynamic_cast<ast::MemberAccess*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::BinaryExpression::FunctionCallExpression:
+    {
+        ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
+        visit(subnode);
+        break;
+    }
     case ast::BinaryExpression::ExpressionOnlyStatement:
     {
         ast::ExpressionOnlyStatement* subnode =
@@ -278,18 +290,6 @@ Visitor::visit(ast::Expression* node)
     {
         ast::ArrayExpression* subnode =
             dynamic_cast<ast::ArrayExpression*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::Expression::MemberAccess:
-    {
-        ast::MemberAccess* subnode = dynamic_cast<ast::MemberAccess*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::Expression::FunctionCallExpression:
-    {
-        ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
         visit(subnode);
         break;
     }

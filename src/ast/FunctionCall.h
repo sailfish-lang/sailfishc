@@ -3,15 +3,16 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Expression.h"
+#include "BinaryExpression.h"
 #include "Node.h"
 #include <vector>
 
 namespace ast
 {
-class FunctionCall : public Expression, public Node
+class FunctionCall : public BinaryExpression, public Node
 {
   private:
+    Expression* expr;
     std::vector<Identifier*> args;
 
   public:
@@ -22,17 +23,22 @@ class FunctionCall : public Expression, public Node
     };
     // destructor
     ~FunctionCall(){};
-    // implement Expression
-    /* virtual*/ ExpressionType
-    getExpressionType()
+    // implement BinaryExpression
+    /* virtual*/ BinaryExpressionType
+    getBinaryExpressionType()
     {
-        return ExpressionType::FunctionCallExpression;
+        return BinaryExpressionType::FunctionCallExpression;
     }
     // get methods
     std::vector<Identifier*>
     getArguments()
     {
         return args;
+    }
+    Expression*
+    getExpr()
+    {
+        return expr;
     }
 };
 }

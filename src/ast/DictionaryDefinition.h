@@ -3,9 +3,9 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Expression.h"
 #include "GeneralDefinition.h"
 #include "Identifier.h"
+#include "NewExpression.h"
 #include "Node.h"
 #include "Typename.h"
 
@@ -17,12 +17,12 @@ class DictionaryDefinition : public GeneralDefinition, public Node
     Identifier* name;
     Typename* keyType;
     Typename* valueType;
-    Expression* expr;
+    NewExpression* expr;
 
   public:
     // constructor
     DictionaryDefinition(Identifier* i, Typename* kt, Typename* vt,
-                         Expression* e, int lineNum)
+                         NewExpression* e, int lineNum)
         : Node(lineNum)
     {
         name = i;
@@ -57,7 +57,7 @@ class DictionaryDefinition : public GeneralDefinition, public Node
     {
         return valueType;
     }
-    Expression*
+    NewExpression*
     getExpression()
     {
         return expr;

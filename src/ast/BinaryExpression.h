@@ -26,6 +26,8 @@ class BinaryExpression
         AndComparison,
         OrComparison,
         Assignment,
+        FunctionCallExpression,
+        MemberAccess,
         ExpressionOnlyStatement,
     };
     virtual BinaryExpressionType getBinaryExpressionType() = 0;

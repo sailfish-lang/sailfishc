@@ -13,8 +13,6 @@ class Expression
     {
         ArrayExpression,
         GroupingExpression,
-        MemberAccess,
-        FunctionCallExpression,
         NewExpression,
         UnaryExpression,
         PrimaryExpression,

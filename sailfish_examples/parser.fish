@@ -6,19 +6,8 @@ dec list someList <[ flt ]> new [1.0]
 fun foo
 <- void
 -> void
-{}
-
-Cat Foo {
-    int i
-}
-
-Cfn Foo {
-    fun bar
-    <- int i
-    -> flt f
-    {
-        return i + 10.0
-    }
+{
+     return i + 10.0
 }
 
 start {

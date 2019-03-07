@@ -1,0 +1,4 @@
+fun
+<- int i
+-> int
+{}

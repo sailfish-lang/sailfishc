@@ -13,12 +13,14 @@ class AttributeAccess : public MemberAccess, public Node
 {
   private:
     Identifier* attribute;
+    Expression* expr;
 
   public:
     // constructor
-    AttributeAccess(Identifier* i, int lineNum) : Node(lineNum)
+    AttributeAccess(Identifier* i, Expression* e, int lineNum) : Node(lineNum)
     {
         attribute = i;
+        expr = e;
     };
     // destructor
     ~AttributeAccess(){};
@@ -33,6 +35,11 @@ class AttributeAccess : public MemberAccess, public Node
     getAttribute()
     {
         return attribute;
+    }
+    Expression*
+    getExpression()
+    {
+        return expr;
     }
 };
 }
