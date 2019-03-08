@@ -54,11 +54,6 @@
 
 	dict def
 		- not a reserved keyword
-
-	var decl
-		- type exists
-		- matching types
-		- not a reserved keyword
 */
 
 // -------       function      -------- //

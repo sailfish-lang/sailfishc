@@ -282,6 +282,17 @@ TypeChecker::visit(ast::NewVariableDefinition* node)
 
     // visit expression
     visit(node->getExpressionStatement());
+
+    std::string exprType = getRightExpressionType(node->getExpressionStatement(), semanticErrorHandler);
+    
+    // make sure the type of the assignment is the same as the declared type
+    if (exprType != type)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared type: " + type +
+                                    " for variable named: " + name +
+                                    " does not match assigned expression type of: " + exprType + "."));
+    }
 }
 
 void
