@@ -44,7 +44,13 @@ SymbolTable::exitScope()
         auto value = globalScopeTable.find(varName);
         if (value != globalScopeTable.end())
         {
-            globalScopeTable.erase(varName);
+            value->second->pop();
+
+            // we will remove vars from table if their scope is empty
+            if (value->second->isEmpty())
+            {
+                globalScopeTable.erase(varName);
+            }
         }
     }
 
@@ -65,120 +71,47 @@ SymbolTable::hasVariable(std::string varName)
     return globalScopeTable.find(varName) != globalScopeTable.end();
 }
 
-Symbol*
-SymbolTable::getSymbol(std::string varName)
+std::string
+SymbolTable::getSymbolType(std::string varName)
 {
     if (hasVariable(varName))
     {
-        return globalScopeTable.find(varName)->second;
+        return globalScopeTable.find(varName)->second->peek()->getType();
     }
 
-    return nullptr;
+    return "";
+}
+
+int
+SymbolTable::getSymbolScope(std::string varName)
+{
+    if (hasVariable(varName))
+    {
+        return globalScopeTable.find(varName)->second->peek()->getScopeLevel();
+    }
+
+    return -1;
 }
 
 bool
-SymbolTable::addSymbol(std::string varName, std::string type,
-                       Symbol::SymbolType st)
+SymbolTable::addSymbol(std::string varName, std::string type)
 {
     if (hasVariable(varName))
     {
-        // ERROR
-        return false;
-    }
+        // ensure not adding a variable if already exists in this scope
+        if (getSymbolScope(varName) == scopeLevel)
+            return false;
 
-    switch (st)
+        globalScopeTable.find(varName)->second->push(type, scopeLevel);
+        localCache = addToLocalCache(varName, localCache);
+        return true;
+    }
+    else
     {
-    case Symbol::SymbolType::Primitive:
-    {
-        Symbol* s = new PrimitiveSymbol(type);
-        globalScopeTable.insert({varName, s});
-        break;
+        ScopeStack* ss = new ScopeStack();
+        ss->push(type, scopeLevel);
+        globalScopeTable.insert({varName, ss});
+        localCache = addToLocalCache(varName, localCache);
+        return true;
     }
-
-    case Symbol::SymbolType::List:
-    {
-        Symbol* s = new ListSymbol(type);
-        globalScopeTable.insert({varName, s});
-        break;
-    }
-    }
-
-    localCache = addToLocalCache(varName, localCache);
-    return true;
-}
-
-bool
-SymbolTable::addSymbol(std::string varName, std::string type,
-                       std::string keyType, std::string valueType,
-                       Symbol::SymbolType st)
-{
-    if (hasVariable(varName))
-    {
-        // ERROR
-        return false;
-    }
-
-    switch (st)
-    {
-    case Symbol::SymbolType::Dictionary:
-    {
-        Symbol* s = new DictionarySymbol(type, keyType, valueType);
-        globalScopeTable.insert({varName, s});
-        break;
-    }
-    }
-
-    localCache = addToLocalCache(varName, localCache);
-    return true;
-}
-
-bool
-SymbolTable::addSymbol(std::string varName, std::string type,
-                       std::vector<std::string> inputs,
-                       std::vector<std::string> outputs, Symbol::SymbolType st)
-{
-    if (hasVariable(varName))
-    {
-        // ERROR
-        return false;
-    }
-
-    switch (st)
-    {
-    case Symbol::SymbolType::Function:
-    {
-        Symbol* s = new FunctionSymbol(type, inputs, outputs);
-        globalScopeTable.insert({varName, s});
-        break;
-    }
-    }
-
-    localCache = addToLocalCache(varName, localCache);
-    return true;
-}
-
-bool
-SymbolTable::addSymbol(std::string varName, std::string type,
-                       SymbolTable* attributes, SymbolTable* methods,
-                       Symbol::SymbolType st)
-{
-
-    if (hasVariable(varName))
-    {
-        // ERROR
-        return false;
-    }
-
-    switch (st)
-    {
-    case Symbol::SymbolType::UDT:
-    {
-        Symbol* s = new UDTSymbol(type, attributes, methods);
-        globalScopeTable.insert({varName, s});
-        break;
-    }
-    }
-
-    localCache = addToLocalCache(varName, localCache);
-    return true;
 }

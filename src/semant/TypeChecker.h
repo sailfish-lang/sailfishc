@@ -10,6 +10,7 @@
 #include "../errorhandler/SymbolTableErrorHandler.h"
 #include "../visitor/Visitor.h"
 #include "SymbolTable.h"
+#include "UDTTable.h"
 
 class TypeChecker : public Visitor
 {
@@ -17,6 +18,7 @@ class TypeChecker : public Visitor
     ErrorHandler* symbolTableErrorHandler;
     ErrorHandler* semanticErrorHandler;
     SymbolTable* symbolTable;
+    UDTTable* udtTable;
 
   public:
     using Visitor::visit;
@@ -56,6 +58,9 @@ class TypeChecker : public Visitor
     // function
     void visit(ast::FunctionDefinition*);
 
+    // udt's
+    void visit(ast::UserDefinedTypeDefinition*);
+
     // all nodes containing block statements must create enter/exit scopes
     void visit(ast::InitialExecutionBody*);
     void visit(ast::IfStatement*);
@@ -79,5 +84,8 @@ class TypeChecker : public Visitor
     virtual void visit(ast::Subtraction*);
 
     // unary
-    void visit(ast::Negation* node);
+    void visit(ast::Negation*);
+
+    // only global scopes
+    virtual void visit(ast::ExportDefinition*);
 };

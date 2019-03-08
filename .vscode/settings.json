@@ -43,6 +43,7 @@
         "__config": "cpp",
         "__nullptr": "cpp",
         "map": "cpp",
-        "cstdarg": "cpp"
+        "cstdarg": "cpp",
+        "string": "cpp"
     }
 }

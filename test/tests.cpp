@@ -6,13 +6,7 @@
 #include "../src/ast/Ast.h"
 #include "../src/lexar/Lexar.h"
 #include "../src/parser/Parser.h"
-#include "../src/semant/DictionarySymbol.h"
-#include "../src/semant/FunctionSymbol.h"
-#include "../src/semant/ListSymbol.h"
-#include "../src/semant/PrimitiveSymbol.h"
-#include "../src/semant/Symbol.h"
 #include "../src/semant/SymbolTable.h"
-#include "../src/semant/UDTSymbol.h"
 #include "../src/visitor/InOrderTraversal.h"
 #include <gtest/gtest.h>
 
@@ -148,97 +142,59 @@ TEST(ParserTest, AllTokens)
     }
 }
 
-TEST(SymbolDataStructure, Symbol)
-{
-    // test primitive and defaults of Symbol abstract class
-    Symbol* p = new PrimitiveSymbol("int");
-    ASSERT_EQ(p->getType(), "int");
-    ASSERT_EQ(p->getSymbolType(), Symbol::Primitive);
-    ASSERT_EQ(p->getMethods(), nullptr);
-    ASSERT_EQ(p->getAttributes(), nullptr);
-    ASSERT_EQ(p->getKeyType(), "");
-    ASSERT_EQ(p->getValueType(), "");
-    ASSERT_EQ(p->getInputTypes().size(), 0);
-    ASSERT_EQ(p->getOutputTypes().size(), 0);
-
-    // test list
-    Symbol* l = new ListSymbol("int[]");
-    ASSERT_EQ(l->getType(), "int[]");
-    ASSERT_EQ(l->getSymbolType(), Symbol::List);
-
-    // test dictionary
-    Symbol* d = new DictionarySymbol("dictionary", "str", "int");
-    ASSERT_EQ(d->getType(), "dictionary");
-    ASSERT_EQ(d->getSymbolType(), Symbol::Dictionary);
-    ASSERT_EQ(d->getKeyType(), "str");
-    ASSERT_EQ(d->getValueType(), "int");
-
-    // test function
-    std::vector<std::string> inputs{"int", "bool"};
-    std::vector<std::string> outputs{"void"};
-    Symbol* f = new FunctionSymbol("function", inputs, outputs);
-    ASSERT_EQ(f->getType(), "function");
-    ASSERT_EQ(f->getSymbolType(), Symbol::Function);
-    ASSERT_EQ(f->getInputTypes().size(), 2);
-    ASSERT_EQ(f->getOutputTypes().size(), 1);
-
-    // test UDT -- SymbolTable will change thus just going nullptr for now
-    Symbol* u = new UDTSymbol("udt", nullptr, nullptr);
-    ASSERT_EQ(u->getType(), "udt");
-    ASSERT_EQ(u->getSymbolType(), Symbol::UDT);
-    ASSERT_EQ(u->getAttributes(), nullptr);
-    ASSERT_EQ(u->getMethods(), nullptr);
-}
-
 TEST(SymbolTableDataStructure, SymbolTable)
 {
     SymbolTable* st = new SymbolTable();
 
-    // -- start in the global scope
+    // -- start in the global scope ---------------------- SCOPE: 0
     // add a new primitive
-    st->addSymbol("primitive", "int", Symbol::SymbolType::Primitive);
+    st->addSymbol("primitive", "int");
     ASSERT_EQ(st->hasVariable("primitive"), true);
+    ASSERT_EQ(st->getSymbolScope("primitive"), 0);
 
     // add a new function
-    std::vector<std::string> inputs{"int", "bool"};
-    std::vector<std::string> outputs{"void"};
-    st->addSymbol("somefunction", "function", inputs, outputs,
-                  Symbol::SymbolType::Function);
-
+    st->addSymbol("somefunction", "function");
     ASSERT_EQ(st->hasVariable("somefunction"), true);
+    ASSERT_EQ(st->getSymbolScope("somefunction"), 0);
 
-    // // -- start in a nested scope inside the function
+    // // -- start in a nested scope inside the function  --------- SCOPE: 1
     st->enterScope();
+    ASSERT_EQ(st->isGlobalScope(), false);
     // // add a new list
-    st->addSymbol("someArr", "int[]", Symbol::SymbolType::List);
+    st->addSymbol("someArr", "int[]");
     ASSERT_EQ(st->hasVariable("someArr"), true);
+    ASSERT_EQ(st->getSymbolScope("someArr"), 1);
 
-    // // -- exit nested scope
+    // // -- exit nested scope  ---------------------- SCOPE: 0
     st->exitScope();
+    ASSERT_EQ(st->isGlobalScope(), true);
     ASSERT_EQ(st->hasVariable("someArr"), false);
 
     // // add a new dictionary
-    st->addSymbol("someDict", "dictionary", "int", "str",
-                  Symbol::SymbolType::Dictionary);
+    st->addSymbol("someDict", "dictionary");
     ASSERT_EQ(st->hasVariable("someDict"), true);
+    ASSERT_EQ(st->getSymbolScope("someDict"), 0);
 
-    // -- enter a scope
+    // add a UDT
+    st->addSymbol("FOOUDT", "FOO");
+    ASSERT_EQ(st->hasVariable("FOOUDT"), true);
+    ASSERT_EQ(st->getSymbolScope("FOOUDT"), 0);
+
+    // -- enter a scope  ---------------------- SCOPE: 1
     st->enterScope();
 
     // add a previously deleted list
-    st->addSymbol("someArr", "int[]", Symbol::SymbolType::List);
+    st->addSymbol("someArr", "int[]");
     ASSERT_EQ(st->hasVariable("someArr"), true);
+    ASSERT_EQ(st->getSymbolScope("someArr"), 1);
 
-    // construct a symbol table for UDT attributes
-    SymbolTable* st_atts = new SymbolTable();
-    st_atts->addSymbol("foo", "flt", Symbol::SymbolType::Primitive);
-    // construct a symbol table for UDT methods
-    SymbolTable* st_meths = new SymbolTable();
-    st_meths->addSymbol("somefunction", "function", inputs, outputs,
-                        Symbol::SymbolType::Function);
-    // add a UDT
-    st->addSymbol("FOOUDT", "FOO", st_atts, st_meths, Symbol::SymbolType::UDT);
-    ASSERT_EQ(st->hasVariable("FOOUDT"), true);
+    // -- enter a scope  ---------------------- SCOPE: 2
+    st->enterScope();
+
+    // add a previously added list for a new scope and a different type
+    st->addSymbol("someArr", "int");
+    ASSERT_EQ(st->hasVariable("someArr"), true);
+    ASSERT_EQ(st->getSymbolScope("someArr"), 2);
 }
 
 int

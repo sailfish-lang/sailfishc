@@ -3,12 +3,7 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "DictionarySymbol.h"
-#include "FunctionSymbol.h"
-#include "ListSymbol.h"
-#include "PrimitiveSymbol.h"
-#include "Symbol.h"
-#include "UDTSymbol.h"
+#include "ScopeStack.h"
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -18,7 +13,7 @@ class SymbolTable
 {
   private:
     int scopeLevel;
-    std::unordered_map<std::string, Symbol*> globalScopeTable;
+    std::unordered_map<std::string, ScopeStack*> globalScopeTable;
     std::vector<std::string> localCache;
 
   public:
@@ -32,6 +27,7 @@ class SymbolTable
     ~SymbolTable()
     {
     }
+
     // enter the scope, incrementing the scope level counter
     void enterScope();
 
@@ -42,21 +38,14 @@ class SymbolTable
     // check if a symbol is in the symbol table
     bool hasVariable(std::string);
 
-    // retreive a symbol from the symbol table
-    Symbol* getSymbol(std::string);
+    // retreive a symbol's type from the symbol table
+    std::string getSymbolType(std::string);
+
+    // retreive a symbol's scope level from the symbol table
+    int getSymbolScope(std::string);
 
     // either push to the variables scope if exists or add variable
-    // Primitive and List
-    bool addSymbol(std::string, std::string, Symbol::SymbolType);
-    // Dictionary
-    bool addSymbol(std::string, std::string, std::string, std::string,
-                   Symbol::SymbolType);
-    // Function
-    bool addSymbol(std::string, std::string, std::vector<std::string>,
-                   std::vector<std::string>, Symbol::SymbolType);
-    // UDT
-    bool addSymbol(std::string, std::string, SymbolTable*, SymbolTable*,
-                   Symbol::SymbolType);
+    bool addSymbol(std::string, std::string);
 
     // helper methods
     bool

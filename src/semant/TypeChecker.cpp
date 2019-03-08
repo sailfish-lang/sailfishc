@@ -90,16 +90,37 @@ binaryExpressionHelper(ast::BinaryExpression* node)
         ast::Assignment* subnode = dynamic_cast<ast::Assignment*>(node);
         return subnode->getLeftExpr();
     }
+    case ast::BinaryExpression::FunctionCallExpression:
+    {
+        ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
+        return subnode->getExpr();
+    }
+    case ast::BinaryExpression::MemberAccess:
+    {
+        ast::MemberAccess* subnode = dynamic_cast<ast::MemberAccess*>(node);
+
+        switch (subnode->getMemberAccessType())
+        {
+        case ast::MemberAccess::AttributeAccess:
+        {
+            ast::AttributeAccess* subsubnode =
+                dynamic_cast<ast::AttributeAccess*>(subnode);
+            return subsubnode->getExpression();
+        }
+        case ast::MemberAccess::MethodAccess:
+        {
+            ast::MethodAccess* subsubnode =
+                dynamic_cast<ast::MethodAccess*>(subnode);
+            return subsubnode->getExpression();
+        }
+        }
+        break;
+    }
     case ast::BinaryExpression::ExpressionOnlyStatement:
     {
         ast::ExpressionOnlyStatement* subnode =
             dynamic_cast<ast::ExpressionOnlyStatement*>(node);
         return subnode->getExpression();
-    }
-    case ast::BinaryExpression::FunctionCallExpression:
-    {
-        ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
-        return subnode->getExpr();
     }
     }
 }
@@ -147,6 +168,21 @@ expressionHelper(ast::Expression* node, ErrorHandler* seh)
 {
     switch (node->getExpressionType())
     {
+    case ast::Expression::NewExpression:
+    {
+        ast::NewExpression* subnode = dynamic_cast<ast::NewExpression*>(node);
+
+        switch (subnode->getNewVal()->getNewType())
+        {
+        case ast::New::DictionaryLiteral:
+            return "Dictionary";
+        case ast::New::ListLiteral:
+            return "List";
+        case ast::New::UserDefinedType:
+            return "UDT";
+        }
+        break;
+    }
     case ast::Expression::GroupingExpression:
     {
         ast::GroupingExpression* subnode =
@@ -196,6 +232,7 @@ getRightExpressionType(ast::ExpressionStatement* node,
 
 // ------- END ------- //
 
+// ------- Additions to the symbol table ------- //
 void
 TypeChecker::check(ast::Start* root)
 {
@@ -210,14 +247,16 @@ TypeChecker::visit(ast::NewVariableDefinition* node)
     std::string name = var->getName()->getValue();
     std::string type = var->getType()->getType();
 
-    bool isUnique =
-        symbolTable->addSymbol(name, type, Symbol::SymbolType::Primitive);
+    std::string adjustedName = "V" + type;
 
+    bool isUnique = symbolTable->addSymbol(name, adjustedName);
+
+    // symbol table entry must be unique for current scope
     if (!isUnique)
     {
         symbolTableErrorHandler->handle(new Error(
-            var->getName()->getLineNum(),
-            "Invalid redecleration of a variable with name: " + name + "."));
+            node->getLineNum(),
+            "Invalid redecleration of variable with name: " + name + "."));
     }
 
     // visit expression
@@ -230,14 +269,16 @@ TypeChecker::visit(ast::ListDefinition* node)
     std::string name = node->getName()->getValue();
     std::string type = node->getType()->getType();
 
-    bool isUnique =
-        symbolTable->addSymbol(name, type + "[]", Symbol::SymbolType::List);
+    std::string adjustedName = "L" + type;
 
+    bool isUnique = symbolTable->addSymbol(name, adjustedName);
+
+    // symbol table entry must be unique for current scope
     if (!isUnique)
     {
         symbolTableErrorHandler->handle(new Error(
-            node->getName()->getLineNum(),
-            "Invalid redecleration of a variable with name: " + name + "."));
+            node->getLineNum(),
+            "Invalid redecleration of list with name: " + name + "."));
     }
 
     // visit expression
@@ -251,14 +292,16 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     std::string keyType = node->getKeyType()->getType();
     std::string valueType = node->getValueType()->getType();
 
-    bool isUnique = symbolTable->addSymbol(
-        name, "dictionary", keyType, valueType, Symbol::SymbolType::Dictionary);
+    std::string adjustedName = "D" + keyType + "_" + valueType;
 
+    bool isUnique = symbolTable->addSymbol(name, adjustedName);
+
+    // symbol table entry must be unique for current scope
     if (!isUnique)
     {
         symbolTableErrorHandler->handle(new Error(
-            node->getName()->getLineNum(),
-            "Invalid redecleration of a variable with name: " + name + "."));
+            node->getLineNum(),
+            "Invalid redecleration of dictionary with name: " + name + "."));
     }
 
     // visit expression
@@ -280,8 +323,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 
     std::string name = node->getName()->getValue();
 
-    std::vector<std::string> inputs;
-    std::vector<std::string> outputs;
+    std::string adjustedName = "F" + name + "(";
 
     //  capture for the addition of the function to the symbol table
     for (auto const& input : node->getInputList())
@@ -289,9 +331,10 @@ TypeChecker::visit(ast::FunctionDefinition* node)
         ast::Variable* var = input->getInput();
         std::string inp_type = var->getType()->getType();
 
-        // add to list of function inputs
-        inputs.push_back(inp_type);
+        adjustedName += "_" + inp_type;
     }
+
+    adjustedName += ")(";
 
     // capture for the addition of the function to the symbol table
     for (auto const& output : node->getOutputList())
@@ -299,35 +342,23 @@ TypeChecker::visit(ast::FunctionDefinition* node)
         ast::Typename* var = output->getOutput();
         std::string out_type = var->getType();
 
-        outputs.push_back(out_type);
+        adjustedName += "_" + out_type;
     }
 
-    symbolTable->addSymbol(name, "function", inputs, outputs,
-                           Symbol::SymbolType::Function);
+    adjustedName += ")";
+
+    bool isUnique = symbolTable->addSymbol(name, adjustedName);
+
+    // symbol table entry must be unique for current scope
+    if (!isUnique)
+    {
+        symbolTableErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Invalid redecleration of function with name: " + name + "."));
+    }
 
     // enter a scope for this function, starting with the parameters
     symbolTable->enterScope();
-
-    // TODO: don't visit each param for a second time here!
-    //  add each input to the nested scope for the function
-    for (auto const& input : node->getInputList())
-    {
-        ast::Variable* var = input->getInput();
-        std::string inp_name = var->getName()->getValue();
-        std::string inp_type = var->getType()->getType();
-
-        // add to the symbol table
-        bool isUnique = symbolTable->addSymbol(inp_name, inp_type,
-                                               Symbol::SymbolType::Dictionary);
-
-        if (!isUnique)
-        {
-            symbolTableErrorHandler->handle(new Error(
-                node->getName()->getLineNum(),
-                "Invalid redecleration of a variable with name: " + name +
-                    "."));
-        }
-    }
 
     // visit the function body
     visit(node->getBody());
@@ -335,6 +366,98 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     // exit scope once we exit the body
     symbolTable->exitScope();
 }
+
+void
+TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
+{
+
+    // ensure scope is global since functions cannot be in blocks
+    if (!symbolTable->isGlobalScope())
+    {
+        symbolTableErrorHandler->handle(
+            new Error(node->getAttributes()->getName()->getLineNum(),
+                      "UDT's can only be declared at the global level, "
+                      "i.e. cannot be nested!"));
+    }
+
+    ast::UserDefinedTypeAttributes* attributes = node->getAttributes();
+    ast::UserDefinedTypeMethods* methods = node->getMethods();
+
+    // capture the name
+    std::string udt_name = attributes->getName()->getValue();
+
+    // create a symbol table for the attributes
+    SymbolTable* st_a = new SymbolTable();
+
+    // temporarilly set the symbolTable field to the attribute one so that I can
+    // properly create this
+    SymbolTable* tempTable = symbolTable;
+    symbolTable = st_a;
+
+    for (auto const& var : attributes->getAttributes())
+    {
+        std::string name = var->getName()->getValue();
+        std::string type = var->getType()->getType();
+
+        std::string adjustedName = "V" + type;
+
+        bool isUnique = symbolTable->addSymbol(name, adjustedName);
+
+        // symbol table entry must be unique for current scope
+        if (!isUnique)
+        {
+            symbolTableErrorHandler->handle(new Error(
+                node->getLineNum(),
+                "Invalid redecleration of method with name: " + name + "."));
+        }
+    }
+
+    // capture the decorated symbol table and reset the class field back
+    st_a = symbolTable;
+    symbolTable = tempTable;
+
+    // create a symbol table for the methods
+    SymbolTable* st_m = new SymbolTable();
+
+    // temporarilly set the symbolTable field to the attribute one so that I can
+    // properly create this
+    tempTable = symbolTable;
+    symbolTable = st_m;
+
+    for (auto const& func : methods->getMethods())
+    {
+        visit(func);
+    }
+
+    // capture the decorated symbol table and reset the class field back
+    st_m = symbolTable;
+    symbolTable = tempTable;
+
+    std::string adjustedName = "U" + udt_name;
+
+    // add to both symbol table and udt table
+    bool isUnique = symbolTable->addSymbol(udt_name, adjustedName);
+
+    // symbol table entry must be unique for current scope
+    if (!isUnique)
+    {
+        symbolTableErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Invalid redecleration of udt with name: " + name + "."));
+    }
+
+    bool isUnique = udtTable->addUDT(udt_name, st_a, st_m);
+
+    // udt table entries MUST be unique unlike symbol table (for now)
+    if (!isUnique)
+    {
+        symbolTableErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Invalid redecleration of udt with name: " + udt_name + "."));
+    }
+}
+
+// ------- END ------- //
 
 void
 TypeChecker::visit(ast::InitialExecutionBody* node)
@@ -799,5 +922,38 @@ TypeChecker::visit(ast::Subtraction* node)
             node->getLineNum(), "Expected either float or integer type on left "
                                 "side of subtraction. Instead received: " +
                                     rType + "."));
+    }
+}
+
+void
+TypeChecker::visit(ast::ExportDefinition* node)
+{
+    // ensure scope is global since functions cannot be in blocks
+    if (!symbolTable->isGlobalScope())
+    {
+        symbolTableErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Export definitions can only be declared at the global level, "
+            "i.e. cannot be nested!"));
+    }
+
+    ast::Exportable* exprt = node->getExport();
+    ast::Exportable::ExportableType type = exprt->getExportableType();
+    switch (type)
+    {
+    case ast::Exportable::GeneralDecleration:
+    {
+        ast::GeneralDecleration* subnode =
+            dynamic_cast<ast::GeneralDecleration*>(exprt);
+        visit(subnode);
+        break;
+    }
+    case ast::Exportable::FunctionDefinition:
+    {
+        ast::FunctionDefinition* subnode =
+            dynamic_cast<ast::FunctionDefinition*>(exprt);
+        visit(subnode);
+        break;
+    }
     }
 }

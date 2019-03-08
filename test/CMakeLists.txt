@@ -8,9 +8,6 @@ ADD_LIBRARY(SailfishcLibs
     ../src/parser/Parser.cpp
     ../src/visitor/InOrderTraversal.cpp
     ../src/visitor/Visitor.cpp
-    ../src/semant/DictionarySymbol.cpp
-    ../src/semant/FunctionSymbol.cpp
-    ../src/semant/UDTSymbol.cpp
     ../src/semant/SymbolTable.cpp
      ../src/errorhandler/ParserErrorHandler.cpp
 )
