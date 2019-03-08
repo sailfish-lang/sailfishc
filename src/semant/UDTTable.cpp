@@ -3,7 +3,6 @@
  * Sailfish Programming Language
  */
 #include "UDTTable.h"
-#include "UDTMetaData.h"
 #include <string>
 
 // check if a UDT is in the UDT table

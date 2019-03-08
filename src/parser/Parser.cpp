@@ -211,8 +211,10 @@ Parser::parseFunctionDefintion()
         // if arrow forgotten, will parse until EOF
         if (currentToken->isEOF())
         {
-            errorHandler->handle(new Error(currentToken->getLineNum(),
-                                           "Missing a right arrow token."));
+            errorHandler->handle(
+                new Error(currentToken->getLineNum(),
+                          "Missing a right arrow token or incorrect format for "
+                          "input. Correct: [TYPE] [NAME]."));
         }
     }
 

@@ -22,7 +22,7 @@ void
 SymbolTableErrorHandler::end()
 {
     if (!foundError)
-        std::cout << "Symbal Table creation finished error free!\n";
+        std::cout << "Symbol Table creation finished error free!\n";
     else
         std::cout
             << "Symbol Table creation stopped and found one or more errors.\n";

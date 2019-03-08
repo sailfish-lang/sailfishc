@@ -4,6 +4,7 @@
  */
 #pragma once
 #include "../ast/Ast.h"
+#include "../common/ReservedWords.h"
 #include "../errorhandler/Error.h"
 #include "../errorhandler/ErrorHandler.h"
 #include "../errorhandler/SemanticErrorHandler.h"
@@ -29,6 +30,7 @@ class TypeChecker : public Visitor
         symbolTableErrorHandler = (ErrorHandler*)new SymbolTableErrorHandler();
         semanticErrorHandler = (ErrorHandler*)new SemanticErrorHandler();
         symbolTable = new SymbolTable();
+        udtTable = new UDTTable();
     }
     // destructor
     ~TypeChecker()

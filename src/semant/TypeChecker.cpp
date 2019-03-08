@@ -1,7 +1,8 @@
-
-#include "./TypeChecker.h"
-#include "../errorhandler/Error.h"
-#include "SymbolTable.h"
+/*
+ * Robert Durst 2019
+ * Sailfish Programming Language
+ */
+#include "TypeChecker.h"
 
 // ------- Ugly/Hacky Helper Functions ------- //
 
@@ -141,24 +142,24 @@ primaryHelper(ast::Primary* primary)
     {
         ast::StringLiteral* subnode =
             dynamic_cast<ast::StringLiteral*>(primary);
-        return "String";
+        return "str";
     }
     case ast::Primary::BooleanLiteral:
     {
         ast::BooleanLiteral* subnode =
             dynamic_cast<ast::BooleanLiteral*>(primary);
-        return "Boolean";
+        return "bool";
     }
     case ast::Primary::IntegerLiteral:
     {
         ast::IntegerLiteral* subnode =
             dynamic_cast<ast::IntegerLiteral*>(primary);
-        return "Integer";
+        return "int";
     }
     case ast::Primary::FloatLiteral:
     {
         ast::FloatLiteral* subnode = dynamic_cast<ast::FloatLiteral*>(primary);
-        return "Float";
+        return "flt";
     }
     }
 }
@@ -175,11 +176,11 @@ expressionHelper(ast::Expression* node, ErrorHandler* seh)
         switch (subnode->getNewVal()->getNewType())
         {
         case ast::New::DictionaryLiteral:
-            return "Dictionary";
+            return "dictionary";
         case ast::New::ListLiteral:
-            return "List";
+            return "list";
         case ast::New::UserDefinedType:
-            return "UDT";
+            return "udt";
         }
         break;
     }
@@ -192,7 +193,7 @@ expressionHelper(ast::Expression* node, ErrorHandler* seh)
                               "Unexpected grouping inside binary expression. "
                               "Groupings cannot be nested."));
         // return list type to continue semantic analysis
-        return "List";
+        return "list";
     }
     case ast::Expression::ArrayExpression:
     {
@@ -202,7 +203,7 @@ expressionHelper(ast::Expression* node, ErrorHandler* seh)
         seh->handle(new Error(subnode->getLineNum(),
                               "Unexpected list inside binary expression."));
         // return list type to continue semantic analysis
-        return "List";
+        return "list";
     }
     case ast::Expression::PrimaryExpression:
     {
@@ -217,7 +218,7 @@ expressionHelper(ast::Expression* node, ErrorHandler* seh)
             dynamic_cast<ast::UnaryExpression*>(node);
 
         // must be a boolean so fine to return boolean here
-        return "Boolean";
+        return "bool";
     }
     }
 }
@@ -242,12 +243,32 @@ TypeChecker::check(ast::Start* root)
 void
 TypeChecker::visit(ast::NewVariableDefinition* node)
 {
+    bool isGood = true;
+
     // capture variable information to add to the symbol table
     ast::Variable* var = node->getVariable();
     std::string name = var->getName()->getValue();
     std::string type = var->getType()->getType();
 
     std::string adjustedName = "V" + type;
+
+    // make sure the name is not a reserved word, a primitive name, or a UDT
+    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared variable named: " + name +
+                                    " illegally shares its name with a "
+                                    "type or a keyword/reserved word."));
+    }
+
+    // make sure the type is either primitive or a udt
+    if (!isPrimitive(type) && !udtTable->hasUDT(type))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared type: " + type +
+                                    " for variable named: " + name +
+                                    " is not a legal or known type."));
+    }
 
     bool isUnique = symbolTable->addSymbol(name, adjustedName);
 
@@ -311,6 +332,8 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
 void
 TypeChecker::visit(ast::FunctionDefinition* node)
 {
+    // if we hit errors, do not add it to the symbol table
+    bool isGood = true;
 
     // ensure scope is global since functions cannot be in blocks
     if (!symbolTable->isGlobalScope())
@@ -331,6 +354,14 @@ TypeChecker::visit(ast::FunctionDefinition* node)
         ast::Variable* var = input->getInput();
         std::string inp_type = var->getType()->getType();
 
+        if (!isPrimitive(inp_type) && !symbolTable->hasVariable(inp_type))
+        {
+            semanticErrorHandler->handle(
+                new Error(node->getName()->getLineNum(),
+                          "Functions input type of:  " + inp_type +
+                              " for function: " + name + " does not exist."));
+        }
+
         adjustedName += "_" + inp_type;
     }
 
@@ -342,19 +373,30 @@ TypeChecker::visit(ast::FunctionDefinition* node)
         ast::Typename* var = output->getOutput();
         std::string out_type = var->getType();
 
+        if (!isPrimitive(out_type) && !symbolTable->hasVariable(out_type))
+        {
+            semanticErrorHandler->handle(
+                new Error(node->getName()->getLineNum(),
+                          "Functions output type of:  " + out_type +
+                              " for function: " + name + " does not exist."));
+        }
+
         adjustedName += "_" + out_type;
     }
 
     adjustedName += ")";
 
-    bool isUnique = symbolTable->addSymbol(name, adjustedName);
-
-    // symbol table entry must be unique for current scope
-    if (!isUnique)
+    if (isGood)
     {
-        symbolTableErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Invalid redecleration of function with name: " + name + "."));
+        bool isUnique = symbolTable->addSymbol(name, adjustedName);
+
+        // symbol table entry must be unique for current scope
+        if (!isUnique)
+        {
+            symbolTableErrorHandler->handle(new Error(
+                node->getLineNum(),
+                "Invalid redecleration of function with name: " + name + "."));
+        }
     }
 
     // enter a scope for this function, starting with the parameters
@@ -441,12 +483,12 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     // symbol table entry must be unique for current scope
     if (!isUnique)
     {
-        symbolTableErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Invalid redecleration of udt with name: " + name + "."));
+        symbolTableErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Invalid redecleration of udt with name: " + udt_name + "."));
     }
 
-    bool isUnique = udtTable->addUDT(udt_name, st_a, st_m);
+    isUnique = udtTable->addUDT(udt_name, st_a, st_m);
 
     // udt table entries MUST be unique unlike symbol table (for now)
     if (!isUnique)

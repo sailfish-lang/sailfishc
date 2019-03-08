@@ -5,15 +5,14 @@
 #include "Token.h"
 #include <iostream>
 #include <string>
+
 Token::Token(Kind k, std::string v, int i, int c)
 {
     kind = k;
     // handle keywords and start tokens
     if (k == IDENTIFIER_TOKEN)
     {
-        if (v == "fun" || v == "Cat" || v == "Cfn" || v == "dec" ||
-            v == "exp" || v == "if" || v == "else" || v == "return" ||
-            v == "import" || v == "over" || v == "new")
+        if (isKeyword(v))
             kind = KEYWORD_TOKEN;
         else if (v == "start")
             kind = START_TOKEN;

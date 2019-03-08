@@ -3,7 +3,6 @@
  * Sailfish Programming Language
  */
 #include "InitialExecution.h"
-#include "Visitor.h"
 #include <iostream>
 
 // for every initial execution body, increment the count

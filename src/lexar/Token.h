@@ -3,6 +3,7 @@
  * Marmot Programming Language
  */
 #pragma once
+#include "../common/ReservedWords.h"
 #include <string>
 
 // Kind represents all the different types of tokens.

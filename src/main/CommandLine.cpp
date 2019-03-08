@@ -2,11 +2,7 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "../ast/Ast.h"
-#include "../lexar/Lexar.h"
-#include "../parser/Parser.h"
-#include "../semant/SemanticAnalyzer.h"
-#include "../visitor/InOrderTraversal.h"
+#include "CommandLine.h"
 #include <iostream>
 #include <string>
 

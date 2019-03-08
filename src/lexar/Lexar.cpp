@@ -3,7 +3,6 @@
  * Sailfish Programming Language
  */
 #include "Lexar.h"
-#include "Token.h"
 #include <string>
 
 /*
