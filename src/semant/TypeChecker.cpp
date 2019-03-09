@@ -356,6 +356,15 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     }
 
     std::string name = node->getName()->getValue();
+    
+    // make sure the name is not a reserved word, a primitive name, or a UDT
+    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared function named: " + name +
+                                    " illegally shares its name with a "
+                                    "type or a keyword/reserved word."));
+    }
 
     std::string adjustedName = "F" + name + "(";
 
@@ -364,6 +373,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     {
         ast::Variable* var = input->getInput();
         std::string inp_type = var->getType()->getType();
+	std::string inp_name = var->getName()->getValue();
 
         if (!isPrimitive(inp_type) && !symbolTable->hasVariable(inp_type))
         {
@@ -373,7 +383,17 @@ TypeChecker::visit(ast::FunctionDefinition* node)
                               " for function: " + name + " does not exist."));
         }
 
-        adjustedName += "_" + inp_type;
+    	// make sure the name is not a reserved word, a primitive name, or a UDT, however edge case where
+	// is void exists
+    	if (inp_name != "void" && (isPrimitive(inp_name) || isKeyword(inp_name) || udtTable->hasUDT(inp_name)))
+    	{
+        	semanticErrorHandler->handle(new Error(
+            		node->getLineNum(), "Declared function input named: " + inp_name +
+                                    " illegally shares its name with a "
+                                    "type or a keyword/reserved word."));
+    	}
+        
+	adjustedName += "_" + inp_type;
     }
 
     adjustedName += ")(";

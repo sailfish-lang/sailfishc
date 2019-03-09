@@ -57,31 +57,44 @@
 */
 
 // -------       function      -------- //
-/*
+// good
 fun good
 <- void
 -> void
 {}
 
+// input describes nonexistent type
 fun inputDoesNotExist
 <- nonExistentType foo
 -> void
 {}
 
-fun outPutDoesNotExist
+// input name is a reserved word
+fun reserevedKeywordAsInputName
+<-flt flt
+-> void
+{}
+
+// output describes a nonexistent type
+fun outputDoesNotExist
 <- void
 -> nonExistentType
 {}
 
-*/
+// function name is a reserved type
+fun flt
+<- void
+-> void
+{}
 
 // --------       declerations         --------
+/*
 dec flt a = 10 // good
 dec fat b = 10 // error type does not exist
 dec flt flt = 10.0 // error name is a primitive
 dec flt dec = 10.0 // error name is a keyword
 dec flt foo = 10 // error expression type and assignment type are different
-
+*/
 /*
 start {
     // +
