@@ -295,8 +295,6 @@ InOrderTraversal::visit(ast::DictionaryLiteral* node)
 void
 InOrderTraversal::visit(ast::DictionaryItem* node)
 {
-    visit(node->getKey());
-
     push("DictionaryItem");
 }
 void

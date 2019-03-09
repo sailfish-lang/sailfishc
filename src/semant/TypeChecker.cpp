@@ -172,15 +172,98 @@ expressionHelper(ast::Expression* node, ErrorHandler* seh)
     case ast::Expression::NewExpression:
     {
         ast::NewExpression* subnode = dynamic_cast<ast::NewExpression*>(node);
+        ast::New* newnode = subnode->getNewVal();
 
-        switch (subnode->getNewVal()->getNewType())
+        switch (newnode->getNewType())
         {
         case ast::New::DictionaryLiteral:
-            return "dictionary";
+        {
+            ast::DictionaryLiteral* dictionaryLiteral =
+                dynamic_cast<ast::DictionaryLiteral*>(newnode);
+
+            std::vector<ast::DictionaryItem*> items =
+                dictionaryLiteral->getItems();
+
+            // empty lists do not need type checking
+            if (items.size() == 0)
+            {
+                return "dictionary_empty_empty";
+            }
+
+            std::string expectedKeyType = primaryHelper(items.at(0)->getKey());
+            std::string expectedValueType =
+                primaryHelper(items.at(0)->getValue());
+
+            for (ast::DictionaryItem* const& item : items)
+            {
+                std::string keyType = primaryHelper(item->getKey());
+                std::string valueType = primaryHelper(item->getValue());
+
+                // confirm the dictionary keys are homogenous
+                if (keyType != expectedKeyType)
+                {
+                    seh->handle(new Error(
+                        subnode->getLineNum(),
+                        "Dictionary is not homogenous. Received key types: " +
+                            keyType + " and " + expectedKeyType +
+                            " which do not match."));
+
+                    // return list as empty to continue semantic analyis
+                    return "dictionary_empty_empty";
+                }
+
+                // confirm the dictionary values are homogenous
+                if (valueType != expectedValueType)
+                {
+                    seh->handle(new Error(
+                        subnode->getLineNum(),
+                        "Dictionary is not homogenous. Received value types: " +
+                            valueType + " and " + expectedValueType +
+                            " which do not match."));
+
+                    // return list as empty to continue semantic analyis
+                    return "dictionary_empty_empty";
+                }
+            }
+
+            return "dictionary_" + expectedKeyType + "_" + expectedValueType;
+        }
         case ast::New::ListLiteral:
-            return "list";
+        {
+            ast::ListLiteral* listLiteral =
+                dynamic_cast<ast::ListLiteral*>(newnode);
+
+            std::vector<ast::ListItem*> items = listLiteral->getItems();
+
+            // empty lists do not need type checking
+            if (items.size() == 0)
+            {
+                return "list_empty";
+            }
+
+            std::string expectedType = primaryHelper(items.at(0)->getValue());
+
+            for (ast::ListItem* const& item : items)
+            {
+                std::string type = primaryHelper(item->getValue());
+
+                // confirm the list is homogenous
+                if (type != expectedType)
+                {
+                    seh->handle(new Error(
+                        subnode->getLineNum(),
+                        "List is not homogenous. Received types: " + type +
+                            " and " + expectedType + " which do not match."));
+
+                    // return list as empty to continue semantic analyis
+                    return "list_empty";
+                }
+            }
+
+            return "list_" + expectedType;
+        }
         case ast::New::UserDefinedType:
-            return "udt";
+            return "udt_";
         }
         break;
     }
@@ -339,16 +422,25 @@ TypeChecker::visit(ast::ListDefinition* node)
     std::string exprType =
         expressionHelper(node->getExpression(), semanticErrorHandler);
 
-    // make sure the type of the assignment is the same as the declared type
-    // TODO: make sure that the list expressionvalues are actually
-    // match, not just that it is a list
-    if (exprType != "list")
+    std::string baseType = exprType.substr(0, exprType.find("_"));
+    std::string valType =
+        exprType.substr(exprType.find("_") + 1, exprType.length());
+
+    if (baseType != "list")
     {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(),
             "Declared type of list for variable named: " + name +
-                " does not match assigned expression type of: " + exprType +
+                " does not match assigned expression type of: " + baseType +
                 "."));
+    }
+    else if (valType != "empty" && valType != type)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Declared type of list: " + type + " for variable named: " + name +
+                " does not match assigned expression's list of type: " +
+                valType + "."));
     }
 }
 
@@ -404,16 +496,41 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     std::string exprType =
         expressionHelper(node->getExpression(), semanticErrorHandler);
 
-    // make sure the type of the assignment is the same as the declared type
-    // TODO: make sure that the dictionary expression key and values actually
-    // match, not just that it is a dictionary
-    if (exprType != "dictionary")
+    std::string baseType = exprType.substr(0, exprType.find("_"));
+
+    std::string temp =
+        exprType.substr(exprType.find("_") + 1, exprType.length());
+
+    std::string receivedKeyType = temp.substr(0, temp.find("_"));
+
+    std::string receivedValType =
+        temp.substr(temp.find("_") + 1, temp.length());
+
+    if (baseType != "dictionary")
     {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(),
             "Declared type of dictionary for variable named: " + name +
-                " does not match assigned expression type of: " + exprType +
+                " does not match assigned expression type of: " + baseType +
                 "."));
+    }
+    else if (receivedKeyType != "empty" && receivedKeyType != keyType)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared type of dictionary keys: " + keyType +
+                                    " for variable named: " + name +
+                                    " does not match assigned expression's "
+                                    "dictionary keys of type: " +
+                                    receivedKeyType + "."));
+    }
+    else if (receivedValType != "empty" && receivedValType != valueType)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared type of dictionary values: " +
+                                    valueType + " for variable named: " + name +
+                                    " does not match assigned expression's "
+                                    "dictionary values of type: " +
+                                    receivedValType + "."));
     }
 }
 

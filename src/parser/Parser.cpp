@@ -1189,11 +1189,7 @@ Parser::parseDictionaryLiteral()
 ast::DictionaryItem*
 Parser::parseDictionaryItem()
 {
-    ast::Identifier* key = new ast::Identifier(currentToken->getValue(),
-                                               currentToken->getLineNum());
-
-    // consume identifier
-    getNextUsefulToken();
+    ast::Primary* key = parsePrimary();
 
     // check for ':'
     if (currentToken->getKind() != Kind::COLON_TOKEN)

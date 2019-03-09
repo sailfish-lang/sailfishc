@@ -12,12 +12,12 @@ namespace ast
 class DictionaryItem : public Node
 {
   private:
-    Identifier* key;
+    Primary* key;
     Primary* value;
 
   public:
     // constructor
-    DictionaryItem(Identifier* k, Primary* v, int lineNum) : Node(lineNum)
+    DictionaryItem(Primary* k, Primary* v, int lineNum) : Node(lineNum)
     {
         key = k;
         value = v;
@@ -29,7 +29,7 @@ class DictionaryItem : public Node
         delete value;
     };
     // get methods
-    Identifier*
+    Primary*
     getKey()
     {
         return key;

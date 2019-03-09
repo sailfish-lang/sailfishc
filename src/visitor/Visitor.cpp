@@ -583,7 +583,44 @@ Visitor::visit(ast::DictionaryLiteral* node)
 void
 Visitor::visit(ast::DictionaryItem* node)
 {
-    visit(node->getKey());
+    switch (node->getKey()->getPrimaryType())
+    {
+    case ast::Primary::Identifier:
+    {
+        ast::Identifier* subnode =
+            dynamic_cast<ast::Identifier*>(node->getValue());
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::StringLiteral:
+    {
+        ast::StringLiteral* subnode =
+            dynamic_cast<ast::StringLiteral*>(node->getValue());
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::BooleanLiteral:
+    {
+        ast::BooleanLiteral* subnode =
+            dynamic_cast<ast::BooleanLiteral*>(node->getValue());
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::IntegerLiteral:
+    {
+        ast::IntegerLiteral* subnode =
+            dynamic_cast<ast::IntegerLiteral*>(node->getValue());
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::FloatLiteral:
+    {
+        ast::FloatLiteral* subnode =
+            dynamic_cast<ast::FloatLiteral*>(node->getValue());
+        visit(subnode);
+        break;
+    }
+    }
 
     switch (node->getValue()->getPrimaryType())
     {
