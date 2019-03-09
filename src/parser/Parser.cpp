@@ -1205,11 +1205,7 @@ Parser::parseDictionaryItem()
     // consume ':'
     getNextUsefulToken();
 
-    ast::Identifier* value = new ast::Identifier(currentToken->getValue(),
-                                                 currentToken->getLineNum());
-
-    // consume identifier
-    getNextUsefulToken();
+    ast::Primary* value = parsePrimary();
 
     return new ast::DictionaryItem(key, value, currentToken->getLineNum());
 }
@@ -1245,12 +1241,9 @@ Parser::parseListLiteral()
 ast::ListItem*
 Parser::parseListItem()
 {
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
-                                                currentToken->getLineNum());
-    // consume identifier
-    getNextUsefulToken();
+    ast::Primary* value = parsePrimary();
 
-    return new ast::ListItem(name, currentToken->getLineNum());
+    return new ast::ListItem(value, currentToken->getLineNum());
 }
 
 /**

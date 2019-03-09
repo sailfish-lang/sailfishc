@@ -4,6 +4,7 @@
  */
 
 #include "../src/ast/Ast.h"
+#include "../src/common/ReservedWords.h"
 #include "../src/lexar/Lexar.h"
 #include "../src/parser/Parser.h"
 #include "../src/semant/SymbolTable.h"
@@ -73,14 +74,12 @@ TEST(ParserTest, AllTokens)
     static const std::string expected[] = {
         "Identifier: someDict",
         "Identifier: 1",
-        "Identifier: \"hello\"",
         "DictionaryItem",
         "DictionaryLiteral",
         "NewExpression",
         "DictionaryDefinition",
         "ExportDefintion",
         "Identifier: someList",
-        "Identifier: 1.0",
         "ListItem",
         "ListLiteral",
         "NewExpression",

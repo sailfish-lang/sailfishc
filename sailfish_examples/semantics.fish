@@ -102,7 +102,7 @@ dec list abbb <[ int ]> new { 1 : 1.0 }  // error type is not a list
 */
 
 // --------       udt       --------
-
+/*
 // good
 Cat Foo {
     int i
@@ -125,7 +125,12 @@ Cat flt  {
 }
 
 Cfn flt {}
+*/
 
+start {
+    // --------       list literal         ---------
+    z = [ 1, 2 ]
+}
 
 /*
 start {

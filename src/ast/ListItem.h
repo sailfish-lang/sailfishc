@@ -5,30 +5,31 @@
 #pragma once
 #include "Identifier.h"
 #include "Node.h"
+#include "Primary.h"
 
 namespace ast
 {
 class ListItem : public Node
 {
   private:
-    Identifier* name;
+    Primary* value;
 
   public:
     // constructor
-    ListItem(Identifier* i, int lineNum) : Node(lineNum)
+    ListItem(Primary* v, int lineNum) : Node(lineNum)
     {
-        name = i;
+        value = v;
     };
     // destructor
     ~ListItem()
     {
-        delete name;
+        delete value;
     };
     // get methods
-    Identifier*
-    getName()
+    Primary*
+    getValue()
     {
-        return name;
+        return value;
     }
 };
 }
