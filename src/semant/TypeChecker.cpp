@@ -303,6 +303,15 @@ TypeChecker::visit(ast::ListDefinition* node)
     std::string name = node->getName()->getValue();
     std::string type = node->getType()->getType();
 
+    // make sure the name is not a reserved word, a primitive name, or a UDT
+    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared list named: " + name +
+                                    " illegally shares its name with a "
+                                    "type or a keyword/reserved word."));
+    }
+
     std::string adjustedName = "L" + type;
 
     bool isUnique = symbolTable->addSymbol(name, adjustedName);
@@ -315,8 +324,32 @@ TypeChecker::visit(ast::ListDefinition* node)
             "Invalid redecleration of list with name: " + name + "."));
     }
 
+    // ensure the type exists, i.e. is a primitive or udt
+    if (!isPrimitive(type) && !symbolTable->hasVariable(type))
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Defined lists's type of: " + type +
+                          " for list: " + name + " does not exist."));
+    }
+
     // visit expression
     visit(node->getExpression());
+
+    std::string exprType =
+        expressionHelper(node->getExpression(), semanticErrorHandler);
+
+    // make sure the type of the assignment is the same as the declared type
+    // TODO: make sure that the list expressionvalues are actually
+    // match, not just that it is a list
+    if (exprType != "list")
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Declared type of list for variable named: " + name +
+                " does not match assigned expression type of: " + exprType +
+                "."));
+    }
 }
 
 void

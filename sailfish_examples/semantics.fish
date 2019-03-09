@@ -95,11 +95,19 @@ dec flt foo = 10 // error expression type and assignment type are different
 */
 
 // --------       dictionary        -------
+/*
 dec dictionary a <[ int : flt ]> new { 1 : 1.0 } // good
 dec dictionary ab <[ Foo : flt ]> new { 1 : 1.0 } // error key type does not exist
 dec dictionary abb <[ int : Foo ]> new { 1 : 1.0 } // error value type does not exist
 dec dictionary flt <[ int : flt ]> new { 1 : 1.0 } // error name is reserved
 dec dictionary abbb <[ int : flt ]> new [ 1 ] // error type is not a dictionary
+*/
+
+// ---------        list         ---------
+dec list a <[ int ]> new [ 1 ] // good
+dec list ab <[ Foo ]> new [ 1 ] // error key type does not exist
+dec list flt <[ int ]> new [ 1 ] // error name is reserved
+dec list abbb <[ int ]> new { 1 : 1.0 }  // error type is not a list
 
 /*
 start {
