@@ -283,15 +283,17 @@ TypeChecker::visit(ast::NewVariableDefinition* node)
     // visit expression
     visit(node->getExpressionStatement());
 
-    std::string exprType = getRightExpressionType(node->getExpressionStatement(), semanticErrorHandler);
-    
+    std::string exprType = getRightExpressionType(
+        node->getExpressionStatement(), semanticErrorHandler);
+
     // make sure the type of the assignment is the same as the declared type
     if (exprType != type)
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared type: " + type +
-                                    " for variable named: " + name +
-                                    " does not match assigned expression type of: " + exprType + "."));
+            node->getLineNum(),
+            "Declared type: " + type + " for variable named: " + name +
+                " does not match assigned expression type of: " + exprType +
+                "."));
     }
 }
 
@@ -324,6 +326,15 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     std::string keyType = node->getKeyType()->getType();
     std::string valueType = node->getValueType()->getType();
 
+    // make sure the name is not a reserved word, a primitive name, or a UDT
+    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared definition named: " + name +
+                                    " illegally shares its name with a "
+                                    "type or a keyword/reserved word."));
+    }
+
     std::string adjustedName = "D" + keyType + "_" + valueType;
 
     bool isUnique = symbolTable->addSymbol(name, adjustedName);
@@ -336,8 +347,41 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
             "Invalid redecleration of dictionary with name: " + name + "."));
     }
 
+    // ensure the keyType exists, i.e. is a primitive or udt
+    if (!isPrimitive(keyType) && !symbolTable->hasVariable(keyType))
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Defined dictionary's key type of: " + keyType +
+                          " for dictionary: " + name + " does not exist."));
+    }
+
+    // ensure the valueType exists, i.e. is a primitive or udt
+    if (!isPrimitive(valueType) && !symbolTable->hasVariable(valueType))
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Defined dictionary's value type of: " + valueType +
+                          " for dictionary: " + name + " does not exist."));
+    }
+
     // visit expression
     visit(node->getExpression());
+
+    std::string exprType =
+        expressionHelper(node->getExpression(), semanticErrorHandler);
+
+    // make sure the type of the assignment is the same as the declared type
+    // TODO: make sure that the dictionary expression key and values actually
+    // match, not just that it is a dictionary
+    if (exprType != "dictionary")
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Declared type of dictionary for variable named: " + name +
+                " does not match assigned expression type of: " + exprType +
+                "."));
+    }
 }
 
 void
@@ -356,7 +400,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     }
 
     std::string name = node->getName()->getValue();
-    
+
     // make sure the name is not a reserved word, a primitive name, or a UDT
     if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
     {
@@ -373,8 +417,9 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     {
         ast::Variable* var = input->getInput();
         std::string inp_type = var->getType()->getType();
-	std::string inp_name = var->getName()->getValue();
+        std::string inp_name = var->getName()->getValue();
 
+        // ensure the type exists, i.e. is a primitive or udt
         if (!isPrimitive(inp_type) && !symbolTable->hasVariable(inp_type))
         {
             semanticErrorHandler->handle(
@@ -383,17 +428,20 @@ TypeChecker::visit(ast::FunctionDefinition* node)
                               " for function: " + name + " does not exist."));
         }
 
-    	// make sure the name is not a reserved word, a primitive name, or a UDT, however edge case where
-	// is void exists
-    	if (inp_name != "void" && (isPrimitive(inp_name) || isKeyword(inp_name) || udtTable->hasUDT(inp_name)))
-    	{
-        	semanticErrorHandler->handle(new Error(
-            		node->getLineNum(), "Declared function input named: " + inp_name +
-                                    " illegally shares its name with a "
-                                    "type or a keyword/reserved word."));
-    	}
-        
-	adjustedName += "_" + inp_type;
+        // make sure the name is not a reserved word, a primitive name, or a
+        // UDT, however edge case where is void exists
+        if (inp_name != "void" &&
+            (isPrimitive(inp_name) || isKeyword(inp_name) ||
+             udtTable->hasUDT(inp_name)))
+        {
+            semanticErrorHandler->handle(
+                new Error(node->getLineNum(),
+                          "Declared function input named: " + inp_name +
+                              " illegally shares its name with a "
+                              "type or a keyword/reserved word."));
+        }
+
+        adjustedName += "_" + inp_type;
     }
 
     adjustedName += ")(";

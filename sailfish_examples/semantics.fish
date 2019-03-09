@@ -3,10 +3,6 @@
 		- must be type that exists
 		- expression must match the declared type
 	
-	Dictionary Definition type checks:
-		- must be types (key and value) that exist
-		- expression must match the declared types
-	
 	UDT
 		- method outputs and inputs must be types that exist
 		- not using a reserved name as the key
@@ -57,6 +53,7 @@
 */
 
 // -------       function      -------- //
+/*
 // good
 fun good
 <- void
@@ -86,6 +83,7 @@ fun flt
 <- void
 -> void
 {}
+*/
 
 // --------       declerations         --------
 /*
@@ -95,6 +93,14 @@ dec flt flt = 10.0 // error name is a primitive
 dec flt dec = 10.0 // error name is a keyword
 dec flt foo = 10 // error expression type and assignment type are different
 */
+
+// --------       dictionary        -------
+dec dictionary a <[ int : flt ]> new { 1 : 1.0 } // good
+dec dictionary ab <[ Foo : flt ]> new { 1 : 1.0 } // error key type does not exist
+dec dictionary abb <[ int : Foo ]> new { 1 : 1.0 } // error value type does not exist
+dec dictionary flt <[ int : flt ]> new { 1 : 1.0 } // error name is reserved
+dec dictionary abbb <[ int : flt ]> new [ 1 ] // error type is not a dictionary
+
 /*
 start {
     // +
