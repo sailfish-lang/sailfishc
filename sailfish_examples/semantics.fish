@@ -1,14 +1,4 @@
 /*
-	List Definition type checks:
-		- must be type that exists
-		- expression must match the declared type
-	
-	UDT
-		- method outputs and inputs must be types that exist
-		- not using a reserved name as the key
-		- attributes must be unique names
-		- attribute types must exist
-
 	return
 		- must have type that matches existed
 		
@@ -104,10 +94,38 @@ dec dictionary abbb <[ int : flt ]> new [ 1 ] // error type is not a dictionary
 */
 
 // ---------        list         ---------
+/*
 dec list a <[ int ]> new [ 1 ] // good
 dec list ab <[ Foo ]> new [ 1 ] // error key type does not exist
 dec list flt <[ int ]> new [ 1 ] // error name is reserved
 dec list abbb <[ int ]> new { 1 : 1.0 }  // error type is not a list
+*/
+
+// --------       udt       --------
+
+// good
+Cat Foo {
+    int i
+    flt f
+    str s
+}
+
+Cfn Foo {
+    fn foo
+    <- void
+    -> void
+    {}
+}
+
+// errors
+Cat flt  { 
+    flt flt // illegal name
+    void // illegal type
+    udt u // unknown type
+}
+
+Cfn flt {}
+
 
 /*
 start {

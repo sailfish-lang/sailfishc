@@ -325,7 +325,7 @@ TypeChecker::visit(ast::ListDefinition* node)
     }
 
     // ensure the type exists, i.e. is a primitive or udt
-    if (!isPrimitive(type) && !symbolTable->hasVariable(type))
+    if (!isPrimitive(type) && !udtTable->hasUDT(type))
     {
         semanticErrorHandler->handle(
             new Error(node->getName()->getLineNum(),
@@ -381,7 +381,7 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     }
 
     // ensure the keyType exists, i.e. is a primitive or udt
-    if (!isPrimitive(keyType) && !symbolTable->hasVariable(keyType))
+    if (!isPrimitive(keyType) && !udtTable->hasUDT(keyType))
     {
         semanticErrorHandler->handle(
             new Error(node->getName()->getLineNum(),
@@ -390,7 +390,7 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     }
 
     // ensure the valueType exists, i.e. is a primitive or udt
-    if (!isPrimitive(valueType) && !symbolTable->hasVariable(valueType))
+    if (!isPrimitive(valueType) && !udtTable->hasUDT(valueType))
     {
         semanticErrorHandler->handle(
             new Error(node->getName()->getLineNum(),
@@ -453,7 +453,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
         std::string inp_name = var->getName()->getValue();
 
         // ensure the type exists, i.e. is a primitive or udt
-        if (!isPrimitive(inp_type) && !symbolTable->hasVariable(inp_type))
+        if (!isPrimitive(inp_type) && !udtTable->hasUDT(inp_type))
         {
             semanticErrorHandler->handle(
                 new Error(node->getName()->getLineNum(),
@@ -540,6 +540,16 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     // capture the name
     std::string udt_name = attributes->getName()->getValue();
 
+    // make sure the name is not a reserved word, a primitive name, or a UDT
+    if (isPrimitive(udt_name) || isKeyword(udt_name) ||
+        udtTable->hasUDT(udt_name))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared udt named: " + udt_name +
+                                    " illegally shares its name with a "
+                                    "type or a keyword/reserved word."));
+    }
+
     // create a symbol table for the attributes
     SymbolTable* st_a = new SymbolTable();
 
@@ -552,6 +562,25 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     {
         std::string name = var->getName()->getValue();
         std::string type = var->getType()->getType();
+
+        // make sure the name is not a reserved word, a primitive name, or a UDT
+        if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getLineNum(), "Declared udt attribute named: " + name +
+                                        " illegally shares its name with a "
+                                        "type or a keyword/reserved word."));
+        }
+
+        // ensure the type exists, i.e. is a primitive or udt and not a void,
+        // makes no sense here
+        if ((!isPrimitive(type) && !udtTable->hasUDT(type)) || (type == "void"))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getLineNum(),
+                "Udt attribute type of:  " + type + " for attribute: " + name +
+                    " and for udt: " + udt_name + " does not exist."));
+        }
 
         std::string adjustedName = "V" + type;
 
