@@ -4,6 +4,7 @@
 		
 	assignment
 		- types must exist
+        - name must not be reserved
 	
 	functioncall
 		- function must exist
@@ -13,27 +14,6 @@
 	grouping
 		- must ultimately evaluate to boolean (?)
 
-	attribute access
-		- must be on a udt that exists
-		- attribute must also exist
-
-	method access
-		- must be on a udt that exists
-		- method must exist
-	
-	user defined type
-		- all types must match for assignments
-		- all attributes must match and exist
-		- all types must exist
-	
-	Integer/String/Float
-		- watch for overflow
-
-	list def
-		- not a resereved keyword
-
-	dict def
-		- not a reserved keyword
 */
 
 // -------       function      -------- //
@@ -79,6 +59,7 @@ dec flt foo = 10 // error expression type and assignment type are different
 */
 
 // --------       dictionary        -------
+/*
 dec dictionary a <[ int : flt ]> new { 1 : 1.0 } // good
 dec dictionary ab <[ Foo : flt ]> new { 1 : 1.0 } // error key type does not exist
 dec dictionary abb <[ int : Foo ]> new { 1 : 1.0 } // error value type does not exist
@@ -87,7 +68,7 @@ dec dictionary abbb <[ int : flt ]> new [ 1 ] // error type is not a dictionary
 dec dictionary abbbb <[ int : flt ]> new { 1 : 1.0, 1.0 : 1} // error dictionary is not homogenous
 dec dictionary abbbbb <[ int : flt ]> new { 1.0 : 1.0 } // error dictionary keys don't match
 dec dictionary abbbbbb <[ int : flt ]> new { 1 : 1 } // error dictionary values don't match
-
+*/
 
 // ---------        list         ---------
 /*
@@ -124,6 +105,28 @@ Cat flt  {
 
 Cfn flt {}
 */
+
+Cat Foo {
+    int i
+}
+
+Cfn Foo {
+    fn foo
+    <- void
+    -> void
+    {}
+}
+
+start {
+    // udt method and attributes
+    dec Foo f = new Foo { i : 10 } // ok
+    dec Foo fa = new Foo { a : 10 } // error nonexistent attribute
+    dec Foo fb = new Foo { i : 10.0 } // error attribute type mismatch
+ //   z = f.i // ok
+  //  a = f...foo() //ok
+   // b = f.t // error no such attribute
+   // c = f...bar() //  error no such method
+}
 
 /*
 start {

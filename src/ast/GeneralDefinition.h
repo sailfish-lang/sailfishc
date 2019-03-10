@@ -13,7 +13,8 @@ class GeneralDefinition
     {
         ListDefinition,
         DictionaryDefinition,
-        NewVariableDefinition,
+        NewUDTDefinition,
+        PrimitiveDefition,
     };
     virtual GeneralDefinitionType getGeneralDefinitionType() = 0;
 };

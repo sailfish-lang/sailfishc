@@ -49,7 +49,6 @@ class TypeChecker : public Visitor
     void check(ast::Start*);
 
     // primitives
-    void visit(ast::NewVariableDefinition*);
 
     // list
     void visit(ast::ListDefinition*);
@@ -62,6 +61,7 @@ class TypeChecker : public Visitor
 
     // udt's
     void visit(ast::UserDefinedTypeDefinition*);
+    void visit(ast::NewUDTDefinition*);
 
     // all nodes containing block statements must create enter/exit scopes
     void visit(ast::InitialExecutionBody*);
@@ -78,16 +78,19 @@ class TypeChecker : public Visitor
     void visit(ast::OrComparison*);
 
     // all arith
-    virtual void visit(ast::Exponentiation*);
-    virtual void visit(ast::Multiplication*);
-    virtual void visit(ast::Division*);
-    virtual void visit(ast::Modulo*);
-    virtual void visit(ast::Addition*);
-    virtual void visit(ast::Subtraction*);
+    void visit(ast::Exponentiation*);
+    void visit(ast::Multiplication*);
+    void visit(ast::Division*);
+    void visit(ast::Modulo*);
+    void visit(ast::Addition*);
+    void visit(ast::Subtraction*);
 
     // unary
     void visit(ast::Negation*);
 
     // only global scopes
-    virtual void visit(ast::ExportDefinition*);
+    void visit(ast::ExportDefinition*);
+
+    // udt attribute and method access
+    void visit(ast::MemberAccess*);
 };

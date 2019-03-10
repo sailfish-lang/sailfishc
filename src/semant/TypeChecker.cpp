@@ -263,7 +263,21 @@ expressionHelper(ast::Expression* node, ErrorHandler* seh)
             return "list_" + expectedType;
         }
         case ast::New::UserDefinedType:
-            return "udt_";
+
+            ast::UserDefinedType* udt =
+                dynamic_cast<ast::UserDefinedType*>(newnode);
+
+            std::string name = udt->getName()->getValue();
+
+            std::string fullTypeName = "udt_" + name;
+
+            for (ast::DictionaryItem* const& item : udt->getAttributes())
+            {
+                fullTypeName += "_" + primaryHelper(item->getKey()) + "_" +
+                                primaryHelper(item->getValue());
+            }
+
+            return fullTypeName;
         }
         break;
     }
@@ -324,7 +338,7 @@ TypeChecker::check(ast::Start* root)
 }
 
 void
-TypeChecker::visit(ast::NewVariableDefinition* node)
+TypeChecker::visit(ast::NewUDTDefinition* node)
 {
     bool isGood = true;
 
@@ -333,13 +347,13 @@ TypeChecker::visit(ast::NewVariableDefinition* node)
     std::string name = var->getName()->getValue();
     std::string type = var->getType()->getType();
 
-    std::string adjustedName = "V" + type;
+    std::string adjustedName = "U" + type;
 
     // make sure the name is not a reserved word, a primitive name, or a UDT
     if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared variable named: " + name +
+            node->getLineNum(), "Declared udt named: " + name +
                                     " illegally shares its name with a "
                                     "type or a keyword/reserved word."));
     }
@@ -348,7 +362,7 @@ TypeChecker::visit(ast::NewVariableDefinition* node)
     if (!isPrimitive(type) && !udtTable->hasUDT(type))
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared type: " + type +
+            node->getLineNum(), "Declared udt type: " + type +
                                     " for variable named: " + name +
                                     " is not a legal or known type."));
     }
@@ -358,25 +372,86 @@ TypeChecker::visit(ast::NewVariableDefinition* node)
     // symbol table entry must be unique for current scope
     if (!isUnique)
     {
-        symbolTableErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Invalid redecleration of variable with name: " + name + "."));
+        symbolTableErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Invalid redecleration of udt with name: " + name + "."));
     }
 
     // visit expression
-    visit(node->getExpressionStatement());
+    visit(node->getExpression());
 
-    std::string exprType = getRightExpressionType(
-        node->getExpressionStatement(), semanticErrorHandler);
+    std::string exprType =
+        expressionHelper(node->getExpression(), semanticErrorHandler);
 
-    // make sure the type of the assignment is the same as the declared type
-    if (exprType != type)
+    std::string temp;
+    std::string prev;
+
+    std::string baseType = exprType.substr(0, exprType.find("_"));
+    temp = exprType.substr(exprType.find("_") + 1, exprType.length());
+
+    std::string udtTypeName = temp.substr(0, temp.find("_"));
+    temp = temp.substr(temp.find("_") + 1, temp.length());
+    prev = udtTypeName;
+
+    // make sure the type of the assignment is a udt
+    if (baseType != "udt")
     {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(),
-            "Declared type: " + type + " for variable named: " + name +
-                " does not match assigned expression type of: " + exprType +
-                "."));
+            "Expected udt type. Instead received: " + baseType + "."));
+    }
+
+    // make sure the type name of the assigned udt matches
+    else if (udtTypeName != type)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Expected udt of type: " + type +
+                                    " and received: " + udtTypeName + "."));
+    }
+
+    // ensure all attributes exist
+    else
+    {
+        SymbolTable* st = udtTable->getAttributeSymbolTable(udtTypeName);
+
+        while (temp.length() != prev.length())
+        {
+            std::string varName = temp.substr(0, temp.find("_"));
+            temp = temp.substr(temp.find("_") + 1, temp.length());
+
+            // ensure attribute name is in attribute Symbol Table
+            if (!st->hasVariable(varName))
+            {
+                semanticErrorHandler->handle(new Error(
+                    node->getLineNum(), "Attribute: " + varName +
+                                            " for declared udt of type: " +
+                                            udtTypeName + " does not exist."));
+                break;
+            }
+            else
+            {
+                std::string expectedVarType = st->getSymbolType(varName);
+                expectedVarType = expectedVarType.substr(
+                    1, expectedVarType
+                           .length()); // these will have a letter preface
+                std::string varType = temp.substr(0, temp.find("_"));
+                temp = temp.substr(temp.find("_") + 1, temp.length());
+                prev = varType;
+
+                // ensure attribute type matches attribute name
+                if (expectedVarType != varType)
+                {
+                    semanticErrorHandler->handle(new Error(
+                        node->getLineNum(),
+                        "Attribute: " + varType +
+                            " for declared udt of type: " + udtTypeName +
+                            " does not match expected type: " +
+                            expectedVarType +
+                            " for attribute named: " + varName + "."));
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -1253,6 +1328,77 @@ TypeChecker::visit(ast::ExportDefinition* node)
         ast::FunctionDefinition* subnode =
             dynamic_cast<ast::FunctionDefinition*>(exprt);
         visit(subnode);
+        break;
+    }
+    }
+}
+
+void
+TypeChecker::visit(ast::MemberAccess* node)
+{
+    switch (node->getMemberAccessType())
+    {
+    case ast::MemberAccess::AttributeAccess:
+    {
+        ast::AttributeAccess* subnode =
+            dynamic_cast<ast::AttributeAccess*>(node);
+
+        std::string attributeName = subnode->getAttribute()->getValue();
+        std::string variableName =
+            expressionHelper(subnode->getExpression(), semanticErrorHandler);
+        std::string udtTypeFull = symbolTable->getSymbolType(variableName);
+        std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
+
+        // ensure udt exists
+        if (!udtTable->hasUDT(udtType))
+        {
+            semanticErrorHandler->handle(new Error(
+                subnode->getLineNum(),
+                "Attribue: " + attributeName +
+                    " called on nonexistent udt type: " + udtType + "."));
+        }
+
+        // ensure attribute exists for udt
+        else if (!udtTable->getAttributeSymbolTable(udtType)->hasVariable(
+                     attributeName))
+        {
+            semanticErrorHandler->handle(new Error(
+                subnode->getLineNum(),
+                "Attribue: " + attributeName +
+                    " does not exists for udt type: " + udtType + "."));
+        }
+
+        break;
+    }
+    case ast::MemberAccess::MethodAccess:
+    {
+        ast::MethodAccess* subnode = dynamic_cast<ast::MethodAccess*>(node);
+
+        std::string methodName = subnode->getName()->getValue();
+        std::string variableName =
+            expressionHelper(subnode->getExpression(), semanticErrorHandler);
+        std::string udtTypeFull = symbolTable->getSymbolType(variableName);
+        std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
+
+        // ensure udt exists
+        if (!udtTable->hasUDT(udtType))
+        {
+            semanticErrorHandler->handle(new Error(
+                subnode->getLineNum(),
+                "Method: " + methodName +
+                    " called on nonexistent udt type: " + udtType + "."));
+        }
+
+        // ensure metho exists for udt
+        else if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(
+                     methodName))
+        {
+            semanticErrorHandler->handle(new Error(
+                subnode->getLineNum(),
+                "Method: " + methodName +
+                    " does not exist for udt type: " + udtType + "."));
+        }
+
         break;
     }
     }

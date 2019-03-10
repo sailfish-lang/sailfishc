@@ -18,7 +18,7 @@ UDTTable::getAttributeSymbolTable(std::string name)
 {
     if (hasUDT(name))
     {
-        return udtTable.find(name)->second->getAttributeSymbolTable();
+        return udtTable.at(name)->getAttributeSymbolTable();
     }
 
     return nullptr;
@@ -30,7 +30,7 @@ UDTTable::getMethodSymbolTable(std::string name)
 {
     if (hasUDT(name))
     {
-        return udtTable.find(name)->second->getMethodSymbolTable();
+        return udtTable.at(name)->getMethodSymbolTable();
     }
 
     return nullptr;

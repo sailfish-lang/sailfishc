@@ -10,7 +10,7 @@
 
 namespace ast
 {
-class NewVariableDefinition : public GeneralDefinition, public Node
+class PrimitiveDefition : public GeneralDefinition, public Node
 {
   private:
     Variable* var;
@@ -18,14 +18,14 @@ class NewVariableDefinition : public GeneralDefinition, public Node
 
   public:
     // constructor
-    NewVariableDefinition(Variable* v, ExpressionStatement* e, int lineNum)
+    PrimitiveDefition(Variable* v, ExpressionStatement* e, int lineNum)
         : Node(lineNum)
     {
         var = v;
         expr = e;
     };
     // destructor
-    ~NewVariableDefinition()
+    ~PrimitiveDefition()
     {
         delete expr;
         delete var;
@@ -34,7 +34,7 @@ class NewVariableDefinition : public GeneralDefinition, public Node
     /* virtual */ GeneralDefinitionType
     getGeneralDefinitionType()
     {
-        return GeneralDefinitionType::NewVariableDefinition;
+        return GeneralDefinitionType::PrimitiveDefition;
     }
     // get methods
     Variable*

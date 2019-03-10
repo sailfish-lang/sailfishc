@@ -69,12 +69,21 @@ InOrderTraversal::visit(ast::DictionaryDefinition* node)
 }
 
 void
-InOrderTraversal::visit(ast::NewVariableDefinition* node)
+InOrderTraversal::visit(ast::NewUDTDefinition* node)
+{
+    visit(node->getVariable());
+    visit(node->getExpression());
+
+    push("NewUDTDefinition");
+}
+
+void
+InOrderTraversal::visit(ast::PrimitiveDefition* node)
 {
     visit(node->getVariable());
     visit(node->getExpressionStatement());
 
-    push("NewVariableDefinition");
+    push("PrimitiveDefinition");
 }
 
 void

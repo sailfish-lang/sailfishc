@@ -102,10 +102,17 @@ Visitor::visit(ast::GeneralDefinition* node)
         visit(subnode);
         break;
     }
-    case ast::GeneralDefinition::NewVariableDefinition:
+    case ast::GeneralDefinition::NewUDTDefinition:
     {
-        ast::NewVariableDefinition* subnode =
-            dynamic_cast<ast::NewVariableDefinition*>(node);
+        ast::NewUDTDefinition* subnode =
+            dynamic_cast<ast::NewUDTDefinition*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::GeneralDefinition::PrimitiveDefition:
+    {
+        ast::PrimitiveDefition* subnode =
+            dynamic_cast<ast::PrimitiveDefition*>(node);
         visit(subnode);
         break;
     }
@@ -124,7 +131,13 @@ Visitor::visit(ast::DictionaryDefinition* node)
     visit(node->getExpression());
 }
 void
-Visitor::visit(ast::NewVariableDefinition* node)
+Visitor::visit(ast::NewUDTDefinition* node)
+{
+    visit(node->getVariable());
+    visit(node->getExpression());
+}
+void
+Visitor::visit(ast::PrimitiveDefition* node)
 {
     visit(node->getVariable());
     visit(node->getExpressionStatement());

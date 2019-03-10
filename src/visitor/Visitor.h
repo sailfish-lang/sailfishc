@@ -15,7 +15,8 @@ class Visitor
     virtual void visit(ast::GeneralDefinition*);
     virtual void visit(ast::ListDefinition*);
     virtual void visit(ast::DictionaryDefinition*);
-    virtual void visit(ast::NewVariableDefinition*);
+    virtual void visit(ast::NewUDTDefinition*);
+    virtual void visit(ast::PrimitiveDefition*);
     virtual void visit(ast::FunctionDefinition*);
     virtual void visit(ast::Input*);
     virtual void visit(ast::Output*);

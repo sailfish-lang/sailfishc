@@ -277,7 +277,8 @@ Parser::parseGeneralDecleration()
 /**
  * GeneralDefinition := ListDefinition |
  *                      DictionaryDefinition |
- *                      NewVariableDefinition
+ *                      NewUDTDefinition |
+ *                      PrimitiveDefinition
  */
 ast::GeneralDefinition*
 Parser::parseGeneralDefinition()
@@ -306,13 +307,13 @@ Parser::parseGeneralDefinition()
     else if (val == "bool" || val == "str" || val == "int" || val == "flt" ||
              val == "void")
     {
-        return (ast::GeneralDefinition*)parseNewVariableDefinition();
+        return (ast::GeneralDefinition*)parsePrimitiveDefinition();
     }
 
     // user defined types
     else
     {
-        return (ast::GeneralDefinition*)parseNewVariableDefinition();
+        return (ast::GeneralDefinition*)parseNewUDTDefinition();
     }
 }
 
@@ -590,10 +591,33 @@ Parser::parseDictionaryDefinition()
 }
 
 /**
- * NewVariableDefinition := Variable '=' ExpressionStatement
+ * NewUDTDefinition := Variable '=' NewExpression
  */
-ast::NewVariableDefinition*
-Parser::parseNewVariableDefinition()
+ast::NewUDTDefinition*
+Parser::parseNewUDTDefinition()
+{
+    ast::Variable* var = parseVariable();
+
+    // check for '='
+    if (currentToken->getValue() != "=")
+    {
+        errorHandler->handle(new Error(currentToken->getLineNum(),
+                                       "Expected an equals sign. Received: " +
+                                           currentToken->getValue() + "."));
+    }
+    // consume '='
+    getNextUsefulToken();
+
+    ast::NewExpression* expr = parseNewExpression();
+
+    return new ast::NewUDTDefinition(var, expr, currentToken->getLineNum());
+}
+
+/**
+ * PrimitiveDefinition := Variable '=' ExpressionStatement
+ */
+ast::PrimitiveDefition*
+Parser::parsePrimitiveDefinition()
 {
     ast::Variable* var = parseVariable();
 
@@ -609,8 +633,7 @@ Parser::parseNewVariableDefinition()
 
     ast::ExpressionStatement* expr = parseExpressionStatement();
 
-    return new ast::NewVariableDefinition(var, expr,
-                                          currentToken->getLineNum());
+    return new ast::PrimitiveDefition(var, expr, currentToken->getLineNum());
 }
 
 /**

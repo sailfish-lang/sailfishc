@@ -44,7 +44,8 @@ class Parser
 
     ast::DictionaryDefinition* parseDictionaryDefinition();
     ast::ListDefinition* parseListDefinition();
-    ast::NewVariableDefinition* parseNewVariableDefinition();
+    ast::NewUDTDefinition* parseNewUDTDefinition();
+    ast::PrimitiveDefition* parsePrimitiveDefinition();
 
     ast::Expression* parseExpression();
 

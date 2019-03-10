@@ -25,7 +25,8 @@ class InOrderTraversal : public Visitor
     void visit(ast::ExportDefinition*);
     void visit(ast::ListDefinition*);
     void visit(ast::DictionaryDefinition*);
-    void visit(ast::NewVariableDefinition*);
+    void visit(ast::NewUDTDefinition*);
+    void visit(ast::PrimitiveDefition*);
     void visit(ast::FunctionDefinition*);
     void visit(ast::Input*);
     void visit(ast::Output*);

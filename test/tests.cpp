@@ -73,7 +73,6 @@ TEST(ParserTest, AllTokens)
 {
     static const std::string expected[] = {
         "Identifier: someDict",
-        "Identifier: 1",
         "DictionaryItem",
         "DictionaryLiteral",
         "NewExpression",
