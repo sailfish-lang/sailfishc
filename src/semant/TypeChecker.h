@@ -97,4 +97,7 @@ class TypeChecker : public Visitor
 
     // function call
     void visit(ast::FunctionCall*);
+
+    // assignment
+    virtual void visit(ast::Assignment*);
 };

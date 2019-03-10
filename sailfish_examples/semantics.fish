@@ -2,16 +2,7 @@
 	return
 		- must have type that matches existed
         - must match expected type
-		
-	assignment
-		- types must exist
-        - name must not be reserved
-	
-	functioncall
-		- function must exist
-		- params must match expected
-		- return must match
-	
+        
 	grouping
 		- must ultimately evaluate to boolean (?)
 
@@ -91,8 +82,8 @@ Cat Foo {
 
 Cfn Foo {
     fn foo
-    <- void
-    -> void
+    <- int i
+    -> flt
     {}
 }
 
@@ -105,6 +96,39 @@ Cat flt  {
 
 Cfn flt {}
 */
+
+Cat Foo {
+    int i
+    flt f
+    str s
+}
+
+Cfn Foo {
+    fn foo
+    <- int i
+    -> flt
+    {}
+}
+
+fun good
+<- int i, str s
+-> flt
+{} 
+
+
+start {
+    dec Foo f1 = new Foo { i: 1, f: 1.0, s: "hello world" }
+    dec Foo f2 = new Foo { i: 2, f: 2.0, s: "more hellos"}
+    dec flt f3 = 10.0
+
+    f1 = f2 // ok
+    f1 = 10 // error right hand does not match left hand
+    f3 = f2 // error right hand does not match left hand
+    f4 = 1 // error left hand does not exist
+    f2 = f4 // error right hand does not exist
+    good = 10 // cannot assign to functions
+    f3 = good // cannot assign functions as variables
+}
 
 /*
 start {

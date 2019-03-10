@@ -1651,3 +1651,94 @@ TypeChecker::visit(ast::FunctionCall* node)
         visit(arg);
     }
 }
+
+void
+TypeChecker::visit(ast::Assignment* node)
+{
+    std::string name =
+        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
+
+    // ensure the asisgnment is on a declared variable name
+    if (!symbolTable->hasVariable(name))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Undefined assignment left hand expression: " + name + "."));
+
+        // abort
+        return;
+    }
+
+    // capture type of left hand
+    std::string fullExpectedType = symbolTable->getSymbolType(name);
+    std::string expectedType;
+
+    // if not primitive, see if it is a variable in the symbol table
+    char identChar = fullExpectedType.at(0);
+    switch (identChar)
+    {
+    case 'U':
+    case 'P':
+    case 'L':
+    case 'D':
+        expectedType = fullExpectedType.substr(1, fullExpectedType.length());
+        break;
+    case 'F':
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Cannot assign variable to function."));
+
+        // abort
+        break;
+    }
+
+    // ensure the left and right hand sides match types
+    std::string actual =
+        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
+
+    // if not primitive, see if it is a variable in the symbol table
+    if (!isPrimitive(actual))
+    {
+        if (!symbolTable->hasVariable(actual))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getLineNum(),
+                "Undefined assignment right hand expression: " + actual +
+                    " for assignment to: " + name + " ."));
+        }
+        else
+        {
+            std::string fullActual = symbolTable->getSymbolType(actual);
+            char identChar = fullActual.at(0);
+            switch (identChar)
+            {
+            case 'U':
+            case 'P':
+            case 'L':
+            case 'D':
+                actual = fullActual.substr(1, fullActual.length());
+                break;
+            case 'F':
+                semanticErrorHandler->handle(new Error(
+                    node->getLineNum(),
+                    "Illegal argument: " + actual +
+                        " supplied for right hand assignment: " + name +
+                        ". Sorry, functions are not first order :("));
+
+                // to continue semantic analysis
+                actual = expectedType;
+                break;
+            }
+        }
+    }
+
+    if (expectedType != actual)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Left hand assignment for: " + name +
+                                    " expected: " + expectedType +
+                                    " and received: " + actual + "."));
+    }
+
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
+}
