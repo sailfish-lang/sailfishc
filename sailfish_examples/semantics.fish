@@ -49,10 +49,9 @@ fun flt
 {}
 */
 
-// --------       declerations         --------
+// --------       primitives         --------
 /*
-dec flt a = 10 // good
-dec fat b = 10 // error type does not exist
+dec flt a = 10.0 // good
 dec flt flt = 10.0 // error name is a primitive
 dec flt dec = 10.0 // error name is a keyword
 dec flt foo = 10 // error expression type and assignment type are different
@@ -106,30 +105,17 @@ Cat flt  {
 Cfn flt {}
 */
 
-Cat Foo {
-    int i
-}
-
-Cfn Foo {
-    fn foo
-    <- void
-    -> void
-    {}
-}
-
+/*
 start {
     // udt method and attributes
     dec Foo f = new Foo { i : 10 } // ok
     dec Foo fa = new Foo { a : 10 } // error nonexistent attribute
     dec Foo fb = new Foo { i : 10.0 } // error attribute type mismatch
- //   z = f.i // ok
-  //  a = f...foo() //ok
-   // b = f.t // error no such attribute
-   // c = f...bar() //  error no such method
-}
+    z = f.i // ok
+    a = f...foo() //ok
+    b = f.t // error no such attribute
+    c = f...bar() //  error no such method
 
-/*
-start {
     // +
     f = 10.0 + 10.0 // ok
     f = 1 + 2 // ok

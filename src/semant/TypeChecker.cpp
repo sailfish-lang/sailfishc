@@ -456,6 +456,60 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
 }
 
 void
+TypeChecker::visit(ast::PrimitiveDefition* node)
+{
+    std::string name = node->getVariable()->getName()->getValue();
+    std::string type = node->getVariable()->getType()->getType();
+
+    // make sure the name is not a reserved word, a primitive name, or a UDT
+    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Declared list named: " + name +
+                                    " illegally shares its name with a "
+                                    "type or a keyword/reserved word."));
+    }
+
+    std::string adjustedName = "P" + type;
+
+    bool isUnique = symbolTable->addSymbol(name, adjustedName);
+
+    // symbol table entry must be unique for current scope
+    if (!isUnique)
+    {
+        symbolTableErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Invalid redecleration of list with name: " + name + "."));
+    }
+
+    // ensure the type is a primitive
+    if (!isPrimitive(type))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Defined primitives's type of: " + type +
+                                    " for primitive: " + name +
+                                    " is not a recognized primitive."));
+    }
+
+    // visit expression
+    visit(node->getExpressionStatement());
+
+    std::string exprType = getRightExpressionType(
+        node->getExpressionStatement(), semanticErrorHandler);
+
+    // ensure assignment is the expected type
+    if (exprType != type)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Declared type: " + type +
+                " of primitive for variable named: " + name +
+                " does not match assigned expression type of: " + exprType +
+                "."));
+    }
+}
+
+void
 TypeChecker::visit(ast::ListDefinition* node)
 {
     std::string name = node->getName()->getValue();
@@ -465,7 +519,7 @@ TypeChecker::visit(ast::ListDefinition* node)
     if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared list named: " + name +
+            node->getLineNum(), "Declared primitive named: " + name +
                                     " illegally shares its name with a "
                                     "type or a keyword/reserved word."));
     }

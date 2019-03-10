@@ -49,6 +49,7 @@ class TypeChecker : public Visitor
     void check(ast::Start*);
 
     // primitives
+    void visit(ast::PrimitiveDefition*);
 
     // list
     void visit(ast::ListDefinition*);
