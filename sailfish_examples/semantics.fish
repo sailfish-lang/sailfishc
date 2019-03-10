@@ -1,15 +1,4 @@
-/*
-	return
-		- must have type that matches existed
-        - must match expected type
-        
-	grouping
-		- must ultimately evaluate to boolean (?)
-
-*/
-
 // -------       function      -------- //
-/*
 // good
 fun good
 <- int i, str s
@@ -39,40 +28,30 @@ fun flt
 <- void
 -> void
 {}
-*/
 
 // --------       primitives         --------
-/*
-dec flt a = 10.0 // good
-dec flt flt = 10.0 // error name is a primitive
-dec flt dec = 10.0 // error name is a keyword
-dec flt foo = 10 // error expression type and assignment type are different
-*/
+dec flt function_good = 10.0 // good
+dec flt dec = 10.0 // error name is a primitive
+dec flt function_foo = 10 // error expression type and assignment type are different
 
 // --------       dictionary        -------
-/*
-dec dictionary a <[ int : flt ]> new { 1 : 1.0 } // good
-dec dictionary ab <[ Foo : flt ]> new { 1 : 1.0 } // error key type does not exist
-dec dictionary abb <[ int : Foo ]> new { 1 : 1.0 } // error value type does not exist
-dec dictionary flt <[ int : flt ]> new { 1 : 1.0 } // error name is reserved
-dec dictionary abbb <[ int : flt ]> new [ 1 ] // error type is not a dictionary
-dec dictionary abbbb <[ int : flt ]> new { 1 : 1.0, 1.0 : 1} // error dictionary is not homogenous
-dec dictionary abbbbb <[ int : flt ]> new { 1.0 : 1.0 } // error dictionary keys don't match
-dec dictionary abbbbbb <[ int : flt ]> new { 1 : 1 } // error dictionary values don't match
-*/
+dec dictionary dictionary_good <[ int : flt ]> new { 1 : 1.0 } // good
+dec dictionary dictionary_error_a <[ Foo : flt ]> new { 1 : 1.0 } // error key type does not exist
+dec dictionary dictionary_error_b <[ int : Foo ]> new { 1 : 1.0 } // error value type does not exist
+dec dictionary str <[ int : flt ]> new { 1 : 1.0 } // error name is reserved
+dec dictionary dictionary_error_c <[ int : flt ]> new [ 1 ] // error type is not a dictionary
+dec dictionary dictionary_error_d <[ int : flt ]> new { 1 : 1.0, 1.0 : 1} // error dictionary is not homogenous
+dec dictionary dictionary_error_e <[ int : flt ]> new { 1.0 : 1.0 } // error dictionary keys don't match
+dec dictionary dictionary_error_f <[ int : flt ]> new { 1 : 1 } // error dictionary values don't match
 
 // ---------        list         ---------
-/*
-dec list a <[ int ]> new [ 1 ] // good
-dec list ab <[ Foo ]> new [ 1 ] // error key type does not exist
-dec list flt <[ int ]> new [ 1 ] // error name is reserved
-dec list abbb <[ int ]> new { 1 : 1.0 }  // error type is not a list
-dec list abbbb <[ int ]> new [ 1, 1.0 ]  // error list is not homogenous
-dec list abbbbb <[ int ]> new [ 1.0, 1.0 ]  // error list is not same as declared
-*/
+dec list list_good <[ int ]> new [ 1 ] // good
+dec list list_error_a <[ Foo ]> new [ 1 ] // error key type does not exist
+dec list list_error_b <[ int ]> new { 1 : 1.0 }  // error type is not a list
+dec list list_error_c <[ int ]> new [ 1, 1.0 ]  // error list is not homogenous
+dec list list_error_d <[ int ]> new [ 1.0, 1.0 ]  // error list is not same as declared
 
 // --------       udt       --------
-/*
 // good
 Cat Foo {
     int i
@@ -88,66 +67,46 @@ Cfn Foo {
 }
 
 // errors
-Cat flt  { 
+Cat bool  { 
     flt flt // illegal name
     void // illegal type
     udt u // unknown type
 }
 
-Cfn flt {}
-*/
-
-Cat Foo {
-    int i
-    flt f
-    str s
-}
-
-Cfn Foo {
-    fn foo
-    <- int i
-    -> flt
-    {}
-}
-
-fun good
-<- int i, str s
--> flt
-{} 
-
+Cfn bool {}
 
 start {
-    dec Foo f1 = new Foo { i: 1, f: 1.0, s: "hello world" }
-    dec Foo f2 = new Foo { i: 2, f: 2.0, s: "more hellos"}
-    dec flt f3 = 10.0
+    // assignments
+    dec Foo assignment_a = new Foo { i: 1, f: 1.0, s: "hello world" }
+    dec Foo assignment_b = new Foo { i: 2, f: 2.0, s: "more hellos"}
+    dec flt assignment_c = 10.0
 
-    f1 = f2 // ok
-    f1 = 10 // error right hand does not match left hand
-    f3 = f2 // error right hand does not match left hand
+    assignment_a = assignment_b // ok
+    assignment_a = 10 // error right hand does not match left hand
+    assignment_c = assignment_b // error right hand does not match left hand
     f4 = 1 // error left hand does not exist
-    f2 = f4 // error right hand does not exist
+    assignment_b = f4 // error right hand does not exist
     good = 10 // cannot assign to functions
-    f3 = good // cannot assign functions as variables
-}
 
-/*
-start {
     // function calls
-    dec int i = 10
-    a = good(i, "hello world") // ok
-    b = foo(10, i) // error undefined function
-    c = good(10.0, i) // error arg type mismatch
-    d = good(i) // not enough args
-    e = good(i, i, i) // too many args
+    // dec int i = 10
+    // i = good(i, "hello world") // ok
+    // i = foo(10, i) // error undefined function
+    // i = good(10.0, i) // error arg type mismatch
+    // i = good(i) // not enough args
+    // i = good(i, i, i) // too many args
 
     // udt method and attributes
-    dec Foo f = new Foo { i : 10 } // ok
-    dec Foo fa = new Foo { a : 10 } // error nonexistent attribute
-    dec Foo fb = new Foo { i : 10.0 } // error attribute type mismatch
-    z = f.i // ok
-    a = f...foo() //ok
-    b = f.t // error no such attribute
-    c = f...bar() //  error no such method
+    // dec Foo udt_method_attribute_a = new Foo { i : 10 } // ok
+    // dec Foo udt_method_attribute_b = new Foo { a : 10 } // error nonexistent attribute
+    // dec Foo udt_method_attribute_c = new Foo { i : 10.0 } // error attribute type mismatch
+    // method_attribute_a = udt_method_attribute_a.i // ok
+    // method_attribute_b = udt_method_attribute_a...foo(10) //ok
+   // method_attribute_c = udt_method_attribute_a.t // error no such attribute
+   // method_attribute_d = udt_method_attribute_a...bar() //  error no such method
+    
+    // declare f for all subsequent tests
+    dec bool f = true
 
     // +
     f = 10.0 + 10.0 // ok
@@ -162,6 +121,7 @@ start {
     f = false - true // error
     f = 10 - 10.0 // error
     f = 10.0 - 10 // error
+
 
     // *
     f = 10.0 * 10.0 // ok
@@ -239,4 +199,3 @@ start {
     f = !true // ok
     f = !10 // error
 } 
-*/

@@ -38,4 +38,10 @@ class Error
         return "[" + errtype + " Error at line: " + std::to_string(line) +
                "]: " + msg + "\n";
     }
+    // get methods
+    std::string
+    getErrorMessage()
+    {
+        return msg;
+    }
 };

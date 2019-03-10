@@ -17,7 +17,7 @@ class TypeChecker : public Visitor
 {
   private:
     ErrorHandler* symbolTableErrorHandler;
-    ErrorHandler* semanticErrorHandler;
+    SemanticErrorHandler* semanticErrorHandler;
     SymbolTable* symbolTable;
     UDTTable* udtTable;
 
@@ -28,7 +28,7 @@ class TypeChecker : public Visitor
     TypeChecker()
     {
         symbolTableErrorHandler = (ErrorHandler*)new SymbolTableErrorHandler();
-        semanticErrorHandler = (ErrorHandler*)new SemanticErrorHandler();
+        semanticErrorHandler = new SemanticErrorHandler();
         symbolTable = new SymbolTable();
         udtTable = new UDTTable();
     }
@@ -43,6 +43,12 @@ class TypeChecker : public Visitor
     {
         symbolTableErrorHandler->end();
         semanticErrorHandler->end();
+    }
+
+    std::vector<Error*>
+    getSemanticErrors()
+    {
+        return semanticErrorHandler->getErrors();
     }
 
     // visit all nodes and analyze

@@ -27,4 +27,6 @@ class SemanticErrorHandler : public ErrorHandler
     /* virtual */
     void handle(Error*);
     void end();
+    // get methods
+    std::vector<Error*> getErrors();
 };

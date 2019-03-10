@@ -31,3 +31,9 @@ SemanticErrorHandler::end()
         }
     }
 }
+
+std::vector<Error*>
+SemanticErrorHandler::getErrors()
+{
+    return errors;
+}

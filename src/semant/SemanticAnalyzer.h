@@ -4,7 +4,9 @@
  */
 #pragma once
 #include "../ast/Ast.h"
+#include "../errorhandler/Error.h"
 #include "./TypeChecker.h"
+#include <vector>
 
 class SemanticAnalyzer
 {
@@ -29,5 +31,13 @@ class SemanticAnalyzer
         TypeChecker* tc = new TypeChecker();
         tc->check(root);
         tc->end();
+    }
+
+    std::vector<Error*>
+    testAnalyze()
+    {
+        TypeChecker* tc = new TypeChecker();
+        tc->check(root);
+        return tc->getSemanticErrors();
     }
 };

@@ -1655,6 +1655,9 @@ TypeChecker::visit(ast::FunctionCall* node)
 void
 TypeChecker::visit(ast::Assignment* node)
 {
+    visit(node->getLeftExpr());
+    visit(node->getRightExpr());
+
     std::string name =
         expressionHelper(node->getLeftExpr(), semanticErrorHandler);
 
@@ -1688,7 +1691,7 @@ TypeChecker::visit(ast::Assignment* node)
             node->getLineNum(), "Cannot assign variable to function."));
 
         // abort
-        break;
+        return;
     }
 
     // ensure the left and right hand sides match types
@@ -1703,7 +1706,7 @@ TypeChecker::visit(ast::Assignment* node)
             semanticErrorHandler->handle(new Error(
                 node->getLineNum(),
                 "Undefined assignment right hand expression: " + actual +
-                    " for assignment to: " + name + " ."));
+                    " for assignment to: " + name + "."));
         }
         else
         {
@@ -1724,9 +1727,8 @@ TypeChecker::visit(ast::Assignment* node)
                         " supplied for right hand assignment: " + name +
                         ". Sorry, functions are not first order :("));
 
-                // to continue semantic analysis
-                actual = expectedType;
-                break;
+                // abort
+                return;
             }
         }
     }
@@ -1738,7 +1740,4 @@ TypeChecker::visit(ast::Assignment* node)
                                     " expected: " + expectedType +
                                     " and received: " + actual + "."));
     }
-
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
 }

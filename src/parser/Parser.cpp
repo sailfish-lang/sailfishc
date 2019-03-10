@@ -805,8 +805,8 @@ Parser::parseMethodAccess(ast::Expression* e)
     ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
                                                 currentToken->getLineNum());
 
-    // consume identifier
-    getNextUsefulToken();
+    // DONT consume identifier
+    // getNextUsefulToken();
 
     ast::ExpressionStatement* es = parseExpressionStatement();
 

@@ -9,6 +9,11 @@ ADD_LIBRARY(SailfishcLibs
     ../src/visitor/InOrderTraversal.cpp
     ../src/visitor/Visitor.cpp
     ../src/semant/SymbolTable.cpp 
+    ../src/semant/SemanticAnalyzer.cpp 
+    ../src/semant/TypeChecker.cpp 
+    ../src/semant/UDTTable.cpp 
+    ../src/errorhandler/SemanticErrorHandler.cpp 
+    ../src/errorhandler/SymbolTableErrorHandler.cpp 
     ../src/errorhandler/ParserErrorHandler.cpp
     ../src/common/ReservedWords.cpp
 )
