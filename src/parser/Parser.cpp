@@ -203,10 +203,23 @@ Parser::parseFunctionDefintion()
     // consume '<-'
     getNextUsefulToken();
 
+    // error if one of the inputs is void and there are multiple inputs
+    bool hasVoid = false;
     std::vector<ast::Input*> inputs;
     while (currentToken->getKind() != Kind::ARROW_TOKEN)
     {
-        inputs.push_back(parseInput());
+        ast::Input* input = parseInput();
+        inputs.push_back(input);
+
+        if (input->getInput()->getType()->getType() == "void")
+            hasVoid = true;
+
+        if (hasVoid && inputs.size() > 1)
+        {
+            errorHandler->handle(
+                new Error(currentToken->getLineNum(),
+                          "Cannot have multiple inputs if one is void"));
+        }
 
         // if arrow forgotten, will parse until EOF
         if (currentToken->isEOF())
@@ -221,10 +234,23 @@ Parser::parseFunctionDefintion()
     // consume '->'
     getNextUsefulToken();
 
+    // error if one of the outputs is void and there are multiple outputs
+    hasVoid = false;
     std::vector<ast::Output*> outputs;
     while (currentToken->getKind() != Kind::LCURLEY_TOKEN)
     {
-        outputs.push_back(parseOutput());
+        ast::Output* output = parseOutput();
+        outputs.push_back(output);
+
+        if (output->getOutput()->getType() == "void")
+            hasVoid = true;
+
+        if (hasVoid && outputs.size() > 1)
+        {
+            errorHandler->handle(
+                new Error(currentToken->getLineNum(),
+                          "Cannot have multiple outputs if one is void"));
+        }
 
         // if left curley forgotten, will parse until EOF
         if (currentToken->isEOF())

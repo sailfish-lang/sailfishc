@@ -412,7 +412,6 @@ TEST(SeamanticTest, TypeChecker)
         "Left hand assignment for: f expected: bool and received: int.",
         "Expected boolean type following negation. Instead received: bool.",
         "Expected boolean type following negation. Instead received: int.",
-
     };
 
     Parser* p = new Parser();
