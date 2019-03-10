@@ -13,12 +13,14 @@ class FunctionCall : public BinaryExpression, public Node
 {
   private:
     Expression* expr;
-    std::vector<Identifier*> args;
+    std::vector<Primary*> args;
 
   public:
     // constructor
-    FunctionCall(std::vector<Identifier*> i, int lineNum) : Node(lineNum)
+    FunctionCall(Expression* e, std::vector<Primary*> i, int lineNum)
+        : Node(lineNum)
     {
+        expr = e;
         args = i;
     };
     // destructor
@@ -30,7 +32,7 @@ class FunctionCall : public BinaryExpression, public Node
         return BinaryExpressionType::FunctionCallExpression;
     }
     // get methods
-    std::vector<Identifier*>
+    std::vector<Primary*>
     getArguments()
     {
         return args;

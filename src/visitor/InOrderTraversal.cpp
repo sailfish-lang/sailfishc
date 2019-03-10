@@ -276,7 +276,10 @@ InOrderTraversal::visit(ast::MethodAccess* node)
 void
 InOrderTraversal::visit(ast::FunctionCall* node)
 {
-    std::vector<ast::Identifier*> args = node->getArguments();
+    ast::Expression* expr = node->getExpr();
+    std::vector<ast::Primary*> args = node->getArguments();
+
+    visit(expr);
 
     for (auto const& arg : args)
     {

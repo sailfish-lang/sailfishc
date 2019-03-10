@@ -1,6 +1,7 @@
 /*
 	return
 		- must have type that matches existed
+        - must match expected type
 		
 	assignment
 		- types must exist
@@ -20,8 +21,8 @@
 /*
 // good
 fun good
-<- void
--> void
+<- int i, str s
+-> flt
 {}
 
 // input describes nonexistent type
@@ -107,6 +108,14 @@ Cfn flt {}
 
 /*
 start {
+    // function calls
+    dec int i = 10
+    a = good(i, "hello world") // ok
+    b = foo(10, i) // error undefined function
+    c = good(10.0, i) // error arg type mismatch
+    d = good(i) // not enough args
+    e = good(i, i, i) // too many args
+
     // udt method and attributes
     dec Foo f = new Foo { i : 10 } // ok
     dec Foo fa = new Foo { a : 10 } // error nonexistent attribute

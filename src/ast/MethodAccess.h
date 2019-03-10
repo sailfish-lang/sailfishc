@@ -3,7 +3,7 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "FunctionCall.h"
+#include "ExpressionStatement.h"
 #include "Identifier.h"
 #include "MemberAccess.h"
 #include "Node.h"
@@ -14,12 +14,13 @@ class MethodAccess : public MemberAccess, public Node
 {
   private:
     Identifier* name;
-    FunctionCall* func;
+    ExpressionStatement* func;
     Expression* expr;
 
   public:
     // constructor
-    MethodAccess(Identifier* i, FunctionCall* f, Expression* e, int lineNum)
+    MethodAccess(Identifier* i, ExpressionStatement* f, Expression* e,
+                 int lineNum)
         : Node(lineNum)
     {
         name = i;
@@ -44,7 +45,7 @@ class MethodAccess : public MemberAccess, public Node
     {
         return name;
     }
-    FunctionCall*
+    ExpressionStatement*
     getFunctionCall()
     {
         return func;

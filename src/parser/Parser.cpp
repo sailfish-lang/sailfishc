@@ -808,43 +808,10 @@ Parser::parseMethodAccess(ast::Expression* e)
     // consume identifier
     getNextUsefulToken();
 
-    ast::FunctionCall* fc = parseFunctionCall();
+    ast::ExpressionStatement* es = parseExpressionStatement();
 
-    return new ast::MethodAccess(name, fc, e, currentToken->getLineNum());
+    return new ast::MethodAccess(name, es, e, currentToken->getLineNum());
 }
-
-/**
- * FunctionCall := '(' [Expression] (',' Expression)*')'
- */
-ast::FunctionCall*
-Parser::parseFunctionCall()
-{
-    // consume '('
-    getNextUsefulToken();
-
-    std::vector<ast::Identifier*> idents;
-
-    while (currentToken->getKind() != Kind::RPAREN_TOKEN)
-    {
-        idents.push_back(new ast::Identifier(currentToken->getValue(),
-                                             currentToken->getLineNum()));
-
-        // consume identifier
-        getNextUsefulToken();
-
-        if (currentToken->isEOF())
-        {
-            errorHandler->handle(new Error(currentToken->getLineNum(),
-                                           "Missing a right parenthesis."));
-        }
-    }
-
-    // consume ')'
-    getNextUsefulToken();
-
-    return new ast::FunctionCall(idents, currentToken->getLineNum());
-}
-
 /**
  * UnaryExpression := Negation
  */
@@ -1099,13 +1066,30 @@ Parser::parseBinaryExpression()
         }
     }
 
-    // Expression FunctionCall
+    // Expression '(' [Primary] (',' Primary)*')'
     if (tk == "(")
     {
         // consume '('
         getNextUsefulToken();
 
-        return (ast::BinaryExpression*)parseFunctionCall();
+        std::vector<ast::Primary*> idents;
+
+        while (currentToken->getKind() != Kind::RPAREN_TOKEN)
+        {
+            idents.push_back(parsePrimary());
+
+            if (currentToken->isEOF())
+            {
+                errorHandler->handle(new Error(currentToken->getLineNum(),
+                                               "Missing a right parenthesis."));
+            }
+        }
+
+        // consume ')'
+        getNextUsefulToken();
+
+        return (ast::BinaryExpression*)new ast::FunctionCall(leftExpr, idents,
+                                                             lineNum);
     }
 
     // PrimaryExpression

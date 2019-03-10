@@ -59,8 +59,6 @@ class Parser
     ast::AttributeAccess* parseAttributeAccess(ast::Expression* e);
     ast::MethodAccess* parseMethodAccess(ast::Expression* e);
 
-    ast::FunctionCall* parseFunctionCall();
-
     ast::UnaryExpression* parseUnaryExpression();
     ast::BinaryExpression* parseBinaryExpression();
 

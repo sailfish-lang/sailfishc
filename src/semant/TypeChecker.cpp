@@ -689,7 +689,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
                                     "type or a keyword/reserved word."));
     }
 
-    std::string adjustedName = "F" + name + "(";
+    std::string adjustedName = "F" + name + "{";
 
     //  capture for the addition of the function to the symbol table
     for (auto const& input : node->getInputList())
@@ -723,7 +723,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
         adjustedName += "_" + inp_type;
     }
 
-    adjustedName += ")(";
+    adjustedName += "}(";
 
     // capture for the addition of the function to the symbol table
     for (auto const& output : node->getOutputList())
@@ -1455,5 +1455,199 @@ TypeChecker::visit(ast::MemberAccess* node)
 
         break;
     }
+    }
+}
+
+void
+TypeChecker::visit(ast::FunctionCall* node)
+{
+    ast::Expression* expr = node->getExpr();
+    std::string name = expressionHelper(expr, semanticErrorHandler);
+
+    // ensure variable exists in symbol tabel
+    if (!symbolTable->hasVariable(name))
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Function named: " + name + " has not been defined."));
+
+        // just bail
+        return;
+    }
+
+    // parse out type info from symbol table form of type name
+    int state = 0;
+    std::vector<std::string> inputs;
+    std::vector<std::string> outputs;
+    std::string buffer = "";
+    for (auto c : symbolTable->getSymbolType(name))
+    {
+        switch (state)
+        {
+        case 0:
+        {
+            if (c == '{')
+            {
+                ++state;
+            }
+            break;
+        }
+        case 1:
+        {
+            if (c == '}')
+            {
+                if (buffer != "")
+                {
+                    inputs.push_back(buffer);
+                }
+
+                buffer = "";
+                ++state;
+            }
+            else if (c == '_')
+            {
+                if (buffer != "")
+                {
+                    inputs.push_back(buffer);
+                }
+
+                buffer = "";
+            }
+            else
+            {
+                buffer += c;
+            }
+            break;
+        }
+        case 2:
+        {
+            if (c == '(')
+            {
+                // ignore this
+            }
+            else if (c == ')')
+            {
+                if (buffer != "")
+                {
+                    outputs.push_back(buffer);
+                }
+
+                buffer = "";
+                ++state;
+            }
+            else if (c == '_')
+            {
+                if (buffer != "")
+                {
+                    outputs.push_back(buffer);
+                }
+
+                buffer = "";
+            }
+            else
+            {
+                buffer += c;
+            }
+            break;
+        }
+        }
+    }
+
+    for (std::string const& str : inputs)
+    {
+        std::cout << str << "\n";
+    }
+
+    // ensure that each of the arguments is supplied and of the proper type
+    std::vector<ast::Primary*> args = node->getArguments();
+
+    int numArgs = args.size();
+    int numInps = inputs.size();
+    if (numArgs < numInps)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Not enough args supplied to function."));
+    }
+    else if (numArgs > numInps)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Too many args supplied to function."));
+    }
+    else
+    {
+        for (int i = 0; i < numArgs; i++)
+        {
+            ast::Primary* arg = args.at(i);
+            std::string actual = primaryHelper(arg);
+
+            // if not primitive, see if it is a variable in the symbol table
+            if (!isPrimitive(actual))
+            {
+                if (!symbolTable->hasVariable(actual))
+                {
+                    semanticErrorHandler->handle(
+                        new Error(node->getLineNum(),
+                                  "Undefined argument: " + actual +
+                                      " supplied for function: " + name + "."));
+                }
+                else
+                {
+                    std::string fullActual = symbolTable->getSymbolType(actual);
+                    char identChar = fullActual.at(0);
+                    switch (identChar)
+                    {
+                    case 'U':
+                    case 'P':
+                        actual = fullActual.substr(1, fullActual.length());
+                        break;
+                    case 'F':
+                        semanticErrorHandler->handle(new Error(
+                            node->getLineNum(),
+                            "Illegal argument: " + actual +
+                                " supplied for function: " + name +
+                                ". Sorry, functions are not first order :("));
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    case 'L':
+                        new Error(node->getLineNum(),
+                                  "Illegal argument: " + actual +
+                                      " supplied for function: " + name +
+                                      ". Lists cannot be passed to functions");
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    case 'D':
+                        new Error(
+                            node->getLineNum(),
+                            "Illegal argument: " + actual +
+                                " supplied for function: " + name +
+                                ". Dictionaries cannot be passed to functions");
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    }
+                }
+            }
+
+            if (actual != inputs[i])
+            {
+                semanticErrorHandler->handle(new Error(
+                    node->getLineNum(),
+                    "Supplied argument type of: " + actual +
+                        " does not match expected type of: " + inputs[i] +
+                        "."));
+            }
+        }
+    }
+
+    visit(expr);
+
+    for (auto const& arg : args)
+    {
+        visit(arg);
     }
 }

@@ -522,7 +522,10 @@ Visitor::visit(ast::MethodAccess* node)
 void
 Visitor::visit(ast::FunctionCall* node)
 {
-    std::vector<ast::Identifier*> args = node->getArguments();
+    ast::Expression* expr = node->getExpr();
+    std::vector<ast::Primary*> args = node->getArguments();
+
+    visit(expr);
 
     for (auto const& arg : args)
     {
@@ -541,41 +544,41 @@ Visitor::visit(ast::UserDefinedType* node)
 void
 Visitor::visit(ast::PrimaryExpression* node)
 {
-    ast::Primary* primary = node->getPrimary();
-    ast::Primary::PrimaryType type = primary->getPrimaryType();
-
+    visit(node->getPrimary());
+}
+void
+Visitor::visit(ast::Primary* node)
+{
+    ast::Primary::PrimaryType type = node->getPrimaryType();
     switch (type)
     {
     case ast::Primary::Identifier:
     {
-        ast::Identifier* subnode = dynamic_cast<ast::Identifier*>(primary);
+        ast::Identifier* subnode = dynamic_cast<ast::Identifier*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::StringLiteral:
     {
-        ast::StringLiteral* subnode =
-            dynamic_cast<ast::StringLiteral*>(primary);
+        ast::StringLiteral* subnode = dynamic_cast<ast::StringLiteral*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::BooleanLiteral:
     {
-        ast::BooleanLiteral* subnode =
-            dynamic_cast<ast::BooleanLiteral*>(primary);
+        ast::BooleanLiteral* subnode = dynamic_cast<ast::BooleanLiteral*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::IntegerLiteral:
     {
-        ast::IntegerLiteral* subnode =
-            dynamic_cast<ast::IntegerLiteral*>(primary);
+        ast::IntegerLiteral* subnode = dynamic_cast<ast::IntegerLiteral*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::FloatLiteral:
     {
-        ast::FloatLiteral* subnode = dynamic_cast<ast::FloatLiteral*>(primary);
+        ast::FloatLiteral* subnode = dynamic_cast<ast::FloatLiteral*>(node);
         visit(subnode);
         break;
     }
@@ -596,83 +599,8 @@ Visitor::visit(ast::DictionaryLiteral* node)
 void
 Visitor::visit(ast::DictionaryItem* node)
 {
-    switch (node->getKey()->getPrimaryType())
-    {
-    case ast::Primary::Identifier:
-    {
-        ast::Identifier* subnode =
-            dynamic_cast<ast::Identifier*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::StringLiteral:
-    {
-        ast::StringLiteral* subnode =
-            dynamic_cast<ast::StringLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::BooleanLiteral:
-    {
-        ast::BooleanLiteral* subnode =
-            dynamic_cast<ast::BooleanLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::IntegerLiteral:
-    {
-        ast::IntegerLiteral* subnode =
-            dynamic_cast<ast::IntegerLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::FloatLiteral:
-    {
-        ast::FloatLiteral* subnode =
-            dynamic_cast<ast::FloatLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    }
-
-    switch (node->getValue()->getPrimaryType())
-    {
-    case ast::Primary::Identifier:
-    {
-        ast::Identifier* subnode =
-            dynamic_cast<ast::Identifier*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::StringLiteral:
-    {
-        ast::StringLiteral* subnode =
-            dynamic_cast<ast::StringLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::BooleanLiteral:
-    {
-        ast::BooleanLiteral* subnode =
-            dynamic_cast<ast::BooleanLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::IntegerLiteral:
-    {
-        ast::IntegerLiteral* subnode =
-            dynamic_cast<ast::IntegerLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::FloatLiteral:
-    {
-        ast::FloatLiteral* subnode =
-            dynamic_cast<ast::FloatLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    }
+    visit(node->getKey());
+    visit(node->getValue());
 }
 void
 Visitor::visit(ast::ListLiteral* node)
@@ -685,44 +613,7 @@ Visitor::visit(ast::ListLiteral* node)
 void
 Visitor::visit(ast::ListItem* node)
 {
-    switch (node->getValue()->getPrimaryType())
-    {
-    case ast::Primary::Identifier:
-    {
-        ast::Identifier* subnode =
-            dynamic_cast<ast::Identifier*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::StringLiteral:
-    {
-        ast::StringLiteral* subnode =
-            dynamic_cast<ast::StringLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::BooleanLiteral:
-    {
-        ast::BooleanLiteral* subnode =
-            dynamic_cast<ast::BooleanLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::IntegerLiteral:
-    {
-        ast::IntegerLiteral* subnode =
-            dynamic_cast<ast::IntegerLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    case ast::Primary::FloatLiteral:
-    {
-        ast::FloatLiteral* subnode =
-            dynamic_cast<ast::FloatLiteral*>(node->getValue());
-        visit(subnode);
-        break;
-    }
-    }
+    visit(node->getValue());
 }
 void
 Visitor::visit(ast::IntegerLiteral* node)

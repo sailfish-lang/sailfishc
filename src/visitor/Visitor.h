@@ -38,6 +38,7 @@ class Visitor
     virtual void visit(ast::FunctionCall*);
     virtual void visit(ast::UnaryExpression*);
     virtual void visit(ast::PrimaryExpression*);
+    virtual void visit(ast::Primary*);
     virtual void visit(ast::BooleanLiteral*);
     virtual void visit(ast::DictionaryLiteral*);
     virtual void visit(ast::DictionaryItem*);
