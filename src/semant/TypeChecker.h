@@ -10,6 +10,7 @@
 #include "../errorhandler/SemanticErrorHandler.h"
 #include "../errorhandler/SymbolTableErrorHandler.h"
 #include "../visitor/Visitor.h"
+#include "CommonExtractions.h"
 #include "SymbolTable.h"
 #include "UDTTable.h"
 
@@ -74,23 +75,8 @@ class TypeChecker : public Visitor
     void visit(ast::InitialExecutionBody*);
     void visit(ast::IfStatement*);
 
-    // binary logic and comparison
-    void visit(ast::BinaryGreaterThan*);
-    void visit(ast::BinaryLessThan*);
-    void visit(ast::BinaryGreaterThanOrEqual*);
-    void visit(ast::BinaryLessThanOrEqual*);
-    void visit(ast::EquivalenceComparison*);
-    void visit(ast::NonEquivalenceComparison*);
-    void visit(ast::AndComparison*);
-    void visit(ast::OrComparison*);
-
-    // all arith
-    void visit(ast::Exponentiation*);
-    void visit(ast::Multiplication*);
-    void visit(ast::Division*);
-    void visit(ast::Modulo*);
-    void visit(ast::Addition*);
-    void visit(ast::Subtraction*);
+    // binary expressions
+    void visit(ast::BinaryExpression*);
 
     // unary
     void visit(ast::Negation*);
@@ -99,11 +85,9 @@ class TypeChecker : public Visitor
     void visit(ast::ExportDefinition*);
 
     // udt attribute and method access
-    void visit(ast::MemberAccess*);
+    void visit(ast::AttributeAccess*);
+    void visit(ast::MethodAccess*);
 
     // function call
     void visit(ast::FunctionCall*);
-
-    // assignment
-    virtual void visit(ast::Assignment*);
 };

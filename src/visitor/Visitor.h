@@ -28,11 +28,9 @@ class Visitor
     virtual void visit(ast::Variable*);
     virtual void visit(ast::Block*);
     virtual void visit(ast::IfStatement*);
-    virtual void visit(ast::ExpressionStatement*);
     virtual void visit(ast::ReturnStatement*);
     virtual void visit(ast::NewExpression*);
     virtual void visit(ast::ArrayExpression*);
-    virtual void visit(ast::MemberAccess*);
     virtual void visit(ast::AttributeAccess*);
     virtual void visit(ast::MethodAccess*);
     virtual void visit(ast::FunctionCall*);

@@ -81,7 +81,7 @@ void
 InOrderTraversal::visit(ast::PrimitiveDefition* node)
 {
     visit(node->getVariable());
-    visit(node->getExpressionStatement());
+    visit(node->getBinaryExpression());
 
     push("PrimitiveDefinition");
 }
@@ -197,17 +197,9 @@ InOrderTraversal::visit(ast::IfStatement* node)
 }
 
 void
-InOrderTraversal::visit(ast::ExpressionStatement* node)
-{
-    visit(node->getBinaryExpression());
-
-    push("ExpressionStatement");
-}
-
-void
 InOrderTraversal::visit(ast::ReturnStatement* node)
 {
-    visit(node->getExpressionStatement());
+    visit(node->getBinaryExpression());
 
     push("ReturnStatement");
 }
@@ -276,10 +268,10 @@ InOrderTraversal::visit(ast::MethodAccess* node)
 void
 InOrderTraversal::visit(ast::FunctionCall* node)
 {
-    ast::Expression* expr = node->getExpr();
+    ast::Identifier* name = node->getName();
     std::vector<ast::Primary*> args = node->getArguments();
 
-    visit(expr);
+    visit(name);
 
     for (auto const& arg : args)
     {
@@ -365,7 +357,7 @@ InOrderTraversal::visit(ast::Typename* node)
 void
 InOrderTraversal::visit(ast::Negation* node)
 {
-    visit(node->getExpressionStatement());
+    visit(node->getBinaryExpression());
 
     push("Negation");
 }

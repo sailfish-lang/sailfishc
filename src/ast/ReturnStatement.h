@@ -3,7 +3,7 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ExpressionStatement.h"
+#include "BinaryExpression.h"
 #include "Node.h"
 #include "Statement.h"
 
@@ -33,7 +33,7 @@ class ReturnStatement : public Statement, public Node
     }
     // get methods
     BinaryExpression*
-    getExpressionStatement()
+    getBinaryExpression()
     {
         return expr;
     }

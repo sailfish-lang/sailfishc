@@ -4,7 +4,7 @@
  */
 #pragma once
 #include "Expression.h"
-#include "ExpressionStatement.h"
+#include "BinaryExpression.h"
 #include "IntegerLiteral.h"
 #include "Node.h"
 #include <vector>
@@ -14,11 +14,11 @@ namespace ast
 class GroupingExpression : public Expression, public Node
 {
   private:
-    std::vector<ExpressionStatement*> expressionList;
+    std::vector<BinaryExpression*> expressionList;
 
   public:
     // constructor
-    GroupingExpression(std::vector<ExpressionStatement*> e, int lineNum)
+    GroupingExpression(std::vector<BinaryExpression*> e, int lineNum)
         : Node(lineNum)
     {
         expressionList = e;
@@ -32,8 +32,8 @@ class GroupingExpression : public Expression, public Node
         return ExpressionType::GroupingExpression;
     }
     // get method
-    std::vector<ExpressionStatement*>
-    getExpressionStatementList()
+    std::vector<BinaryExpression*>
+    getBinaryExpressionList()
     {
         return expressionList;
     }

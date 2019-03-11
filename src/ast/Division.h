@@ -5,46 +5,23 @@
 #pragma once
 #include "BinaryExpression.h"
 #include "Expression.h"
-#include "ExpressionStatement.h"
 #include "Node.h"
 
 namespace ast
 {
 class Division : public BinaryExpression, public Node
 {
-  private:
-    Expression* leftExpr;
-    ExpressionStatement* rightExpr;
-
   public:
     // constructor
-    Division(Expression* l, ExpressionStatement* r, int lineNum) : Node(lineNum)
-    {
-        leftExpr = l;
-        rightExpr = r;
-    };
+    Division(Expression* l, BinaryExpression* r, int lineNum)
+        : Node(lineNum), BinaryExpression(l, r){};
     // destructor
-    ~Division()
-    {
-        delete leftExpr;
-        delete rightExpr;
-    };
+    ~Division(){};
     // implement BinaryExpression
     /* virtual */ BinaryExpressionType
     getBinaryExpressionType()
     {
         return BinaryExpressionType::Division;
-    }
-    // get methods
-    Expression*
-    getLeftExpr()
-    {
-        return leftExpr;
-    }
-    ExpressionStatement*
-    getRightExpr()
-    {
-        return rightExpr;
     }
 };
 }

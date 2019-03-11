@@ -140,7 +140,7 @@ void
 Visitor::visit(ast::PrimitiveDefition* node)
 {
     visit(node->getVariable());
-    visit(node->getExpressionStatement());
+    visit(node->getBinaryExpression());
 }
 void
 Visitor::visit(ast::BinaryExpression* node)
@@ -242,18 +242,6 @@ Visitor::visit(ast::BinaryExpression* node)
         visit(subnode);
         break;
     }
-    case ast::BinaryExpression::MemberAccess:
-    {
-        ast::MemberAccess* subnode = dynamic_cast<ast::MemberAccess*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::FunctionCallExpression:
-    {
-        ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
-        visit(subnode);
-        break;
-    }
     case ast::BinaryExpression::ExpressionOnlyStatement:
     {
         ast::ExpressionOnlyStatement* subnode =
@@ -266,7 +254,7 @@ Visitor::visit(ast::BinaryExpression* node)
 void
 Visitor::visit(ast::ExpressionOnlyStatement* node)
 {
-    visit(node->getExpression());
+    visit(node->getLeftExpr());
 }
 void
 Visitor::visit(ast::UnaryExpression* node)
@@ -422,13 +410,6 @@ Visitor::visit(ast::Block* node)
             visit(subnode);
             break;
         }
-        case ast::Statement::ExpressionStatement:
-        {
-            ast::ExpressionStatement* subnode =
-                dynamic_cast<ast::ExpressionStatement*>(statement);
-            visit(subnode);
-            break;
-        }
         }
     }
 }
@@ -439,15 +420,11 @@ Visitor::visit(ast::IfStatement* node)
     visit(node->getIfStatements());
     visit(node->getElseStatements());
 }
-void
-Visitor::visit(ast::ExpressionStatement* node)
-{
-    visit(node->getBinaryExpression());
-}
+
 void
 Visitor::visit(ast::ReturnStatement* node)
 {
-    visit(node->getExpressionStatement());
+    visit(node->getBinaryExpression());
 }
 void
 Visitor::visit(ast::NewExpression* node)
@@ -488,26 +465,6 @@ Visitor::visit(ast::ArrayExpression* node)
     }
 }
 void
-Visitor::visit(ast::MemberAccess* node)
-{
-    switch (node->getMemberAccessType())
-    {
-    case ast::MemberAccess::AttributeAccess:
-    {
-        ast::AttributeAccess* subnode =
-            dynamic_cast<ast::AttributeAccess*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::MemberAccess::MethodAccess:
-    {
-        ast::MethodAccess* subnode = dynamic_cast<ast::MethodAccess*>(node);
-        visit(subnode);
-        break;
-    }
-    }
-}
-void
 Visitor::visit(ast::AttributeAccess* node)
 {
     visit(node->getAttribute());
@@ -522,10 +479,10 @@ Visitor::visit(ast::MethodAccess* node)
 void
 Visitor::visit(ast::FunctionCall* node)
 {
-    ast::Expression* expr = node->getExpr();
+    ast::Identifier* name = node->getName();
     std::vector<ast::Primary*> args = node->getArguments();
 
-    visit(expr);
+    visit(name);
 
     for (auto const& arg : args)
     {
@@ -552,7 +509,7 @@ Visitor::visit(ast::Primary* node)
     ast::Primary::PrimaryType type = node->getPrimaryType();
     switch (type)
     {
-    case ast::Primary::Identifier:
+    case ast::Primary::IdentifierLiteral:
     {
         ast::Identifier* subnode = dynamic_cast<ast::Identifier*>(node);
         visit(subnode);
@@ -579,6 +536,25 @@ Visitor::visit(ast::Primary* node)
     case ast::Primary::FloatLiteral:
     {
         ast::FloatLiteral* subnode = dynamic_cast<ast::FloatLiteral*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::AttributeAccessLiteral:
+    {
+        ast::AttributeAccess* subnode =
+            dynamic_cast<ast::AttributeAccess*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::MethodAccessLiteral:
+    {
+        ast::MethodAccess* subnode = dynamic_cast<ast::MethodAccess*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::FunctionCallLiteral:
+    {
+        ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
         visit(subnode);
         break;
     }
@@ -642,7 +618,7 @@ Visitor::visit(ast::Typename* node)
 void
 Visitor::visit(ast::Negation* node)
 {
-    visit(node->getExpressionStatement());
+    visit(node->getBinaryExpression());
 }
 void
 Visitor::visit(ast::Exponentiation* node)
@@ -683,7 +659,7 @@ Visitor::visit(ast::Subtraction* node)
 void
 Visitor::visit(ast::GroupingExpression* node)
 {
-    for (auto const& expr : node->getExpressionStatementList())
+    for (auto const& expr : node->getBinaryExpressionList())
     {
         visit(expr);
     }

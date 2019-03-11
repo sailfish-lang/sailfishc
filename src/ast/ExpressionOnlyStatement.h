@@ -11,31 +11,17 @@ namespace ast
 {
 class ExpressionOnlyStatement : public BinaryExpression, public Node
 {
-  private:
-    Expression* expr;
-
   public:
     // constructor
-    ExpressionOnlyStatement(Expression* e, int lineNum) : Node(lineNum)
-    {
-        expr = e;
-    };
+    ExpressionOnlyStatement(Expression* l, int lineNum)
+        : Node(lineNum), BinaryExpression(l, nullptr){};
     // destructor
-    ~ExpressionOnlyStatement()
-    {
-        delete expr;
-    };
+    ~ExpressionOnlyStatement(){};
     // implement BinaryExpression
     /* virtual */ BinaryExpressionType
     getBinaryExpressionType()
     {
         return BinaryExpressionType::ExpressionOnlyStatement;
-    }
-    // get methods
-    Expression*
-    getExpression()
-    {
-        return expr;
     }
 };
 }

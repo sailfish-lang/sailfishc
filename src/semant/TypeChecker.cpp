@@ -6,328 +6,6 @@
 
 // ------- Ugly/Hacky Helper Functions ------- //
 
-ast::Expression*
-binaryExpressionHelper(ast::BinaryExpression* node)
-{
-    switch (node->getBinaryExpressionType())
-    {
-    case ast::BinaryExpression::Exponentiation:
-    {
-        ast::Exponentiation* subnode = dynamic_cast<ast::Exponentiation*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::Multiplication:
-    {
-        ast::Multiplication* subnode = dynamic_cast<ast::Multiplication*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::Division:
-    {
-        ast::Division* subnode = dynamic_cast<ast::Division*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::Modulo:
-    {
-        ast::Modulo* subnode = dynamic_cast<ast::Modulo*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::Addition:
-    {
-        ast::Addition* subnode = dynamic_cast<ast::Addition*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::Subtraction:
-    {
-        ast::Subtraction* subnode = dynamic_cast<ast::Subtraction*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::BinaryGreaterThan:
-    {
-        ast::BinaryGreaterThan* subnode =
-            dynamic_cast<ast::BinaryGreaterThan*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::BinaryLessThan:
-    {
-        ast::BinaryLessThan* subnode = dynamic_cast<ast::BinaryLessThan*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::BinaryGreaterThanOrEqual:
-    {
-        ast::BinaryGreaterThanOrEqual* subnode =
-            dynamic_cast<ast::BinaryGreaterThanOrEqual*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::BinaryLessThanOrEqual:
-    {
-        ast::BinaryLessThanOrEqual* subnode =
-            dynamic_cast<ast::BinaryLessThanOrEqual*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::EquivalenceComparison:
-    {
-        ast::EquivalenceComparison* subnode =
-            dynamic_cast<ast::EquivalenceComparison*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::NonEquivalenceComparison:
-    {
-        ast::NonEquivalenceComparison* subnode =
-            dynamic_cast<ast::NonEquivalenceComparison*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::AndComparison:
-    {
-        ast::AndComparison* subnode = dynamic_cast<ast::AndComparison*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::OrComparison:
-    {
-        ast::OrComparison* subnode = dynamic_cast<ast::OrComparison*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::Assignment:
-    {
-        ast::Assignment* subnode = dynamic_cast<ast::Assignment*>(node);
-        return subnode->getLeftExpr();
-    }
-    case ast::BinaryExpression::FunctionCallExpression:
-    {
-        ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
-        return subnode->getExpr();
-    }
-    case ast::BinaryExpression::MemberAccess:
-    {
-        ast::MemberAccess* subnode = dynamic_cast<ast::MemberAccess*>(node);
-
-        switch (subnode->getMemberAccessType())
-        {
-        case ast::MemberAccess::AttributeAccess:
-        {
-            ast::AttributeAccess* subsubnode =
-                dynamic_cast<ast::AttributeAccess*>(subnode);
-            return subsubnode->getExpression();
-        }
-        case ast::MemberAccess::MethodAccess:
-        {
-            ast::MethodAccess* subsubnode =
-                dynamic_cast<ast::MethodAccess*>(subnode);
-            return subsubnode->getExpression();
-        }
-        }
-        break;
-    }
-    case ast::BinaryExpression::ExpressionOnlyStatement:
-    {
-        ast::ExpressionOnlyStatement* subnode =
-            dynamic_cast<ast::ExpressionOnlyStatement*>(node);
-        return subnode->getExpression();
-    }
-    }
-}
-
-std::string
-primaryHelper(ast::Primary* primary)
-{
-    ast::Primary::PrimaryType type = primary->getPrimaryType();
-
-    switch (type)
-    {
-    case ast::Primary::Identifier:
-    {
-        ast::Identifier* subnode = dynamic_cast<ast::Identifier*>(primary);
-        return subnode->getValue();
-    }
-    case ast::Primary::StringLiteral:
-    {
-        ast::StringLiteral* subnode =
-            dynamic_cast<ast::StringLiteral*>(primary);
-        return "str";
-    }
-    case ast::Primary::BooleanLiteral:
-    {
-        ast::BooleanLiteral* subnode =
-            dynamic_cast<ast::BooleanLiteral*>(primary);
-        return "bool";
-    }
-    case ast::Primary::IntegerLiteral:
-    {
-        ast::IntegerLiteral* subnode =
-            dynamic_cast<ast::IntegerLiteral*>(primary);
-        return "int";
-    }
-    case ast::Primary::FloatLiteral:
-    {
-        ast::FloatLiteral* subnode = dynamic_cast<ast::FloatLiteral*>(primary);
-        return "flt";
-    }
-    }
-}
-
-std::string
-expressionHelper(ast::Expression* node, ErrorHandler* seh)
-{
-    switch (node->getExpressionType())
-    {
-    case ast::Expression::NewExpression:
-    {
-        ast::NewExpression* subnode = dynamic_cast<ast::NewExpression*>(node);
-        ast::New* newnode = subnode->getNewVal();
-
-        switch (newnode->getNewType())
-        {
-        case ast::New::DictionaryLiteral:
-        {
-            ast::DictionaryLiteral* dictionaryLiteral =
-                dynamic_cast<ast::DictionaryLiteral*>(newnode);
-
-            std::vector<ast::DictionaryItem*> items =
-                dictionaryLiteral->getItems();
-
-            // empty lists do not need type checking
-            if (items.size() == 0)
-            {
-                return "dictionary_empty_empty";
-            }
-
-            std::string expectedKeyType = primaryHelper(items.at(0)->getKey());
-            std::string expectedValueType =
-                primaryHelper(items.at(0)->getValue());
-
-            for (ast::DictionaryItem* const& item : items)
-            {
-                std::string keyType = primaryHelper(item->getKey());
-                std::string valueType = primaryHelper(item->getValue());
-
-                // confirm the dictionary keys are homogenous
-                if (keyType != expectedKeyType)
-                {
-                    seh->handle(new Error(
-                        subnode->getLineNum(),
-                        "Dictionary is not homogenous. Received key types: " +
-                            keyType + " and " + expectedKeyType +
-                            " which do not match."));
-
-                    // return list as empty to continue semantic analyis
-                    return "dictionary_empty_empty";
-                }
-
-                // confirm the dictionary values are homogenous
-                if (valueType != expectedValueType)
-                {
-                    seh->handle(new Error(
-                        subnode->getLineNum(),
-                        "Dictionary is not homogenous. Received value types: " +
-                            valueType + " and " + expectedValueType +
-                            " which do not match."));
-
-                    // return list as empty to continue semantic analyis
-                    return "dictionary_empty_empty";
-                }
-            }
-
-            return "dictionary_" + expectedKeyType + "_" + expectedValueType;
-        }
-        case ast::New::ListLiteral:
-        {
-            ast::ListLiteral* listLiteral =
-                dynamic_cast<ast::ListLiteral*>(newnode);
-
-            std::vector<ast::ListItem*> items = listLiteral->getItems();
-
-            // empty lists do not need type checking
-            if (items.size() == 0)
-            {
-                return "list_empty";
-            }
-
-            std::string expectedType = primaryHelper(items.at(0)->getValue());
-
-            for (ast::ListItem* const& item : items)
-            {
-                std::string type = primaryHelper(item->getValue());
-
-                // confirm the list is homogenous
-                if (type != expectedType)
-                {
-                    seh->handle(new Error(
-                        subnode->getLineNum(),
-                        "List is not homogenous. Received types: " + type +
-                            " and " + expectedType + " which do not match."));
-
-                    // return list as empty to continue semantic analyis
-                    return "list_empty";
-                }
-            }
-
-            return "list_" + expectedType;
-        }
-        case ast::New::UserDefinedType:
-
-            ast::UserDefinedType* udt =
-                dynamic_cast<ast::UserDefinedType*>(newnode);
-
-            std::string name = udt->getName()->getValue();
-
-            std::string fullTypeName = "udt_" + name;
-
-            for (ast::DictionaryItem* const& item : udt->getAttributes())
-            {
-                fullTypeName += "_" + primaryHelper(item->getKey()) + "_" +
-                                primaryHelper(item->getValue());
-            }
-
-            return fullTypeName;
-        }
-        break;
-    }
-    case ast::Expression::GroupingExpression:
-    {
-        ast::GroupingExpression* subnode =
-            dynamic_cast<ast::GroupingExpression*>(node);
-
-        seh->handle(new Error(subnode->getLineNum(),
-                              "Unexpected grouping inside binary expression. "
-                              "Groupings cannot be nested."));
-        // return list type to continue semantic analysis
-        return "list";
-    }
-    case ast::Expression::ArrayExpression:
-    {
-        ast::ArrayExpression* subnode =
-            dynamic_cast<ast::ArrayExpression*>(node);
-
-        seh->handle(new Error(subnode->getLineNum(),
-                              "Unexpected list inside binary expression."));
-        // return list type to continue semantic analysis
-        return "list";
-    }
-    case ast::Expression::PrimaryExpression:
-    {
-        ast::PrimaryExpression* subnode =
-            dynamic_cast<ast::PrimaryExpression*>(node);
-
-        return primaryHelper(subnode->getPrimary());
-    }
-    case ast::Expression::UnaryExpression:
-    {
-        ast::UnaryExpression* subnode =
-            dynamic_cast<ast::UnaryExpression*>(node);
-
-        // must be a boolean so fine to return boolean here
-        return "bool";
-    }
-    }
-}
-
-std::string
-getRightExpressionType(ast::ExpressionStatement* node,
-                       ErrorHandler* errorHandler)
-{
-    return expressionHelper(binaryExpressionHelper(node->getBinaryExpression()),
-                            errorHandler);
-}
-
 // ------- END ------- //
 
 // ------- Additions to the symbol table ------- //
@@ -377,11 +55,15 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
                       "Invalid redecleration of udt with name: " + name + "."));
     }
 
+    // enter into the symbol table for udt
+    SymbolTable* tempST = symbolTable;
+    symbolTable = udtTable->getAttributeSymbolTable(type);
+
     // visit expression
     visit(node->getExpression());
 
-    std::string exprType =
-        expressionHelper(node->getExpression(), semanticErrorHandler);
+    std::string exprType = expressionHelper(node->getExpression(), symbolTable,
+                                            semanticErrorHandler, udtTable);
 
     std::string temp;
     std::string prev;
@@ -419,40 +101,24 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
             std::string varName = temp.substr(0, temp.find("_"));
             temp = temp.substr(temp.find("_") + 1, temp.length());
 
-            // ensure attribute name is in attribute Symbol Table
-            if (!st->hasVariable(varName))
+            std::string varType = temp.substr(0, temp.find("_"));
+            temp = temp.substr(temp.find("_") + 1, temp.length());
+            prev = varType;
+
+            // ensure attribute type matches attribute name
+            if (varName != varType)
             {
                 semanticErrorHandler->handle(new Error(
-                    node->getLineNum(), "Attribute: " + varName +
-                                            " for declared udt of type: " +
-                                            udtTypeName + " does not exist."));
+                    node->getLineNum(),
+                    "Attribute: " + varType + " for declared udt of type: " +
+                        varName + " does not match expected type: " + "."));
                 break;
-            }
-            else
-            {
-                std::string expectedVarType = st->getSymbolType(varName);
-                expectedVarType = expectedVarType.substr(
-                    1, expectedVarType
-                           .length()); // these will have a letter preface
-                std::string varType = temp.substr(0, temp.find("_"));
-                temp = temp.substr(temp.find("_") + 1, temp.length());
-                prev = varType;
-
-                // ensure attribute type matches attribute name
-                if (expectedVarType != varType)
-                {
-                    semanticErrorHandler->handle(new Error(
-                        node->getLineNum(),
-                        "Attribute: " + varType +
-                            " for declared udt of type: " + udtTypeName +
-                            " does not match expected type: " +
-                            expectedVarType +
-                            " for attribute named: " + varName + "."));
-                    break;
-                }
             }
         }
     }
+
+    // exit the symbol table for udt
+    symbolTable = tempST;
 }
 
 void
@@ -492,10 +158,11 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
     }
 
     // visit expression
-    visit(node->getExpressionStatement());
+    visit(node->getBinaryExpression());
 
-    std::string exprType = getRightExpressionType(
-        node->getExpressionStatement(), semanticErrorHandler);
+    std::string exprType =
+        getRightExpressionType(node->getBinaryExpression(), symbolTable,
+                               semanticErrorHandler, udtTable);
 
     // ensure assignment is the expected type
     if (exprType != type)
@@ -548,8 +215,8 @@ TypeChecker::visit(ast::ListDefinition* node)
     // visit expression
     visit(node->getExpression());
 
-    std::string exprType =
-        expressionHelper(node->getExpression(), semanticErrorHandler);
+    std::string exprType = expressionHelper(node->getExpression(), symbolTable,
+                                            semanticErrorHandler, udtTable);
 
     std::string baseType = exprType.substr(0, exprType.find("_"));
     std::string valType =
@@ -622,8 +289,8 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     // visit expression
     visit(node->getExpression());
 
-    std::string exprType =
-        expressionHelper(node->getExpression(), semanticErrorHandler);
+    std::string exprType = expressionHelper(node->getExpression(), symbolTable,
+                                            semanticErrorHandler, udtTable);
 
     std::string baseType = exprType.substr(0, exprType.find("_"));
 
@@ -828,7 +495,11 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
                     " and for udt: " + udt_name + " does not exist."));
         }
 
-        std::string adjustedName = "V" + type;
+        std::string adjustedName = "U" + type;
+        if (isPrimitive(type))
+        {
+            std::string adjustedName = "P" + type;
+        }
 
         bool isUnique = symbolTable->addSymbol(name, adjustedName);
 
@@ -916,11 +587,12 @@ TypeChecker::visit(ast::IfStatement* node)
 void
 TypeChecker::visit(ast::Negation* node)
 {
-    visit(node->getExpressionStatement());
+    visit(node->getBinaryExpression());
 
     // ensure that all negations are boolean
-    std::string type = getRightExpressionType(node->getExpressionStatement(),
-                                              semanticErrorHandler);
+    std::string type =
+        getRightExpressionType(node->getBinaryExpression(), symbolTable,
+                               semanticErrorHandler, udtTable);
     if (type != "Boolean")
     {
         semanticErrorHandler->handle(new Error(
@@ -931,426 +603,119 @@ TypeChecker::visit(ast::Negation* node)
 }
 
 void
-TypeChecker::visit(ast::BinaryGreaterThan* node)
+TypeChecker::visit(ast::BinaryExpression* node)
 {
+
+    // edge case where there is no right expression
+    if (node->getBinaryExpressionType() ==
+        ast::BinaryExpression::ExpressionOnlyStatement)
+    {
+        visit(node->getLeftExpr());
+        return;
+    }
+
     visit(node->getLeftExpr());
     visit(node->getRightExpr());
 
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
+    std::string lType = expressionHelper(node->getLeftExpr(), symbolTable,
+                                         semanticErrorHandler, udtTable);
+    std::string rType = getRightExpressionType(
+        node->getRightExpr(), symbolTable, semanticErrorHandler, udtTable);
 
-    if (lType != rType)
+    switch (node->getBinaryExpressionType())
     {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Expected the same types on each side of greater than "
-                      "comparison. Instead recevied: " +
-                          lType + " and " + rType + "."));
+    // only int AND int
+    case ast::BinaryExpression::Modulo:
+    {
+        if (lType != "int")
+        {
+            semanticErrorHandler->handle(
+                new Error(0, "int type on left "
+                             "side of modulo. Instead received: " +
+                                 lType + "."));
+        }
+        else if (rType != "int")
+        {
+            semanticErrorHandler->handle(
+                new Error(0, "int type on left "
+                             "side of modulo. Instead received: " +
+                                 rType + "."));
+        }
+        break;
     }
-    else if (lType != "Integer" && lType != "Float")
+    // only int AND int or flt AND flt
+    case ast::BinaryExpression::Addition:
+    case ast::BinaryExpression::Subtraction:
+    case ast::BinaryExpression::Exponentiation:
+    case ast::BinaryExpression::Multiplication:
+    case ast::BinaryExpression::Division:
+    case ast::BinaryExpression::BinaryLessThan:
+    case ast::BinaryExpression::BinaryLessThanOrEqual:
+    case ast::BinaryExpression::BinaryGreaterThanOrEqual:
+    case ast::BinaryExpression::BinaryGreaterThan:
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of greater than "
-                                "comparison. Instead received: " +
-                                    lType + "."));
-    }
-    else if (rType != "Integer" && rType != "Float")
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Expected boolean type on right side of greater than "
-                      "comparison. Instead received: " +
-                          rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::BinaryLessThan* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Expected the same types on each side of less than "
-                      "comparison. Instead recevied: " +
-                          lType + " and " + rType + "."));
-    }
-    else if (lType != "Integer" && lType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of less than "
-                                "comparison. Instead received: " +
-                                    lType + "."));
-    }
-    else if (rType != "Integer" && rType != "Float")
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Expected boolean type on right side of less than "
-                      "comparison. Instead received: " +
-                          rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::BinaryGreaterThanOrEqual* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Expected the same types on each side of greater than or equal to "
-            "comparison. Instead recevied: " +
-                lType + " and " + rType + "."));
-    }
-    else if (lType != "Integer" && lType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of greater than or equal to "
-                                "comparison. Instead received: " +
-                                    lType + "."));
-    }
-    else if (rType != "Integer" && rType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Expected boolean type on right side of greater than or equal to "
-            "comparison. Instead received: " +
-                rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::BinaryLessThanOrEqual* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Expected the same types on each side of less than or equal to "
-            "comparison. Instead recevied: " +
-                lType + " and " + rType + "."));
-    }
-    else if (lType != "Integer" && lType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of less than or equal to "
-                                "comparison. Instead received: " +
-                                    lType + "."));
-    }
-    else if (rType != "Integer" && rType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Expected boolean type on right side of less than or equal to "
-            "comparison. Instead received: " +
-                rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::EquivalenceComparison* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Expected the same types on each side of equivalence "
-                      "comparison. Instead recevied: " +
-                          lType + " and " + rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::NonEquivalenceComparison* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Expected the same types on each side of nonequivalence "
-                      "comparison. Instead recevied: " +
-                          lType + " and " + rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::AndComparison* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != "Boolean")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected boolean type on left side of and "
-                                "comparison. Instead received: " +
-                                    lType + "."));
+        if (lType != rType)
+        {
+            semanticErrorHandler->handle(new Error(
+                0, "Expected the same types on each side of greater than "
+                   "comparison. Instead recevied: " +
+                       lType + " and " + rType + "."));
+        }
+        else if (lType != "int" && lType != "flt")
+        {
+            semanticErrorHandler->handle(
+                new Error(0, "Expected either float or integer type on left "
+                             "side of greater than "
+                             "comparison. Instead received: " +
+                                 lType + "."));
+        }
+        else if (rType != "int" && rType != "flt")
+        {
+            semanticErrorHandler->handle(
+                new Error(0, "Expected either float or integer type on left "
+                             "side of greater than "
+                             "comparison. Instead received: " +
+                                 rType + "."));
+        }
+        break;
     }
 
-    else if (rType != "Boolean")
+    // both sides same type
+    case ast::BinaryExpression::EquivalenceComparison:
+    case ast::BinaryExpression::NonEquivalenceComparison:
+    case ast::BinaryExpression::Assignment:
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected boolean type on right side of and "
-                                "comparison. Instead received: " +
-                                    rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::OrComparison* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != "Boolean")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected boolean type on left side of or "
-                                "comparison. Instead received: " +
-                                    lType + "."));
+        if (lType != rType)
+        {
+            semanticErrorHandler->handle(new Error(
+                0, "Expected the same types on each side of equivalence "
+                   "comparison. Instead recevied: " +
+                       lType + " and " + rType + "."));
+        }
+        break;
     }
 
-    else if (rType != "Boolean")
+    // both side boolean
+    case ast::BinaryExpression::AndComparison:
+    case ast::BinaryExpression::OrComparison:
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected boolean type on right side of or "
-                                "comparison. Instead received: " +
-                                    rType + "."));
-    }
-}
+        if (lType != "Boolean")
+        {
+            semanticErrorHandler->handle(
+                new Error(0, "Expected boolean type on left side of and "
+                             "comparison. Instead received: " +
+                                 lType + "."));
+        }
 
-void
-TypeChecker::visit(ast::Exponentiation* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != "Integer")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Integer type on left "
-                                "side of exponentiation. Instead received: " +
-                                    lType + "."));
+        else if (rType != "Boolean")
+        {
+            semanticErrorHandler->handle(
+                new Error(0, "Expected boolean type on right side of and "
+                             "comparison. Instead received: " +
+                                 rType + "."));
+        }
+        break;
     }
-    else if (rType != "Integer")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Integer type on left "
-                                "side of exponentiation. Instead received: " +
-                                    rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::Multiplication* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected the same types on each side of "
-                                "multiplication. Instead recevied: " +
-                                    lType + " and " + rType + "."));
-    }
-    else if (lType != "Integer" && lType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of multiplication. Instead received: " +
-                                    lType + "."));
-    }
-    else if (rType != "Integer" && rType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of multiplication. Instead received: " +
-                                    rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::Division* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected the same types on each side of "
-                                "division. Instead recevied: " +
-                                    lType + " and " + rType + "."));
-    }
-    else if (lType != "Integer" && lType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of division. Instead received: " +
-                                    lType + "."));
-    }
-    else if (rType != "Integer" && rType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of division. Instead received: " +
-                                    rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::Modulo* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != "Integer")
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(), "Integer type on left "
-                                          "side of modulo. Instead received: " +
-                                              lType + "."));
-    }
-    else if (rType != "Integer")
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(), "Integer type on left "
-                                          "side of modulo. Instead received: " +
-                                              rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::Addition* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected the same types on each side of "
-                                "addition. Instead recevied: " +
-                                    lType + " and " + rType + "."));
-    }
-    else if (lType != "Integer" && lType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of addition. Instead received: " +
-                                    lType + "."));
-    }
-    else if (rType != "Integer" && rType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of addition. Instead received: " +
-                                    rType + "."));
-    }
-}
-void
-TypeChecker::visit(ast::Subtraction* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    if (lType != rType)
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected the same types on each side of "
-                                "subtraction. Instead recevied: " +
-                                    lType + " and " + rType + "."));
-    }
-    else if (lType != "Integer" && lType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of subtraction. Instead received: " +
-                                    lType + "."));
-    }
-    else if (rType != "Integer" && rType != "Float")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected either float or integer type on left "
-                                "side of subtraction. Instead received: " +
-                                    rType + "."));
     }
 }
 
@@ -1388,81 +753,78 @@ TypeChecker::visit(ast::ExportDefinition* node)
 }
 
 void
-TypeChecker::visit(ast::MemberAccess* node)
+TypeChecker::visit(ast::AttributeAccess* node)
 {
-    switch (node->getMemberAccessType())
+    std::string attributeName = node->getAttribute()->getValue();
+    std::string variableName = node->getUDT()->getValue();
+
+    // ensure variable exists
+    if (!symbolTable->hasVariable(variableName))
     {
-    case ast::MemberAccess::AttributeAccess:
-    {
-        ast::AttributeAccess* subnode =
-            dynamic_cast<ast::AttributeAccess*>(node);
-
-        std::string attributeName = subnode->getAttribute()->getValue();
-        std::string variableName =
-            expressionHelper(subnode->getExpression(), semanticErrorHandler);
-        std::string udtTypeFull = symbolTable->getSymbolType(variableName);
-        std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
-
-        // ensure udt exists
-        if (!udtTable->hasUDT(udtType))
-        {
-            semanticErrorHandler->handle(new Error(
-                subnode->getLineNum(),
-                "Attribue: " + attributeName +
-                    " called on nonexistent udt type: " + udtType + "."));
-        }
-
-        // ensure attribute exists for udt
-        else if (!udtTable->getAttributeSymbolTable(udtType)->hasVariable(
-                     attributeName))
-        {
-            semanticErrorHandler->handle(new Error(
-                subnode->getLineNum(),
-                "Attribue: " + attributeName +
-                    " does not exists for udt type: " + udtType + "."));
-        }
-
-        break;
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Attribue: " + attributeName +
+                " called on undeclared variable: " + variableName + "."));
     }
-    case ast::MemberAccess::MethodAccess:
+
+    std::string udtTypeFull = symbolTable->getSymbolType(variableName);
+    std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
+
+    // ensure udt exists
+    if (!udtTable->hasUDT(udtType))
     {
-        ast::MethodAccess* subnode = dynamic_cast<ast::MethodAccess*>(node);
+        semanticErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Attribue: " + attributeName +
+                          " called on nonexistent udt type: " + udtType + "."));
 
-        std::string methodName = subnode->getName()->getValue();
-        std::string variableName =
-            expressionHelper(subnode->getExpression(), semanticErrorHandler);
-        std::string udtTypeFull = symbolTable->getSymbolType(variableName);
-        std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
-
-        // ensure udt exists
-        if (!udtTable->hasUDT(udtType))
-        {
-            semanticErrorHandler->handle(new Error(
-                subnode->getLineNum(),
-                "Method: " + methodName +
-                    " called on nonexistent udt type: " + udtType + "."));
-        }
-
-        // ensure metho exists for udt
-        else if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(
-                     methodName))
-        {
-            semanticErrorHandler->handle(new Error(
-                subnode->getLineNum(),
-                "Method: " + methodName +
-                    " does not exist for udt type: " + udtType + "."));
-        }
-
-        break;
+        return;
     }
+
+    // ensure attribute exists for udt
+    if (!udtTable->getAttributeSymbolTable(udtType)->hasVariable(attributeName))
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Attribue: " + attributeName +
+                          " does not exists for udt type: " + udtType + "."));
+    }
+}
+
+void
+TypeChecker::visit(ast::MethodAccess* node)
+{
+    std::string methodName = node->getName()->getValue();
+    std::string udtname = node->getUDT()->getValue();
+
+    // ensure udt exists
+    if (!udtTable->hasUDT(udtname))
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Method: " + methodName +
+                          " called on nonexistent udt type: " + udtname + "."));
+
+        return;
+    }
+
+    std::string udtTypeFull = symbolTable->getSymbolType(udtname);
+    std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
+
+    // ensure metho exists for udt
+    if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(methodName))
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Method: " + methodName +
+                          " does not exist for udt type: " + udtType + "."));
     }
 }
 
 void
 TypeChecker::visit(ast::FunctionCall* node)
 {
-    ast::Expression* expr = node->getExpr();
-    std::string name = expressionHelper(expr, semanticErrorHandler);
+    std::string name = node->getName()->getValue();
 
     // ensure variable exists in symbol tabel
     if (!symbolTable->hasVariable(name))
@@ -1553,16 +915,14 @@ TypeChecker::visit(ast::FunctionCall* node)
         }
     }
 
-    for (std::string const& str : inputs)
-    {
-        std::cout << str << "\n";
-    }
-
     // ensure that each of the arguments is supplied and of the proper type
     std::vector<ast::Primary*> args = node->getArguments();
 
     int numArgs = args.size();
     int numInps = inputs.size();
+
+    std::cout << numArgs << " " << numInps << "\n";
+
     if (numArgs < numInps)
     {
         semanticErrorHandler->handle(new Error(
@@ -1578,7 +938,8 @@ TypeChecker::visit(ast::FunctionCall* node)
         for (int i = 0; i < numArgs; i++)
         {
             ast::Primary* arg = args.at(i);
-            std::string actual = primaryHelper(arg);
+            std::string actual =
+                primaryHelper(arg, symbolTable, semanticErrorHandler, udtTable);
 
             // if not primitive, see if it is a variable in the symbol table
             if (!isPrimitive(actual))
@@ -1644,100 +1005,10 @@ TypeChecker::visit(ast::FunctionCall* node)
         }
     }
 
-    visit(expr);
+    // visit(name);
 
     for (auto const& arg : args)
     {
         visit(arg);
-    }
-}
-
-void
-TypeChecker::visit(ast::Assignment* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-
-    std::string name =
-        expressionHelper(node->getLeftExpr(), semanticErrorHandler);
-
-    // ensure the asisgnment is on a declared variable name
-    if (!symbolTable->hasVariable(name))
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Undefined assignment left hand expression: " + name + "."));
-
-        // abort
-        return;
-    }
-
-    // capture type of left hand
-    std::string fullExpectedType = symbolTable->getSymbolType(name);
-    std::string expectedType;
-
-    // if not primitive, see if it is a variable in the symbol table
-    char identChar = fullExpectedType.at(0);
-    switch (identChar)
-    {
-    case 'U':
-    case 'P':
-    case 'L':
-    case 'D':
-        expectedType = fullExpectedType.substr(1, fullExpectedType.length());
-        break;
-    case 'F':
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Cannot assign variable to function."));
-
-        // abort
-        return;
-    }
-
-    // ensure the left and right hand sides match types
-    std::string actual =
-        getRightExpressionType(node->getRightExpr(), semanticErrorHandler);
-
-    // if not primitive, see if it is a variable in the symbol table
-    if (!isPrimitive(actual))
-    {
-        if (!symbolTable->hasVariable(actual))
-        {
-            semanticErrorHandler->handle(new Error(
-                node->getLineNum(),
-                "Undefined assignment right hand expression: " + actual +
-                    " for assignment to: " + name + "."));
-        }
-        else
-        {
-            std::string fullActual = symbolTable->getSymbolType(actual);
-            char identChar = fullActual.at(0);
-            switch (identChar)
-            {
-            case 'U':
-            case 'P':
-            case 'L':
-            case 'D':
-                actual = fullActual.substr(1, fullActual.length());
-                break;
-            case 'F':
-                semanticErrorHandler->handle(new Error(
-                    node->getLineNum(),
-                    "Illegal argument: " + actual +
-                        " supplied for right hand assignment: " + name +
-                        ". Sorry, functions are not first order :("));
-
-                // abort
-                return;
-            }
-        }
-    }
-
-    if (expectedType != actual)
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Left hand assignment for: " + name +
-                                    " expected: " + expectedType +
-                                    " and received: " + actual + "."));
     }
 }

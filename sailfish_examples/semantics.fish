@@ -1,33 +1,4 @@
-// -------       function      -------- //
-// good
-fun good
-<- int i, str s
--> flt
-{}
 
-// input describes nonexistent type
-fun inputDoesNotExist
-<- nonExistentType foo
--> void
-{}
-
-// input name is a reserved word
-fun reserevedKeywordAsInputName
-<-flt flt
--> void
-{}
-
-// output describes a nonexistent type
-fun outputDoesNotExist
-<- void
--> nonExistentType
-{}
-
-// function name is a reserved type
-fun flt
-<- void
--> void
-{}
 
 // --------       primitives         --------
 dec flt function_good = 10.0 // good
@@ -76,6 +47,7 @@ Cat bool  {
 Cfn bool {}
 
 start {
+    
     // assignments
     dec Foo assignment_a = new Foo { i: 1, f: 1.0, s: "hello world" }
     dec Foo assignment_b = new Foo { i: 2, f: 2.0, s: "more hellos"}
@@ -87,7 +59,6 @@ start {
     f4 = 1 // error left hand does not exist
     assignment_b = f4 // error right hand does not exist
     good = 10 // cannot assign to functions
-
     // function calls
     // dec int i = 10
     // i = good(i, "hello world") // ok
@@ -114,6 +85,7 @@ start {
     f = false + true // error
     f = 10 + 10.0 // error
     f = 10.0 + 10 // error
+/*
 
     // -
     f = 10.0 - 10.0 // ok
@@ -198,4 +170,5 @@ start {
     // negation
     f = !true // ok
     f = !10 // error
+    */
 } 

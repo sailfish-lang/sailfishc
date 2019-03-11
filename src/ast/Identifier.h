@@ -26,7 +26,7 @@ class Identifier : public Primary, public Node
     /* virtual */ PrimaryType
     getPrimaryType()
     {
-        return PrimaryType::Identifier;
+        return PrimaryType::IdentifierLiteral;
     }
     // get method
     std::string

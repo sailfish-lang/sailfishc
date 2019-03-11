@@ -3,32 +3,32 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Identifier.h"
-#include "MemberAccess.h"
+#include "Identifier.h" // hack for name conflict
 #include "Node.h"
+#include "Primary.h"
 
 namespace ast
 {
-class AttributeAccess : public MemberAccess, public Node
+class AttributeAccess : public Primary, public Node
 {
   private:
     Identifier* attribute;
-    Expression* expr;
+    Identifier* udt;
 
   public:
     // constructor
-    AttributeAccess(Identifier* i, Expression* e, int lineNum) : Node(lineNum)
+    AttributeAccess(Identifier* i, Identifier* u, int lineNum) : Node(lineNum)
     {
         attribute = i;
-        expr = e;
+        udt = u;
     };
     // destructor
     ~AttributeAccess(){};
-    // implement MemberAccess
-    /* virtual */ MemberAccessType
-    getMemberAccessType()
+    // implement Primary
+    /* virtual */ PrimaryType
+    getPrimaryType()
     {
-        return MemberAccess::AttributeAccess;
+        return Primary::AttributeAccessLiteral;
     }
     // get method
     Identifier*
@@ -36,10 +36,10 @@ class AttributeAccess : public MemberAccess, public Node
     {
         return attribute;
     }
-    Expression*
-    getExpression()
+    Identifier*
+    getUDT()
     {
-        return expr;
+        return udt;
     }
 };
 }

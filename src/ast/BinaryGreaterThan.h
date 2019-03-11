@@ -5,47 +5,23 @@
 #pragma once
 #include "BinaryExpression.h"
 #include "Expression.h"
-#include "ExpressionStatement.h"
 #include "Node.h"
 
 namespace ast
 {
 class BinaryGreaterThan : public BinaryExpression, public Node
 {
-  private:
-    Expression* leftExpr;
-    ExpressionStatement* rightExpr;
-
   public:
     // constructor
-    BinaryGreaterThan(Expression* l, ExpressionStatement* r, int lineNum)
-        : Node(lineNum)
-    {
-        leftExpr = l;
-        rightExpr = r;
-    };
+    BinaryGreaterThan(Expression* l, BinaryExpression* r, int lineNum)
+        : Node(lineNum), BinaryExpression(l, r){};
     // destructor
-    ~BinaryGreaterThan()
-    {
-        delete leftExpr;
-        delete rightExpr;
-    };
+    ~BinaryGreaterThan(){};
     // implement BinaryExpression
     /* virtual */ BinaryExpressionType
     getBinaryExpressionType()
     {
         return BinaryExpressionType::BinaryGreaterThan;
-    }
-    // get methods
-    Expression*
-    getLeftExpr()
-    {
-        return leftExpr;
-    }
-    ExpressionStatement*
-    getRightExpr()
-    {
-        return rightExpr;
     }
 };
 }

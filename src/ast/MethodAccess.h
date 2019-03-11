@@ -3,29 +3,29 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ExpressionStatement.h"
-#include "Identifier.h"
-#include "MemberAccess.h"
+#include "Ast.h"
+#include "BinaryExpression.h"
 #include "Node.h"
+#include "Primary.h"
 
 namespace ast
 {
-class MethodAccess : public MemberAccess, public Node
+class MethodAccess : public Primary, public Node
 {
   private:
     Identifier* name;
-    ExpressionStatement* func;
-    Expression* expr;
+    BinaryExpression* func;
+    Identifier* udt;
 
   public:
     // constructor
-    MethodAccess(Identifier* i, ExpressionStatement* f, Expression* e,
+    MethodAccess(Identifier* i, BinaryExpression* f, Identifier* u,
                  int lineNum)
         : Node(lineNum)
     {
         name = i;
         func = f;
-        expr = e;
+        udt = u;
     };
     // destructor
     ~MethodAccess()
@@ -33,11 +33,11 @@ class MethodAccess : public MemberAccess, public Node
         delete name;
         delete func;
     };
-    // implement MemberAccess
-    /* virtual */ MemberAccessType
-    getMemberAccessType()
+    // implement Primary
+    /* virtual */ PrimaryType
+    getPrimaryType()
     {
-        return MemberAccess::MethodAccess;
+        return Primary::MethodAccessLiteral;
     }
     // get method
     Identifier*
@@ -45,15 +45,15 @@ class MethodAccess : public MemberAccess, public Node
     {
         return name;
     }
-    ExpressionStatement*
+    BinaryExpression*
     getFunctionCall()
     {
         return func;
     }
-    Expression*
-    getExpression()
+    Identifier*
+    getUDT()
     {
-        return expr;
+        return udt;
     }
 };
 }

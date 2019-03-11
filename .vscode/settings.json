@@ -44,6 +44,7 @@
         "__nullptr": "cpp",
         "map": "cpp",
         "cstdarg": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "variant": "cpp"
     }
 }

@@ -4,6 +4,7 @@
  */
 #include "Parser.h"
 #include "../ast/Ast.h"
+#include <iostream>
 #include <vector>
 
 // Parser takes in no args, we use a parse function to take in the filename
@@ -640,7 +641,7 @@ Parser::parseNewUDTDefinition()
 }
 
 /**
- * PrimitiveDefinition := Variable '=' ExpressionStatement
+ * PrimitiveDefinition := Variable '=' BinaryExpression
  */
 ast::PrimitiveDefition*
 Parser::parsePrimitiveDefinition()
@@ -657,7 +658,7 @@ Parser::parsePrimitiveDefinition()
     // consume '='
     getNextUsefulToken();
 
-    ast::ExpressionStatement* expr = parseExpressionStatement();
+    ast::BinaryExpression* expr = parseBinaryExpression();
 
     return new ast::PrimitiveDefition(var, expr, currentToken->getLineNum());
 }
@@ -780,7 +781,7 @@ Parser::parseArrayExpression()
 }
 
 /**
- * GroupingExpression := '|' ExpressionStatement* '|'
+ * GroupingExpression := '|' BinaryExpression* '|'
  */
 ast::GroupingExpression*
 Parser::parseGroupingExpression()
@@ -788,11 +789,11 @@ Parser::parseGroupingExpression()
     // consume '|'
     getNextUsefulToken();
 
-    std::vector<ast::ExpressionStatement*> exprs;
+    std::vector<ast::BinaryExpression*> exprs;
 
     while (currentToken->getKind() != Kind::PIPE_TOKEN)
     {
-        exprs.push_back(parseExpressionStatement());
+        exprs.push_back(parseBinaryExpression());
 
         if (currentToken->isEOF())
         {
@@ -808,10 +809,10 @@ Parser::parseGroupingExpression()
 }
 
 /**
- * AttributeAccess := '...' Identifier
+ * AttributeAccess := Identifier '.' Identifier
  */
 ast::AttributeAccess*
-Parser::parseAttributeAccess(ast::Expression* e)
+Parser::parseAttributeAccess(ast::Identifier* udtName)
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
                                                 currentToken->getLineNum());
@@ -819,14 +820,14 @@ Parser::parseAttributeAccess(ast::Expression* e)
     // consume identifier
     getNextUsefulToken();
 
-    return new ast::AttributeAccess(name, e, currentToken->getLineNum());
+    return new ast::AttributeAccess(name, udtName, currentToken->getLineNum());
 }
 
 /**
- * MethodAccess := '...' Identifier FunctionCall
+ * MethodAccess := Identifier '...' Identifier FunctionCall
  */
 ast::MethodAccess*
-Parser::parseMethodAccess(ast::Expression* e)
+Parser::parseMethodAccess(ast::Identifier* udtName)
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
                                                 currentToken->getLineNum());
@@ -834,9 +835,9 @@ Parser::parseMethodAccess(ast::Expression* e)
     // DONT consume identifier
     // getNextUsefulToken();
 
-    ast::ExpressionStatement* es = parseExpressionStatement();
+    ast::BinaryExpression* es = parseBinaryExpression();
 
-    return new ast::MethodAccess(name, es, e, currentToken->getLineNum());
+    return new ast::MethodAccess(name, es, udtName, currentToken->getLineNum());
 }
 /**
  * UnaryExpression := Negation
@@ -851,7 +852,7 @@ Parser::parseUnaryExpression()
         getNextUsefulToken();
 
         return (ast::UnaryExpression*)new ast::Negation(
-            parseExpressionStatement(), currentToken->getLineNum());
+            parseBinaryExpression(), currentToken->getLineNum());
     }
 }
 
@@ -863,9 +864,6 @@ Parser::parseUnaryExpression()
  *                     Equivalence |
  *                     LogicalComparison |
  *                     Assignment |
- *                     FunctionCall |
- *                     MemberAccess |
- *                     MethodAcess
  *                     ExpressionOnlyStatement
  */
 ast::BinaryExpression*
@@ -889,7 +887,7 @@ Parser::parseBinaryExpression()
         // consume '**'
         getNextUsefulToken();
 
-        ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+        ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
         return (ast::BinaryExpression*)new ast::Exponentiation(
             leftExpr, rightExpr, lineNum);
@@ -903,7 +901,7 @@ Parser::parseBinaryExpression()
             // consume '*'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::Multiplication(
                 leftExpr, rightExpr, lineNum);
@@ -914,7 +912,7 @@ Parser::parseBinaryExpression()
             // consume '/'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::Division(
                 leftExpr, rightExpr, lineNum);
@@ -925,7 +923,7 @@ Parser::parseBinaryExpression()
             // consume '%'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::Modulo(leftExpr, rightExpr,
                                                            lineNum);
@@ -940,7 +938,7 @@ Parser::parseBinaryExpression()
             // consume '+'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::Addition(
                 leftExpr, rightExpr, lineNum);
@@ -951,7 +949,7 @@ Parser::parseBinaryExpression()
             // consume '-'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::Subtraction(
                 leftExpr, rightExpr, lineNum);
@@ -966,7 +964,7 @@ Parser::parseBinaryExpression()
             // consume '>'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::BinaryGreaterThan(
                 leftExpr, rightExpr, lineNum);
@@ -977,7 +975,7 @@ Parser::parseBinaryExpression()
             // consume '>='
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::BinaryGreaterThanOrEqual(
                 leftExpr, rightExpr, lineNum);
@@ -988,7 +986,7 @@ Parser::parseBinaryExpression()
             // consume '<'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::BinaryLessThan(
                 leftExpr, rightExpr, lineNum);
@@ -999,7 +997,7 @@ Parser::parseBinaryExpression()
             // consume '<='
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::BinaryLessThanOrEqual(
                 leftExpr, rightExpr, lineNum);
@@ -1014,7 +1012,7 @@ Parser::parseBinaryExpression()
             // consume '=='
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::EquivalenceComparison(
                 leftExpr, rightExpr, lineNum);
@@ -1025,7 +1023,7 @@ Parser::parseBinaryExpression()
             // consume '!='
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::NonEquivalenceComparison(
                 leftExpr, rightExpr, lineNum);
@@ -1040,7 +1038,7 @@ Parser::parseBinaryExpression()
             // consume 'and'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::AndComparison(
                 leftExpr, rightExpr, lineNum);
@@ -1051,7 +1049,7 @@ Parser::parseBinaryExpression()
             // consume 'or'
             getNextUsefulToken();
 
-            ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+            ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
             return (ast::BinaryExpression*)new ast::OrComparison(
                 leftExpr, rightExpr, lineNum);
@@ -1064,58 +1062,10 @@ Parser::parseBinaryExpression()
         // consume '='
         getNextUsefulToken();
 
-        ast::ExpressionStatement* rightExpr = parseExpressionStatement();
+        ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
         return (ast::BinaryExpression*)new ast::Assignment(leftExpr, rightExpr,
                                                            lineNum);
-    }
-
-    // Expression MemberAccess
-    if (tk == "." || tk == "...")
-    {
-        Kind kind = currentToken->getKind();
-        switch (kind)
-        {
-        case Kind::DOT_TOKEN:
-            // consume '.'
-            getNextUsefulToken();
-
-            return (ast::MemberAccess*)parseAttributeAccess(leftExpr);
-        case Kind::TRIPLE_DOT_TOKEN:
-            // consume '...'
-            getNextUsefulToken();
-
-            return (ast::MemberAccess*)parseMethodAccess(leftExpr);
-        default:
-            errorHandler->handle(new Error(currentToken->getLineNum(),
-                                           "Unexpected member accessor."));
-        }
-    }
-
-    // Expression '(' [Primary] (',' Primary)*')'
-    if (tk == "(")
-    {
-        // consume '('
-        getNextUsefulToken();
-
-        std::vector<ast::Primary*> idents;
-
-        while (currentToken->getKind() != Kind::RPAREN_TOKEN)
-        {
-            idents.push_back(parsePrimary());
-
-            if (currentToken->isEOF())
-            {
-                errorHandler->handle(new Error(currentToken->getLineNum(),
-                                               "Missing a right parenthesis."));
-            }
-        }
-
-        // consume ')'
-        getNextUsefulToken();
-
-        return (ast::BinaryExpression*)new ast::FunctionCall(leftExpr, idents,
-                                                             lineNum);
     }
 
     // PrimaryExpression
@@ -1147,38 +1097,97 @@ Parser::parsePrimary()
     std::string tk = currentToken->getValue();
     Kind kind = currentToken->getKind();
 
-    // consume all since they are captured above
-    getNextUsefulToken();
-
     if (kind == Kind::BOOL_TOKEN)
     {
+        // consume bool
+        getNextUsefulToken();
+
         return (ast::Primary*)new ast::BooleanLiteral(
             tk, currentToken->getLineNum());
     }
     else if (kind == Kind::INTEGER_TOKEN)
     {
+        // consume integer
+        getNextUsefulToken();
+
         return (ast::Primary*)new ast::IntegerLiteral(
             tk, currentToken->getLineNum());
     }
     else if (kind == Kind::FLOAT_TOKEN)
     {
+        // consume float
+        getNextUsefulToken();
+
         return (ast::Primary*)new ast::FloatLiteral(tk,
                                                     currentToken->getLineNum());
     }
     else if (kind == Kind::STRING_TOKEN)
     {
+        // consume string
+        getNextUsefulToken();
+
         return (ast::Primary*)new ast::StringLiteral(
             tk, currentToken->getLineNum());
     }
     else if (kind == Kind::BYTE_TOKEN)
     {
+        // consume byte
+        getNextUsefulToken();
+
         return (ast::Primary*)new ast::ByteLiteral(tk,
                                                    currentToken->getLineNum());
     }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
-        return (ast::Primary*)new ast::Identifier(tk,
-                                                  currentToken->getLineNum());
+        ast::Identifier* ident =
+            new ast::Identifier(tk, currentToken->getLineNum());
+
+        // consume identifier
+        getNextUsefulToken();
+
+        if (currentToken->getKind() == Kind::DOT_TOKEN)
+        {
+            // consume '.'
+            getNextUsefulToken();
+
+            return (ast::Primary*)parseAttributeAccess(ident);
+        }
+        else if (currentToken->getKind() == Kind::TRIPLE_DOT_TOKEN)
+        {
+            // consume '...'
+            getNextUsefulToken();
+
+            return (ast::Primary*)parseMethodAccess(ident);
+        }
+        else if (currentToken->getKind() == Kind::LPAREN_TOKEN)
+        {
+            // consume '('
+            getNextUsefulToken();
+
+            std::vector<ast::Primary*> idents;
+
+            while (currentToken->getKind() != Kind::RPAREN_TOKEN)
+            {
+                idents.push_back(parsePrimary());
+
+                if (currentToken->isEOF())
+                {
+                    errorHandler->handle(
+                        new Error(currentToken->getLineNum(),
+                                  "Missing a right parenthesis."));
+                }
+            }
+
+            // consume ')'
+            getNextUsefulToken();
+
+            return (ast::Primary*)new ast::FunctionCall(
+                ident, idents, currentToken->getLineNum());
+        }
+        else
+        {
+            return (ast::Primary*)ident;
+        }
     }
     else
     {
@@ -1186,7 +1195,7 @@ Parser::parsePrimary()
             new Error(currentToken->getLineNum(),
                       "Expected a literal of type bool, int, flt, str, byte, "
                       "or a UDT. Instead received: " +
-                          currentToken->getValue() + "."));
+                          tk + "."));
     }
 }
 
@@ -1345,7 +1354,7 @@ Parser::parseBlock()
  *              Block |
  *              ReturnStatement |
  *              GeneralDecleration |
- *              ExpressionStatement
+ *              BinaryExpression
  */
 ast::Statement*
 Parser::parseStatement()
@@ -1392,7 +1401,7 @@ Parser::parseStatement()
         return (ast::Statement*)parseBlock();
 
     default:
-        return (ast::Statement*)parseExpressionStatement();
+        return (ast::Statement*)parseBinaryExpression();
     }
 }
 
@@ -1422,17 +1431,7 @@ Parser::parseIfStatement()
 }
 
 /**
- * ExpressionStatement := BinaryExpression
- */
-ast::ExpressionStatement*
-Parser::parseExpressionStatement()
-{
-    return new ast::ExpressionStatement(parseBinaryExpression(),
-                                        currentToken->getLineNum());
-}
-
-/**
- * ReturnStatement := 'return' ExpressionStatement
+ * ReturnStatement := 'return' BinaryExpression
  */
 ast::ReturnStatement*
 Parser::parseReturnStatement()

@@ -4,7 +4,7 @@
  */
 #pragma once
 #include "Expression.h"
-#include "ExpressionStatement.h"
+#include "BinaryExpression.h"
 #include "Node.h"
 #include "UnaryExpression.h"
 
@@ -13,11 +13,11 @@ namespace ast
 class Negation : public UnaryExpression, public Node
 {
   private:
-    ExpressionStatement* expr;
+    BinaryExpression* expr;
 
   public:
     // constructor
-    Negation(ExpressionStatement* e, int lineNum) : Node(lineNum)
+    Negation(BinaryExpression* e, int lineNum) : Node(lineNum)
     {
         expr = e;
     };
@@ -33,8 +33,8 @@ class Negation : public UnaryExpression, public Node
         return UnaryExpressionType::Negation;
     }
     // get methods
-    ExpressionStatement*
-    getExpressionStatement()
+    BinaryExpression*
+    getBinaryExpression()
     {
         return expr;
     }

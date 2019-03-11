@@ -56,8 +56,8 @@ class Parser
 
     ast::GroupingExpression* parseGroupingExpression();
 
-    ast::AttributeAccess* parseAttributeAccess(ast::Expression* e);
-    ast::MethodAccess* parseMethodAccess(ast::Expression* e);
+    ast::AttributeAccess* parseAttributeAccess(ast::Identifier*);
+    ast::MethodAccess* parseMethodAccess(ast::Identifier*);
 
     ast::UnaryExpression* parseUnaryExpression();
     ast::BinaryExpression* parseBinaryExpression();
@@ -76,7 +76,6 @@ class Parser
     ast::Statement* parseStatement();
     ast::IfStatement* parseIfStatement();
     ast::ReturnStatement* parseReturnStatement();
-    ast::ExpressionStatement* parseExpressionStatement();
 
     ast::Variable* parseVariable();
 

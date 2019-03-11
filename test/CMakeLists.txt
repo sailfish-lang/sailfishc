@@ -16,6 +16,7 @@ ADD_LIBRARY(SailfishcLibs
     ../src/errorhandler/SymbolTableErrorHandler.cpp 
     ../src/errorhandler/ParserErrorHandler.cpp
     ../src/common/ReservedWords.cpp
+    ../src/semant/CommonExtractions.cpp
 )
 
 # Locate GTest

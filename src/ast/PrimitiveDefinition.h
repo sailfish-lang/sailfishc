@@ -3,7 +3,7 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ExpressionStatement.h"
+#include "BinaryExpression.h"
 #include "GeneralDefinition.h"
 #include "Node.h"
 #include "Variable.h"
@@ -14,11 +14,11 @@ class PrimitiveDefition : public GeneralDefinition, public Node
 {
   private:
     Variable* var;
-    ExpressionStatement* expr;
+    BinaryExpression* expr;
 
   public:
     // constructor
-    PrimitiveDefition(Variable* v, ExpressionStatement* e, int lineNum)
+    PrimitiveDefition(Variable* v, BinaryExpression* e, int lineNum)
         : Node(lineNum)
     {
         var = v;
@@ -42,8 +42,8 @@ class PrimitiveDefition : public GeneralDefinition, public Node
     {
         return var;
     }
-    ExpressionStatement*
-    getExpressionStatement()
+    BinaryExpression*
+    getBinaryExpression()
     {
         return expr;
     }

@@ -14,7 +14,6 @@ class Statement
         ReturnStatement,
         BlockStatement,
         GeneralDecleration,
-        ExpressionStatement,
     };
     virtual StatementType getStatementType() = 0;
 };
