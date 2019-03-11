@@ -456,6 +456,27 @@ TEST(SeamanticTest, TypeCheckerAssignments)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerIfElse)
+{
+    static const std::string expected[] = {
+        "Expected grouping to result in a boolean.",
+        "Expected grouping to result in a boolean.",
+        "Expected grouping to result in a boolean.",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root = p->parse("../sailfish_examples/semantics_if_else.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
         // std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;

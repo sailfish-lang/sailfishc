@@ -666,10 +666,7 @@ Visitor::visit(ast::Subtraction* node)
 void
 Visitor::visit(ast::GroupingExpression* node)
 {
-    for (auto const& expr : node->getBinaryExpressionList())
-    {
-        visit(expr);
-    }
+    visit(node->getBinaryExpressionList());
 }
 void
 Visitor::visit(ast::BinaryGreaterThan* node)

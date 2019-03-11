@@ -767,7 +767,7 @@ Parser::parseArrayExpression()
 }
 
 /**
- * GroupingExpression := '|' BinaryExpression* '|'
+ * GroupingExpression := '|' BinaryExpression '|'
  */
 ast::GroupingExpression*
 Parser::parseGroupingExpression()
@@ -775,23 +775,24 @@ Parser::parseGroupingExpression()
     // consume '|'
     getNextUsefulToken();
 
-    std::vector<ast::BinaryExpression*> exprs;
-
-    while (currentToken->getKind() != Kind::PIPE_TOKEN)
+    if (currentToken->getKind() == Kind::PIPE_TOKEN)
     {
-        exprs.push_back(parseBinaryExpression());
+        errorHandler->handle(new Error(currentToken->getLineNum(),
+                                       "Cannot have empty if condition."));
+    }
 
-        if (currentToken->isEOF())
-        {
-            errorHandler->handle(
-                new Error(currentToken->getLineNum(), "Missing a pipe."));
-        }
+    ast::BinaryExpression* expr = parseBinaryExpression();
+
+    if (currentToken->getKind() != Kind::PIPE_TOKEN)
+    {
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(), "Missing a pipe."));
     }
 
     // consume '|'
     getNextUsefulToken();
 
-    return new ast::GroupingExpression(exprs, currentToken->getLineNum());
+    return new ast::GroupingExpression(expr, currentToken->getLineNum());
 }
 
 /**

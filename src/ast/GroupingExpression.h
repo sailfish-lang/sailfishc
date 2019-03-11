@@ -3,8 +3,8 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Expression.h"
 #include "BinaryExpression.h"
+#include "Expression.h"
 #include "IntegerLiteral.h"
 #include "Node.h"
 #include <vector>
@@ -14,14 +14,13 @@ namespace ast
 class GroupingExpression : public Expression, public Node
 {
   private:
-    std::vector<BinaryExpression*> expressionList;
+    BinaryExpression* expr;
 
   public:
     // constructor
-    GroupingExpression(std::vector<BinaryExpression*> e, int lineNum)
-        : Node(lineNum)
+    GroupingExpression(BinaryExpression* e, int lineNum) : Node(lineNum)
     {
-        expressionList = e;
+        expr = e;
     };
     // destructor
     ~GroupingExpression(){};
@@ -32,10 +31,10 @@ class GroupingExpression : public Expression, public Node
         return ExpressionType::GroupingExpression;
     }
     // get method
-    std::vector<BinaryExpression*>
+    BinaryExpression*
     getBinaryExpressionList()
     {
-        return expressionList;
+        return expr;
     }
 };
 }

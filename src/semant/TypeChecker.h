@@ -90,4 +90,7 @@ class TypeChecker : public Visitor
 
     // function call
     void visit(ast::FunctionCall*);
+
+    // grouping
+    void visit(ast::GroupingExpression*);
 };

@@ -578,6 +578,20 @@ TypeChecker::visit(ast::IfStatement* node)
 }
 
 void
+TypeChecker::visit(ast::GroupingExpression* node)
+{
+    ast::BinaryExpression* binExpr = node->getBinaryExpressionList();
+
+    visit(binExpr);
+
+    if (!isLegalGrouping(binExpr))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Expected grouping to result in a boolean."));
+    }
+}
+
+void
 TypeChecker::visit(ast::Negation* node)
 {
     visit(node->getBinaryExpression());

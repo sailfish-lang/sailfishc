@@ -15,3 +15,5 @@ std::string expressionHelper(ast::Expression*, SymbolTable*,
 
 std::string getRightExpressionType(ast::BinaryExpression*, SymbolTable*,
                                    SemanticErrorHandler*, UDTTable*);
+
+bool isLegalGrouping(ast::BinaryExpression*);
