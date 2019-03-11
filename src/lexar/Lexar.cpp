@@ -131,9 +131,6 @@ Lexar::getNextToken()
                     case '/':
                         state = State::DIVISION_OR_COMMENT;
                         break;
-                    case '\'':
-                        state = State::BYTE;
-                        break;
                     case '\"':
                         state = State::STRING;
                         break;
@@ -222,12 +219,6 @@ Lexar::getNextToken()
                     state = State::MULTIPLE_LINE_COMMENT_PRESTATE;
                 break;
 
-            case State::BYTE:
-                if (c == '\'')
-                    return new Token(Kind::BYTE_TOKEN, buffer, currentLineNum,
-                                     currentColNum);
-
-                break;
             case State::STRING:
                 if (c == '\\')
                     state = State::STRING_ESCAPE;

@@ -312,11 +312,36 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
         ast::ArrayExpression* subnode =
             dynamic_cast<ast::ArrayExpression*>(node);
 
-        semanticErrorHandler->handle(
-            new Error(subnode->getLineNum(),
-                      "Unexpected list inside binary expression."));
-        // return list type to continue semantic analysis
-        return "list";
+        std::vector<ast::Primary*> items = subnode->getExpressionList();
+
+        // empty lists do not need type checking
+        if (items.size() == 0)
+        {
+            return "list_empty";
+        }
+
+        std::string expectedType = primaryHelper(
+            items.at(0), symbolTable, semanticErrorHandler, udtTable);
+
+        for (ast::Primary* const& item : items)
+        {
+            std::string type = primaryHelper(item, symbolTable,
+                                             semanticErrorHandler, udtTable);
+
+            // confirm the list is homogenous
+            if (type != expectedType)
+            {
+                semanticErrorHandler->handle(new Error(
+                    subnode->getLineNum(),
+                    "List is not homogenous. Received types: " + type +
+                        " and " + expectedType + " which do not match."));
+
+                // return list as empty to continue semantic analyis
+                return "list_empty";
+            }
+        }
+
+        return "list_" + expectedType;
     }
     case ast::Expression::PrimaryExpression:
     {

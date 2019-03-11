@@ -19,18 +19,18 @@ class FunctionDefinition : public SourcePart, public Exportable, public Node
   private:
     Identifier* name;
     std::vector<Input*> inputList;
-    std::vector<Output*> outputList;
+    Output* output;
     Block* body;
 
   public:
     // constructor
-    FunctionDefinition(Identifier* i, std::vector<Input*> in,
-                       std::vector<Output*> out, Block* b, int lineNum)
+    FunctionDefinition(Identifier* i, std::vector<Input*> in, Output* out,
+                       Block* b, int lineNum)
         : Node(lineNum)
     {
         name = i;
         inputList = in;
-        outputList = out;
+        output = out;
         body = b;
     };
     // destructor
@@ -61,10 +61,10 @@ class FunctionDefinition : public SourcePart, public Exportable, public Node
     {
         return inputList;
     }
-    std::vector<Output*>
-    getOutputList()
+    Output*
+    getOutput()
     {
-        return outputList;
+        return output;
     }
     Block*
     getBody()

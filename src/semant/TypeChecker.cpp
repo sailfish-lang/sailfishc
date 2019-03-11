@@ -393,22 +393,19 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     adjustedName += "}(";
 
     // capture for the addition of the function to the symbol table
-    for (auto const& output : node->getOutputList())
+    ast::Output* output = node->getOutput();
+    ast::Typename* var = output->getOutput();
+    std::string out_type = var->getType();
+
+    if (!isPrimitive(out_type) && !symbolTable->hasVariable(out_type))
     {
-        ast::Typename* var = output->getOutput();
-        std::string out_type = var->getType();
-
-        if (!isPrimitive(out_type) && !symbolTable->hasVariable(out_type))
-        {
-            semanticErrorHandler->handle(
-                new Error(node->getName()->getLineNum(),
-                          "Functions output type of:  " + out_type +
-                              " for function: " + name + " does not exist."));
-        }
-
-        adjustedName += "_" + out_type;
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Functions output type of:  " + out_type +
+                          " for function: " + name + " does not exist."));
     }
 
+    adjustedName += "_" + out_type;
     adjustedName += ")";
 
     if (isGood)
@@ -593,7 +590,7 @@ TypeChecker::visit(ast::Negation* node)
     std::string type =
         getRightExpressionType(node->getBinaryExpression(), symbolTable,
                                semanticErrorHandler, udtTable);
-    if (type != "Boolean")
+    if (type != "bool")
     {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(),
@@ -625,19 +622,20 @@ TypeChecker::visit(ast::BinaryExpression* node)
     {
     // only int AND int
     case ast::BinaryExpression::Modulo:
+    case ast::BinaryExpression::Exponentiation:
     {
         if (lType != "int")
         {
             semanticErrorHandler->handle(
-                new Error(0, "int type on left "
-                             "side of modulo. Instead received: " +
+                new Error(0, "Expected int type on left "
+                             "side of operation. Instead received: " +
                                  lType + "."));
         }
         else if (rType != "int")
         {
             semanticErrorHandler->handle(
-                new Error(0, "int type on left "
-                             "side of modulo. Instead received: " +
+                new Error(0, "Expected int type on left "
+                             "side of operation. Instead received: " +
                                  rType + "."));
         }
         break;
@@ -645,7 +643,6 @@ TypeChecker::visit(ast::BinaryExpression* node)
     // only int AND int or flt AND flt
     case ast::BinaryExpression::Addition:
     case ast::BinaryExpression::Subtraction:
-    case ast::BinaryExpression::Exponentiation:
     case ast::BinaryExpression::Multiplication:
     case ast::BinaryExpression::Division:
     case ast::BinaryExpression::BinaryLessThan:
@@ -682,6 +679,9 @@ TypeChecker::visit(ast::BinaryExpression* node)
     case ast::BinaryExpression::NonEquivalenceComparison:
     case ast::BinaryExpression::Assignment:
     {
+        if (!isPrimitive(rType))
+        {
+        }
         if (lType != rType)
         {
             semanticErrorHandler->handle(
@@ -696,7 +696,7 @@ TypeChecker::visit(ast::BinaryExpression* node)
     case ast::BinaryExpression::AndComparison:
     case ast::BinaryExpression::OrComparison:
     {
-        if (lType != "Boolean")
+        if (lType != "bool")
         {
             semanticErrorHandler->handle(
                 new Error(0, "Expected boolean type on left side of "
@@ -704,7 +704,7 @@ TypeChecker::visit(ast::BinaryExpression* node)
                                  lType + "."));
         }
 
-        else if (rType != "Boolean")
+        else if (rType != "bool")
         {
             semanticErrorHandler->handle(
                 new Error(0, "Expected boolean type on right side of "

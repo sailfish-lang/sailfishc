@@ -42,19 +42,18 @@ TEST(LexarTest, Nonsense)
         Kind::START_TOKEN,      Kind::LCURLEY_TOKEN,    Kind::KEYWORD_TOKEN,
         Kind::IDENTIFIER_TOKEN, Kind::INTEGER_TOKEN,    Kind::FLOAT_TOKEN,
         Kind::COMMENT_TOKEN,    Kind::STRING_TOKEN,     Kind::STRING_TOKEN,
-        Kind::BYTE_TOKEN,       Kind::BYTE_TOKEN,       Kind::KEYWORD_TOKEN,
-        Kind::IDENTIFIER_TOKEN, Kind::OPERATION_TOKEN,  Kind::INTEGER_TOKEN,
-        Kind::LOGIC_TOKEN,      Kind::LOGIC_TOKEN,      Kind::ARROW_TOKEN,
-        Kind::ARROW_TOKEN,      Kind::UNDERSCORE_TOKEN, Kind::COMMA_TOKEN,
-        Kind::LBRACKET_TOKEN,   Kind::RBRACKET_TOKEN,   Kind::LPAREN_TOKEN,
-        Kind::RPAREN_TOKEN,     Kind::ERROR_TOKEN,      Kind::OPERATION_TOKEN,
+        Kind::KEYWORD_TOKEN,    Kind::IDENTIFIER_TOKEN, Kind::OPERATION_TOKEN,
+        Kind::INTEGER_TOKEN,    Kind::LOGIC_TOKEN,      Kind::LOGIC_TOKEN,
+        Kind::ARROW_TOKEN,      Kind::ARROW_TOKEN,      Kind::UNDERSCORE_TOKEN,
+        Kind::COMMA_TOKEN,      Kind::LBRACKET_TOKEN,   Kind::RBRACKET_TOKEN,
+        Kind::LPAREN_TOKEN,     Kind::RPAREN_TOKEN,     Kind::ERROR_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
-        Kind::COMMENT_TOKEN,    Kind::PIPE_TOKEN,       Kind::PIPE_TOKEN,
-        Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::BOOL_TOKEN,
-        Kind::BOOL_TOKEN,       Kind::LFISH_TAIL_TOKEN, Kind::RFISH_TAIL_TOKEN,
-        Kind::RCURLEY_TOKEN,
+        Kind::OPERATION_TOKEN,  Kind::COMMENT_TOKEN,    Kind::PIPE_TOKEN,
+        Kind::PIPE_TOKEN,       Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
+        Kind::BOOL_TOKEN,       Kind::BOOL_TOKEN,       Kind::LFISH_TAIL_TOKEN,
+        Kind::RFISH_TAIL_TOKEN, Kind::RCURLEY_TOKEN,
     };
 
     Lexar* lexar = new Lexar("../sailfish_examples/nonsense_lexar.fish");
@@ -404,8 +403,62 @@ TEST(SeamanticTest, TypeCheckerBinariesAndUnaries)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
-        std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerUDTDec)
+{
+    static const std::string expected[] = {
+        "Declared udt named: bool illegally shares its name with a type or a "
+        "keyword/reserved word.",
+        "Declared udt attribute named: flt illegally shares its name with a "
+        "type or a keyword/reserved word.",
+        "Declared udt attribute named: void illegally shares its name with a "
+        "type or a keyword/reserved word.",
+        "Udt attribute type of:  void for attribute: void and for udt: bool "
+        "does not exist.",
+        "Udt attribute type of:  udt for attribute: u and for udt: bool does "
+        "not exist.",
+        "Variable: a is undefined.",
+        "Attribute: int for declared udt of type: unknown does not match "
+        "expected type: .",
+        "Attribute: flt for declared udt of type: int does not match expected "
+        "type: .",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root = p->parse("../sailfish_examples/semantics_udt.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
+        // std::cout << err->getErrorMessage() << "\n";
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerAssignments)
+{
+    static const std::string expected[] = {
+
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root =
+        p->parse("../sailfish_examples/semantics_assignment.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
+        std::cout << err->getErrorMessage() << "\n";
+        // ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
     }
 }

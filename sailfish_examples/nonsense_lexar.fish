@@ -3,8 +3,6 @@ start {
     // Hello World
     "\" Hello "
     "Simple string"
-    'w'
-    '\c'
     exp x = 10
     == !=
     ->

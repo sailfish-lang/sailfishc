@@ -96,10 +96,7 @@ InOrderTraversal::visit(ast::FunctionDefinition* node)
         visit(input);
     }
 
-    for (auto const& output : node->getOutputList())
-    {
-        visit(output);
-    }
+    visit(node->getOutput());
 
     visit(node->getBody());
 
@@ -328,12 +325,6 @@ void
 InOrderTraversal::visit(ast::FloatLiteral* node)
 {
     push("FloatLiteral: " + node->getNum());
-}
-
-void
-InOrderTraversal::visit(ast::ByteLiteral* node)
-{
-    push("ByteLiteral: " + node->getString());
 }
 
 void

@@ -320,10 +320,7 @@ Visitor::visit(ast::FunctionDefinition* node)
         visit(input);
     }
 
-    for (auto const& output : node->getOutputList())
-    {
-        visit(output);
-    }
+    visit(node->getOutput());
 
     visit(node->getBody());
 }
@@ -608,10 +605,6 @@ Visitor::visit(ast::FloatLiteral* node)
 }
 void
 Visitor::visit(ast::StringLiteral* node)
-{
-}
-void
-Visitor::visit(ast::ByteLiteral* node)
 {
 }
 void

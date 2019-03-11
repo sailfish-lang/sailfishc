@@ -43,8 +43,6 @@ kindToString(Kind k)
         return "Operation";
     case STRING_TOKEN:
         return "String";
-    case BYTE_TOKEN:
-        return "Byte";
     case LBRACKET_TOKEN:
         return "Left Bracket";
     case RBRACKET_TOKEN:

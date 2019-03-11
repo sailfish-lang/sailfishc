@@ -13,14 +13,14 @@ namespace ast
 class ArrayExpression : public Expression, public Node
 {
   private:
-    std::vector<Expression*> expressionList;
+    std::vector<Primary*> expressionList;
     // flag for determining whether this is a valid index access, i.e.
     // if it can be used as an index
     bool canBeIndexAccess;
 
   public:
     // constructor
-    ArrayExpression(std::vector<Expression*> e, bool c, int lineNum)
+    ArrayExpression(std::vector<Primary*> e, bool c, int lineNum)
         : Node(lineNum)
     {
         expressionList = e;
@@ -35,7 +35,7 @@ class ArrayExpression : public Expression, public Node
         return ExpressionType::ArrayExpression;
     }
     // get method
-    std::vector<Expression*>
+    std::vector<Primary*>
     getExpressionList()
     {
         return expressionList;

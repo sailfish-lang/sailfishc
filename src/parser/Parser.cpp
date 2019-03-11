@@ -181,7 +181,7 @@ Parser::parseExportable()
  * FunctionDefinition := FunctionName FunctionInput FunctionOutput FunctionBody
  * FunctionName := 'fun' Identifier
  * FunctionInput := '<-' InputList
- * FunctionOutput := '->' OutputList
+ * FunctionOutput := '->' Output
  * FunctionBody := Block
  */
 ast::FunctionDefinition*
@@ -236,34 +236,20 @@ Parser::parseFunctionDefintion()
     getNextUsefulToken();
 
     // error if one of the outputs is void and there are multiple outputs
-    hasVoid = false;
-    std::vector<ast::Output*> outputs;
-    while (currentToken->getKind() != Kind::LCURLEY_TOKEN)
+    // hasVoid = false;
+    // std::vector<ast::Output*> outputs;
+
+    ast::Output* output = parseOutput();
+
+    if (currentToken->getKind() != Kind::LCURLEY_TOKEN)
     {
-        ast::Output* output = parseOutput();
-        outputs.push_back(output);
-
-        if (output->getOutput()->getType() == "void")
-            hasVoid = true;
-
-        if (hasVoid && outputs.size() > 1)
-        {
-            errorHandler->handle(
-                new Error(currentToken->getLineNum(),
-                          "Cannot have multiple outputs if one is void"));
-        }
-
-        // if left curley forgotten, will parse until EOF
-        if (currentToken->isEOF())
-        {
-            errorHandler->handle(new Error(currentToken->getLineNum(),
-                                           "Missing a left curley."));
-        }
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(), "Expected left curley."));
     }
 
     ast::Block* body = parseBlock();
 
-    return new ast::FunctionDefinition(name, inputs, outputs, body,
+    return new ast::FunctionDefinition(name, inputs, output, body,
                                        currentToken->getLineNum());
 }
 
@@ -754,11 +740,11 @@ Parser::parseArrayExpression()
         canBeIndex = false;
     }
 
-    std::vector<ast::Expression*> exprs;
+    std::vector<ast::Primary*> exprs;
 
     while (currentToken->getKind() != Kind::RBRACKET_TOKEN)
     {
-        exprs.push_back(parseExpression());
+        exprs.push_back(parsePrimary());
 
         if (currentToken->isEOF())
         {
@@ -1129,14 +1115,6 @@ Parser::parsePrimary()
         return (ast::Primary*)new ast::StringLiteral(
             tk, currentToken->getLineNum());
     }
-    else if (kind == Kind::BYTE_TOKEN)
-    {
-        // consume byte
-        getNextUsefulToken();
-
-        return (ast::Primary*)new ast::ByteLiteral(tk,
-                                                   currentToken->getLineNum());
-    }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
         ast::Identifier* ident =
@@ -1193,7 +1171,7 @@ Parser::parsePrimary()
     {
         errorHandler->handle(
             new Error(currentToken->getLineNum(),
-                      "Expected a literal of type bool, int, flt, str, byte, "
+                      "Expected a literal of type bool, int, flt, str, "
                       "or a UDT. Instead received: " +
                           tk + "."));
     }
