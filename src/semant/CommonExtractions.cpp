@@ -6,6 +6,35 @@ binaryExpressionHelper(ast::BinaryExpression* node)
     return node->getLeftExpr();
 }
 
+std::vector<std::string>
+getFunctionParamTypes(std::string fulltype)
+{
+    std::vector<std::string> params;
+
+    std::string buffer = "";
+    for (int i = fulltype.find("{") + 2; i < fulltype.find("}"); i++)
+    {
+        char c = fulltype.at(i);
+        if (c == '_' || c == '}')
+        {
+            params.push_back(buffer);
+            buffer = "";
+        }
+        else
+        {
+
+            buffer += c;
+        }
+    }
+
+    if (buffer != "")
+    {
+        params.push_back(buffer);
+    }
+
+    return params;
+}
+
 std::string
 getFunctionReturnType(std::string fulltype)
 {
@@ -263,10 +292,45 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
     }
     case ast::Primary::MethodAccessLiteral:
     {
-        ast::MethodAccess* subsubnode =
-            dynamic_cast<ast::MethodAccess*>(primary);
-        return "poopy"; // FIX
-        // xx
+        ast::MethodAccess* node = dynamic_cast<ast::MethodAccess*>(primary);
+        std::string methodName = node->getName()->getValue();
+        std::string variableUDTname = node->getUDT()->getValue();
+
+        // ensure variable's udt exists
+        if (!symbolTable->hasVariable(variableUDTname))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getLineNum(), "Method: " + methodName +
+                                        " called on nonexistent udt type: " +
+                                        variableUDTname + "."));
+
+            return "unknown";
+        }
+
+        std::string udtname = symbolTable->getSymbolType(variableUDTname);
+
+        // ensure variable's udt exists
+        if (!udtTable->hasUDT(udtname.substr(1, udtname.length())))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getLineNum(), "Method: " + methodName +
+                                        " called on nonexistent udt type: " +
+                                        variableUDTname + "."));
+
+            return "unknown";
+        }
+
+        std::string udtType = udtname.substr(1, udtname.length());
+
+        // ensure metho exists for udt - double checked so no need for another
+        // error message
+        if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(methodName))
+        {
+            return "unknown";
+        }
+
+        return getReturnType(
+            udtTable->getMethodSymbolTable(udtType)->getSymbolType(methodName));
     }
     case ast::Primary::FunctionCallLiteral:
     {

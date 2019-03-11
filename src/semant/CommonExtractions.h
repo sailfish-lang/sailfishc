@@ -17,3 +17,6 @@ std::string getRightExpressionType(ast::BinaryExpression*, SymbolTable*,
                                    SemanticErrorHandler*, UDTTable*);
 
 bool isLegalGrouping(ast::BinaryExpression*);
+
+std::vector<std::string> getFunctionParamTypes(std::string);
+std::string getFunctionReturnType(std::string);

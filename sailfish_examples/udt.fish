@@ -1,4 +1,0 @@
-fun
-<- int i
--> int
-{}

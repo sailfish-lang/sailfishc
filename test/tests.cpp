@@ -535,6 +535,32 @@ TEST(SeamanticTest, TypeCheckerDictionaryAndListAccessors)
     }
 }
 
+TEST(SeamanticTest, TypeCheckerMethodAccess)
+{
+    static const std::string expected[] = {
+        "Supplied argument type of: int does not match expected type of: flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+        "Method: bar does not exist for udt type: Foo.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and unknown.",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root =
+        p->parse("../sailfish_examples/semantics_methodaccess.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
+        // std::cout << err->getErrorMessage() << "\n";
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
 int
 main(int argc, char** argv)
 {

@@ -772,11 +772,31 @@ Parser::parseMethodAccess(ast::Identifier* udtName)
                                                 currentToken->getLineNum());
 
     // DONT consume identifier
-    // getNextUsefulToken();
+    getNextUsefulToken();
 
-    ast::BinaryExpression* es = parseBinaryExpression();
+    // consume '('
+    getNextUsefulToken();
 
-    return new ast::MethodAccess(name, es, udtName, currentToken->getLineNum());
+    std::vector<ast::Primary*> idents;
+
+    while (currentToken->getKind() != Kind::RPAREN_TOKEN)
+    {
+        idents.push_back(parsePrimary());
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right parenthesis."));
+        }
+    }
+
+    // consume ')'
+    getNextUsefulToken();
+
+    ast::FunctionCall* fc =
+        new ast::FunctionCall(name, idents, currentToken->getLineNum());
+
+    return new ast::MethodAccess(name, fc, udtName, currentToken->getLineNum());
 }
 /**
  * UnaryExpression := Negation

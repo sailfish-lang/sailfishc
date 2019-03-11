@@ -731,11 +731,53 @@ TypeChecker::visit(ast::BinaryExpression* node)
     // both sides same type
     case ast::BinaryExpression::EquivalenceComparison:
     case ast::BinaryExpression::NonEquivalenceComparison:
+    {
+        if (lType != rType)
+        {
+            semanticErrorHandler->handle(
+                new Error(0, "Expected the same types on each side of "
+                             "operation. Instead received: " +
+                                 lType + " and " + rType + "."));
+        }
+        break;
+    }
+
+    // both sides same types with some restrictions on left hand and right hand
+    // side
     case ast::BinaryExpression::Assignment:
     {
-        if (!isPrimitive(rType))
+        ast::Expression* left = node->getLeftExpr();
+
+        switch (left->getExpressionType())
         {
+        case ast::Expression::PrimaryExpression:
+        {
+            ast::PrimaryExpression* subnode =
+                dynamic_cast<ast::PrimaryExpression*>(left);
+
+            switch (subnode->getPrimary()->getPrimaryType())
+            {
+            case ast::Primary::IdentifierLiteral:
+            {
+                ast::Identifier* z = dynamic_cast<ast::Identifier*>(subnode);
+
+                break;
+            }
+            default:
+            {
+                semanticErrorHandler->handle(new Error(
+                    0, "Illegal left hand expression in assignment."));
+            }
+            }
+            break;
         }
+        default:
+        {
+            semanticErrorHandler->handle(
+                new Error(0, "Illegal left hand expression in assignment."));
+        }
+        }
+
         if (lType != rType)
         {
             semanticErrorHandler->handle(
@@ -846,21 +888,33 @@ void
 TypeChecker::visit(ast::MethodAccess* node)
 {
     std::string methodName = node->getName()->getValue();
-    std::string udtname = node->getUDT()->getValue();
+    std::string variableUDTname = node->getUDT()->getValue();
 
-    // ensure udt exists
-    if (!udtTable->hasUDT(udtname))
+    // ensure variable's udt exists
+    if (!symbolTable->hasVariable(variableUDTname))
     {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Method: " + methodName +
-                          " called on nonexistent udt type: " + udtname + "."));
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Method: " + methodName +
+                " called on nonexistent udt type: " + variableUDTname + "."));
 
         return;
     }
 
-    std::string udtTypeFull = symbolTable->getSymbolType(udtname);
-    std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
+    std::string udtname = symbolTable->getSymbolType(variableUDTname);
+
+    // ensure variable's udt exists
+    if (!udtTable->hasUDT(udtname.substr(1, udtname.length())))
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Method: " + methodName +
+                " called on nonexistent udt type: " + variableUDTname + "."));
+
+        return;
+    }
+
+    std::string udtType = udtname.substr(1, udtname.length());
 
     // ensure metho exists for udt
     if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(methodName))
@@ -869,6 +923,118 @@ TypeChecker::visit(ast::MethodAccess* node)
             new Error(node->getLineNum(),
                       "Method: " + methodName +
                           " does not exist for udt type: " + udtType + "."));
+        // abort
+        return;
+    }
+
+    // visit function call
+    std::string fulltype =
+        udtTable->getMethodSymbolTable(udtType)->getSymbolType(methodName);
+
+    std::vector<std::string> inputs =
+        getFunctionParamTypes(fulltype.substr(1, fulltype.length()));
+
+    // ensure that each of the arguments is supplied and of the proper type
+    std::vector<ast::Primary*> args = node->getFunctionCall()->getArguments();
+
+    int numArgs = args.size();
+    int numInps = inputs.size();
+
+    if (numArgs < numInps)
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Not enough args supplied to function: " + variableUDTname + "..." +
+                methodName + "."));
+    }
+    else if (numArgs > numInps)
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Too many args supplied to function: " + variableUDTname +
+                          "..." + methodName + "."));
+    }
+    else
+    {
+        for (int i = 0; i < numArgs; i++)
+        {
+            ast::Primary* arg = args.at(i);
+            std::string actual =
+                primaryHelper(arg, symbolTable, semanticErrorHandler, udtTable);
+
+            // if not primitive, see if it is a variable in the symbol table
+            if (!isPrimitive(actual))
+            {
+                if (!symbolTable->hasVariable(actual))
+                {
+                    semanticErrorHandler->handle(new Error(
+                        node->getLineNum(),
+                        "Undefined argument: " + actual +
+                            " supplied for function: " + variableUDTname +
+                            "..." + methodName + "."));
+                }
+                else
+                {
+                    std::string fullActual = symbolTable->getSymbolType(actual);
+                    char identChar = fullActual.at(0);
+                    switch (identChar)
+                    {
+                    case 'U':
+                    case 'P':
+                        actual = fullActual.substr(1, fullActual.length());
+                        break;
+                    case 'F':
+                        semanticErrorHandler->handle(new Error(
+                            node->getLineNum(),
+                            "Illegal argument: " + actual +
+                                " supplied for function: " + variableUDTname +
+                                "..." + methodName +
+                                ". Sorry, functions are not first order :("));
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    case 'L':
+                        new Error(node->getLineNum(),
+                                  "Illegal argument: " + actual +
+                                      " supplied for function: " +
+                                      variableUDTname + "..." + methodName +
+                                      ". Lists cannot be passed to functions");
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    case 'D':
+                        new Error(
+                            node->getLineNum(),
+                            "Illegal argument: " + actual +
+                                " supplied for function: " + variableUDTname +
+                                "..." + methodName +
+                                ". Dictionaries cannot be passed to functions");
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    }
+                }
+            }
+
+            if (actual != inputs[i])
+            {
+                semanticErrorHandler->handle(new Error(
+                    node->getLineNum(),
+                    "Supplied argument type of: " + actual +
+                        " does not match expected type of: " + inputs[i] +
+                        "."));
+            }
+        }
+    }
+
+    // visit(name);
+
+    for (auto const& arg : args)
+    {
+        visit(arg);
     }
 }
 
@@ -876,6 +1042,8 @@ void
 TypeChecker::visit(ast::FunctionCall* node)
 {
     std::string name = node->getName()->getValue();
+
+    std::cout << "FUNCTION NAME: " << name;
 
     // parse out type info from symbol table form of type name
     int state = 0;

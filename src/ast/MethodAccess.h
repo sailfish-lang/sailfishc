@@ -4,7 +4,7 @@
  */
 #pragma once
 #include "Ast.h"
-#include "BinaryExpression.h"
+#include "FunctionCall.h"
 #include "Node.h"
 #include "Primary.h"
 
@@ -14,13 +14,12 @@ class MethodAccess : public Primary, public Node
 {
   private:
     Identifier* name;
-    BinaryExpression* func;
+    FunctionCall* func;
     Identifier* udt;
 
   public:
     // constructor
-    MethodAccess(Identifier* i, BinaryExpression* f, Identifier* u,
-                 int lineNum)
+    MethodAccess(Identifier* i, FunctionCall* f, Identifier* u, int lineNum)
         : Node(lineNum)
     {
         name = i;
@@ -45,7 +44,7 @@ class MethodAccess : public Primary, public Node
     {
         return name;
     }
-    BinaryExpression*
+    FunctionCall*
     getFunctionCall()
     {
         return func;
