@@ -213,7 +213,34 @@ TEST(SeamanticTest, TypeCheckerFunctions)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
-        std::cout << err->getErrorMessage() << "\n";
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerLists)
+{
+    static const std::string expected[] = {
+        "Defined lists's type of: Foo for list: list_error_a does not exist.",
+        "Declared type of list: Foo for variable named: list_error_a does not "
+        "match assigned expression's list of type: int.",
+        "Declared type of list for variable named: list_error_b does not match "
+        "assigned expression type of: dictionary.",
+        "List is not homogenous. Received types: flt and int which do not "
+        "match.",
+        "Declared type of list: int for variable named: list_error_d does not "
+        "match assigned expression's list of type: flt.",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root = p->parse("../sailfish_examples/semantics_lists.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
+        // std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
     }
