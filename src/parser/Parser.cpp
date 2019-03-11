@@ -704,7 +704,7 @@ Parser::parseNew()
     {
         // consume '['
         getNextUsefulToken();
-        return (ast::New*)parseListLiteral();
+        return (ast::New*)parseListLiteral(new ast::Identifier("", 0));
     }
     else if (kind == Kind::LCURLEY_TOKEN)
     {
@@ -1080,7 +1080,7 @@ Parser::parsePrimary()
         // consume '['
         getNextUsefulToken();
 
-        return (ast::Primary*)parseListLiteral();
+        return (ast::Primary*)parseListLiteral(new ast::Identifier("", 0));
     }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
@@ -1128,6 +1128,13 @@ Parser::parsePrimary()
 
             return (ast::Primary*)new ast::FunctionCall(
                 ident, idents, currentToken->getLineNum());
+        }
+        else if (currentToken->getKind() == Kind::LBRACKET_TOKEN)
+        {
+            // consume '['
+            getNextUsefulToken();
+
+            return (ast::Primary*)parseListLiteral(ident);
         }
         else
         {
@@ -1197,7 +1204,7 @@ Parser::parseDictionaryItem()
  * ListLiteral := '[' [ListItem (',' ListItem)] ']'
  */
 ast::ListLiteral*
-Parser::parseListLiteral()
+Parser::parseListLiteral(ast::Identifier* ident)
 {
     std::vector<ast::ListItem*> listItems;
 
@@ -1215,7 +1222,22 @@ Parser::parseListLiteral()
     // consume ']'
     getNextUsefulToken();
 
-    return new ast::ListLiteral(listItems, currentToken->getLineNum());
+    bool isListIndex = false;
+    bool isDictionaryIndex = false;
+    if (listItems.size() == 1)
+    {
+        ast::ListItem* li = listItems.at(0);
+
+        isDictionaryIndex = true;
+
+        if (li->getValue()->getPrimaryType() == ast::Primary::IntegerLiteral)
+        {
+            isListIndex = true;
+        }
+    }
+
+    return new ast::ListLiteral(listItems, isListIndex, isDictionaryIndex,
+                                ident, currentToken->getLineNum());
 }
 
 /**

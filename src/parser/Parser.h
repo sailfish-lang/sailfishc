@@ -66,7 +66,7 @@ class Parser
     ast::DictionaryLiteral* parseDictionaryLiteral();
     ast::DictionaryItem* parseDictionaryItem();
 
-    ast::ListLiteral* parseListLiteral();
+    ast::ListLiteral* parseListLiteral(ast::Identifier*);
     ast::ListItem* parseListItem();
 
     ast::Block* parseBlock();

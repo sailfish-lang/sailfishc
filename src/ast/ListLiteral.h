@@ -14,12 +14,20 @@ class ListLiteral : public New, public Node, public Primary
 {
   private:
     std::vector<ListItem*> listItems;
+    bool canBeDictionaryIndex;
+    bool canBeListIndex;
+    ast::Identifier* name;
 
   public:
     // constructor
-    ListLiteral(std::vector<ListItem*> v, int lineNum) : Node(lineNum)
+    ListLiteral(std::vector<ListItem*> v, bool l, bool d, Identifier* n,
+                int lineNum)
+        : Node(lineNum)
     {
         listItems = v;
+        canBeDictionaryIndex = d;
+        canBeListIndex = l;
+        name = n;
     };
     // destructor
     ~ListLiteral(){};
@@ -40,6 +48,21 @@ class ListLiteral : public New, public Node, public Primary
     getItems()
     {
         return listItems;
+    }
+    bool
+    isDictionaryIndex()
+    {
+        return canBeDictionaryIndex;
+    }
+    bool
+    isListIndex()
+    {
+        return canBeListIndex;
+    }
+    Identifier*
+    getName()
+    {
+        return name;
     }
 };
 }

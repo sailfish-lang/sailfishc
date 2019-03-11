@@ -147,11 +147,53 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
             primaryHelper(items.at(0)->getValue(), symbolTable,
                           semanticErrorHandler, udtTable);
 
-        // if (subnode->getCanBeIndexAccess())
-        // {
-        //     std::cout << "here\n";
-        //     return expectedType;
-        // }
+        if (subnode->isListIndex() || subnode->isDictionaryIndex())
+        {
+            // return list value type
+            std::string variableName = subnode->getName()->getValue();
+            if (!symbolTable->hasVariable(variableName))
+            {
+                semanticErrorHandler->handle(
+                    new Error(subnode->getLineNum(),
+                              "Variable: " + variableName + " is undefined."));
+
+                return "unknown";
+            }
+
+            std::string fullAttributeType =
+                symbolTable->getSymbolType(variableName);
+
+            if (fullAttributeType.at(0) == 'L')
+            {
+                return fullAttributeType.substr(1, fullAttributeType.length());
+            }
+
+            if (fullAttributeType.at(0) == 'D')
+            {
+
+                std::string keyType = fullAttributeType.substr(
+                    1, fullAttributeType.find("_") - 1);
+                std::string valueType =
+                    fullAttributeType.substr(fullAttributeType.find("_") + 1,
+                                             fullAttributeType.length());
+
+                // check that the provided key is the right type
+                if (expectedType != keyType)
+                {
+                    semanticErrorHandler->handle(new Error(
+                        subnode->getLineNum(),
+                        "Supplied key type: " + expectedType +
+                            " does not match expected key type: " + keyType +
+                            " for: " + variableName + "."));
+
+                    return "unknown";
+                }
+
+                return valueType;
+            }
+
+            return getReturnType(fullAttributeType);
+        }
 
         for (ast::ListItem* const& item : items)
         {

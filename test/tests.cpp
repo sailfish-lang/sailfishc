@@ -502,6 +502,33 @@ TEST(SeamanticTest, TypeCheckerReturnStatements)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerDictionaryAndListAccessors)
+{
+    static const std::string expected[] = {
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+        "Supplied key type: flt does not match expected key type: int for: "
+        "someDict.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and unknown.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root = p->parse(
+        "../sailfish_examples/semantics_dictionary_list_accessors.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
         // std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
