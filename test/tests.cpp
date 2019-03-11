@@ -192,6 +192,8 @@ TEST(SeamanticTest, TypeCheckerFunctions)
         "type or a keyword/reserved word.",
         "Functions output type of:  nonExistentType for function: "
         "outputDoesNotExist does not exist.",
+        "Actual return type of: int does not match expected return type of: "
+        "nonExistentType.",
         "Declared function named: flt illegally shares its name with a type or "
         "a keyword/reserved word.",
         "Too many args supplied to function: foo.",
@@ -471,6 +473,29 @@ TEST(SeamanticTest, TypeCheckerIfElse)
 
     Parser* p = new Parser();
     ast::Start* root = p->parse("../sailfish_examples/semantics_if_else.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
+        // std::cout << err->getErrorMessage() << "\n";
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerReturnStatements)
+{
+    static const std::string expected[] = {
+        "Actual return type of: flt does not match expected return type of: "
+        "int.",
+        "Unexpected return in function returning void.",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root =
+        p->parse("../sailfish_examples/semantics_function_return.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 

@@ -3,7 +3,9 @@
 fun good
 <- int i, str s
 -> int
-{}
+{
+    return 10
+}
 
 // input describes nonexistent type
 fun inputDoesNotExist
@@ -21,7 +23,9 @@ fun reserevedKeywordAsInputName
 fun outputDoesNotExist
 <- void
 -> nonExistentType
-{}
+{
+    return 10
+}
 
 // function name is a reserved type
 fun flt

@@ -423,6 +423,50 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     // visit the function body
     visit(node->getBody());
 
+    bool hasReturn = false;
+    ast::Block* body = node->getBody();
+    for (ast::Statement* const& statement : body->getStatements())
+    {
+        if (statement->getStatementType() == ast::Statement::ReturnStatement)
+        {
+
+            if (out_type == "void")
+            {
+                semanticErrorHandler->handle(
+                    new Error(node->getLineNum(),
+                              "Unexpected return in function returning void."));
+                break;
+            }
+
+            hasReturn = true;
+
+            // ensure type is as expected
+            ast::ReturnStatement* subnode =
+                dynamic_cast<ast::ReturnStatement*>(statement);
+
+            ast::BinaryExpression* returnedExpr =
+                subnode->getBinaryExpression();
+
+            std::string actualReturnType = getRightExpressionType(
+                returnedExpr, symbolTable, semanticErrorHandler, udtTable);
+
+            if (actualReturnType != out_type)
+            {
+                semanticErrorHandler->handle(new Error(
+                    node->getLineNum(),
+                    "Actual return type of: " + actualReturnType +
+                        " does not match expected return type of: " + out_type +
+                        "."));
+            }
+        }
+    }
+
+    if (!hasReturn && out_type != "void")
+    {
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(), "Function does not have a return statement."));
+    }
+
     // exit scope once we exit the body
     symbolTable->exitScope();
 }

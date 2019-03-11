@@ -10,7 +10,9 @@ Cfn Foo {
     fn foo
     <- int i
     -> flt
-    {}
+    {
+        return 10.0
+    }
 }
 
 // errors
