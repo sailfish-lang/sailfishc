@@ -529,7 +529,6 @@ TEST(SeamanticTest, TypeCheckerDictionaryAndListAccessors)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
-        // std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
     }
@@ -555,7 +554,36 @@ TEST(SeamanticTest, TypeCheckerMethodAccess)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
-        // std::cout << err->getErrorMessage() << "\n";
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerAttributeAccess)
+{
+    static const std::string expected[] = {
+        "Attribute: f does not exists for udt type: Foo.",
+        "Expected the same types on each side of operation. Instead "
+        "received: "
+        "flt and unknown.",
+        "Expected the same types on each side of operation. Instead "
+        "received: "
+        "flt and int.",
+        "Attribute: i called on undeclared variable: goo.",
+        "Expected the same types on each side of operation. Instead "
+        "received: "
+        "flt and unknown.",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root =
+        p->parse("../sailfish_examples/semantics_attributeaccess.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
     }

@@ -856,8 +856,10 @@ TypeChecker::visit(ast::AttributeAccess* node)
     {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(),
-            "Attribue: " + attributeName +
+            "Attribute: " + attributeName +
                 " called on undeclared variable: " + variableName + "."));
+
+        return;
     }
 
     std::string udtTypeFull = symbolTable->getSymbolType(variableName);
@@ -868,7 +870,7 @@ TypeChecker::visit(ast::AttributeAccess* node)
     {
         semanticErrorHandler->handle(
             new Error(node->getLineNum(),
-                      "Attribue: " + attributeName +
+                      "Attribute: " + attributeName +
                           " called on nonexistent udt type: " + udtType + "."));
 
         return;
@@ -879,8 +881,10 @@ TypeChecker::visit(ast::AttributeAccess* node)
     {
         semanticErrorHandler->handle(
             new Error(node->getLineNum(),
-                      "Attribue: " + attributeName +
+                      "Attribute: " + attributeName +
                           " does not exists for udt type: " + udtType + "."));
+
+        return;
     }
 }
 
@@ -1042,8 +1046,6 @@ void
 TypeChecker::visit(ast::FunctionCall* node)
 {
     std::string name = node->getName()->getValue();
-
-    std::cout << "FUNCTION NAME: " << name;
 
     // parse out type info from symbol table form of type name
     int state = 0;

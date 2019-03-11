@@ -251,37 +251,29 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
         std::string attributeName = subsubnode->getAttribute()->getValue();
         std::string variableName = subsubnode->getUDT()->getValue();
 
-        // ensure variable exists
+        // ensure variable exists - double checked so no need for another
+        // error message
         if (!symbolTable->hasVariable(variableName))
         {
-            semanticErrorHandler->handle(new Error(
-                subsubnode->getLineNum(),
-                "Attribute: " + attributeName +
-                    " called on undeclared variable: " + variableName + "."));
+            return "unknown";
         }
 
         std::string udtTypeFull = symbolTable->getSymbolType(variableName);
         std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
 
-        // ensure udt exists
+        // ensure udt exists - double checked so no need for another
+        // error message
         if (!udtTable->hasUDT(udtType))
         {
-            semanticErrorHandler->handle(new Error(
-                subsubnode->getLineNum(),
-                "Attribute: " + attributeName +
-                    " called on nonexistent udt type: " + udtType + "."));
-
             return "unknown";
         }
 
-        // ensure attribute exists for udt
+        // ensure attribute exists for udt - double checked so only return error
+        // once
         if (!udtTable->getAttributeSymbolTable(udtType)->hasVariable(
                 attributeName))
         {
-            semanticErrorHandler->handle(new Error(
-                subsubnode->getLineNum(),
-                "Attribute: " + attributeName +
-                    " does not exists for udt type: " + udtType + "."));
+            return "unknown";
         }
 
         std::string fullAttributeType =
@@ -296,27 +288,19 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
         std::string methodName = node->getName()->getValue();
         std::string variableUDTname = node->getUDT()->getValue();
 
-        // ensure variable's udt exists
+        // ensure variable's udt exists - double checked so no need for another
+        // error message
         if (!symbolTable->hasVariable(variableUDTname))
         {
-            semanticErrorHandler->handle(new Error(
-                node->getLineNum(), "Method: " + methodName +
-                                        " called on nonexistent udt type: " +
-                                        variableUDTname + "."));
-
             return "unknown";
         }
 
         std::string udtname = symbolTable->getSymbolType(variableUDTname);
 
-        // ensure variable's udt exists
+        // ensure variable's udt exists - double checked so no need for another
+        // error message
         if (!udtTable->hasUDT(udtname.substr(1, udtname.length())))
         {
-            semanticErrorHandler->handle(new Error(
-                node->getLineNum(), "Method: " + methodName +
-                                        " called on nonexistent udt type: " +
-                                        variableUDTname + "."));
-
             return "unknown";
         }
 
