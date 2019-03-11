@@ -131,6 +131,47 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
 
         return "dictionary_" + expectedKeyType + "_" + expectedValueType;
     }
+    case ast::Primary::ListLiteral:
+    {
+        ast::ListLiteral* subnode = dynamic_cast<ast::ListLiteral*>(primary);
+
+        std::vector<ast::ListItem*> items = subnode->getItems();
+
+        // empty lists do not need type checking
+        if (items.size() == 0)
+        {
+            return "list_empty";
+        }
+
+        std::string expectedType =
+            primaryHelper(items.at(0)->getValue(), symbolTable,
+                          semanticErrorHandler, udtTable);
+
+        // if (subnode->getCanBeIndexAccess())
+        // {
+        //     std::cout << "here\n";
+        //     return expectedType;
+        // }
+
+        for (ast::ListItem* const& item : items)
+        {
+            std::string type = primaryHelper(item->getValue(), symbolTable,
+                                             semanticErrorHandler, udtTable);
+
+            // confirm the list is homogenous
+            if (type != expectedType)
+            {
+                semanticErrorHandler->handle(new Error(
+                    subnode->getLineNum(),
+                    "List is not homogenous. Received types: " + type +
+                        " and " + expectedType + " which do not match."));
+
+                // return list as empty to continue semantic analyis
+                return "list_empty";
+            }
+        }
+        return "list_" + expectedType;
+    }
     case ast::Primary::AttributeAccessLiteral:
     {
         ast::AttributeAccess* subsubnode =
@@ -351,42 +392,6 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
                       "Groupings cannot be nested."));
         // return list type to continue semantic analysis
         return "list";
-    }
-    case ast::Expression::ArrayExpression:
-    {
-        ast::ArrayExpression* subnode =
-            dynamic_cast<ast::ArrayExpression*>(node);
-
-        std::vector<ast::Primary*> items = subnode->getExpressionList();
-
-        // empty lists do not need type checking
-        if (items.size() == 0)
-        {
-            return "list_empty";
-        }
-
-        std::string expectedType = primaryHelper(
-            items.at(0), symbolTable, semanticErrorHandler, udtTable);
-
-        for (ast::Primary* const& item : items)
-        {
-            std::string type = primaryHelper(item, symbolTable,
-                                             semanticErrorHandler, udtTable);
-
-            // confirm the list is homogenous
-            if (type != expectedType)
-            {
-                semanticErrorHandler->handle(new Error(
-                    subnode->getLineNum(),
-                    "List is not homogenous. Received types: " + type +
-                        " and " + expectedType + " which do not match."));
-
-                // return list as empty to continue semantic analyis
-                return "list_empty";
-            }
-        }
-
-        return "list_" + expectedType;
     }
     case ast::Expression::PrimaryExpression:
     {

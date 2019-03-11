@@ -6,7 +6,6 @@
 
 #include "Addition.h"
 #include "AndComparison.h"
-#include "ArrayExpression.h"
 #include "Assignment.h"
 #include "AttributeAccess.h"
 #include "BinaryExpression.h"

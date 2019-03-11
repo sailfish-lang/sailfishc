@@ -287,13 +287,6 @@ Visitor::visit(ast::Expression* node)
         visit(subnode);
         break;
     }
-    case ast::Expression::ArrayExpression:
-    {
-        ast::ArrayExpression* subnode =
-            dynamic_cast<ast::ArrayExpression*>(node);
-        visit(subnode);
-        break;
-    }
     case ast::Expression::PrimaryExpression:
     {
         ast::PrimaryExpression* subnode =
@@ -458,14 +451,6 @@ Visitor::visit(ast::NewExpression* node)
         visit(subnode);
         break;
     }
-    }
-}
-void
-Visitor::visit(ast::ArrayExpression* node)
-{
-    for (auto const& expression : node->getExpressionList())
-    {
-        visit(expression);
     }
 }
 void

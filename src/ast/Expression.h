@@ -11,7 +11,6 @@ class Expression
   public:
     enum ExpressionType
     {
-        ArrayExpression,
         GroupingExpression,
         NewExpression,
         UnaryExpression,

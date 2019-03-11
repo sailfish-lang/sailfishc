@@ -52,8 +52,6 @@ class Parser
     ast::NewExpression* parseNewExpression();
     ast::New* parseNew();
 
-    ast::ArrayExpression* parseArrayExpression();
-
     ast::GroupingExpression* parseGroupingExpression();
 
     ast::AttributeAccess* parseAttributeAccess(ast::Identifier*);

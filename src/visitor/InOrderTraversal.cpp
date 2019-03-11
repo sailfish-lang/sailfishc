@@ -235,17 +235,6 @@ InOrderTraversal::visit(ast::NewExpression* node)
 }
 
 void
-InOrderTraversal::visit(ast::ArrayExpression* node)
-{
-    for (auto const& expression : node->getExpressionList())
-    {
-        visit(expression);
-    }
-
-    push("ArrayExpression");
-}
-
-void
 InOrderTraversal::visit(ast::AttributeAccess* node)
 {
     visit(node->getAttribute());

@@ -651,7 +651,6 @@ Parser::parsePrimitiveDefinition()
 
 /**
  * Expression := NewExpression |
- *               ArrayExpression |
  *               GroupingExpression |
  *               UnaryExpression |
  *               PrimaryExpression
@@ -664,13 +663,6 @@ Parser::parseExpression()
     if (tk == "new")
     {
         return (ast::Expression*)parseNewExpression();
-    }
-    else if (tk == "[")
-    {
-        // consume '['
-        getNextUsefulToken();
-
-        return (ast::Expression*)parseArrayExpression();
     }
     else if (tk == "|")
     {
@@ -724,46 +716,6 @@ Parser::parseNew()
     {
         return (ast::New*)parseUserDefinedType();
     }
-}
-
-/**
- * ArrayExpression := '[' Expression (',' Expression)* ']'
- */
-ast::ArrayExpression*
-Parser::parseArrayExpression()
-{
-    bool canBeIndex = true;
-
-    // if first element is not an integer it can't be an index access
-    if (currentToken->getKind() != Kind::INTEGER_TOKEN)
-    {
-        canBeIndex = false;
-    }
-
-    std::vector<ast::Primary*> exprs;
-
-    while (currentToken->getKind() != Kind::RBRACKET_TOKEN)
-    {
-        exprs.push_back(parsePrimary());
-
-        if (currentToken->isEOF())
-        {
-            errorHandler->handle(new Error(currentToken->getLineNum(),
-                                           "Missing a right bracket."));
-        }
-    }
-
-    // if more than one expression in list, it cannot be an index access
-    if (exprs.size() != 1)
-    {
-        canBeIndex = false;
-    }
-
-    // consume ']'
-    getNextUsefulToken();
-
-    return new ast::ArrayExpression(exprs, canBeIndex,
-                                    currentToken->getLineNum());
 }
 
 /**
@@ -1123,6 +1075,13 @@ Parser::parsePrimary()
 
         return (ast::Primary*)parseDictionaryLiteral();
     }
+    else if (kind == Kind::LBRACKET_TOKEN)
+    {
+        // consume '['
+        getNextUsefulToken();
+
+        return (ast::Primary*)parseListLiteral();
+    }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
         ast::Identifier* ident =
@@ -1177,11 +1136,11 @@ Parser::parsePrimary()
     }
     else
     {
-        errorHandler->handle(
-            new Error(currentToken->getLineNum(),
-                      "Expected a literal of type bool, int, flt, str, "
-                      "or a UDT. Instead received: " +
-                          tk + "."));
+        errorHandler->handle(new Error(
+            currentToken->getLineNum(),
+            "Expected a literal of type bool, int, flt, str, list, dictionary, "
+            "or a UDT. Instead received: " +
+                tk + "."));
     }
 }
 

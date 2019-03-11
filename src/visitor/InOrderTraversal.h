@@ -39,7 +39,6 @@ class InOrderTraversal : public Visitor
     void visit(ast::IfStatement*);
     void visit(ast::ReturnStatement*);
     void visit(ast::NewExpression*);
-    void visit(ast::ArrayExpression*);
     void visit(ast::AttributeAccess*);
     void visit(ast::MethodAccess*);
     void visit(ast::FunctionCall*);

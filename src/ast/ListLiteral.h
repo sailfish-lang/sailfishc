@@ -5,11 +5,12 @@
 #pragma once
 #include "New.h"
 #include "Node.h"
+#include "Primary.h"
 #include <vector>
 
 namespace ast
 {
-class ListLiteral : public New, public Node
+class ListLiteral : public New, public Node, public Primary
 {
   private:
     std::vector<ListItem*> listItems;
@@ -27,6 +28,12 @@ class ListLiteral : public New, public Node
     getNewType()
     {
         return NewType::ListLiteral;
+    }
+    // implement Primary
+    /* virtual */ PrimaryType
+    getPrimaryType()
+    {
+        return PrimaryType::ListLiteral;
     }
     // get methods
     std::vector<ListItem*>
