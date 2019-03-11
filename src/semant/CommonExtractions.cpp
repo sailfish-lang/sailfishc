@@ -9,8 +9,6 @@ binaryExpressionHelper(ast::BinaryExpression* node)
 std::string
 getFunctionReturnType(std::string fulltype)
 {
-    std::cout << fulltype << "\n";
-
     std::string buffer = "";
     for (int i = fulltype.find("(") + 2; i < fulltype.length(); i++)
     {
@@ -151,6 +149,7 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
             semanticErrorHandler->handle(
                 new Error(subsubnode->getLineNum(),
                           "Function: " + functionName + " is undefined."));
+            return "unknown";
         }
 
         // get function type from symbol table

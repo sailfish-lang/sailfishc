@@ -605,7 +605,6 @@ TypeChecker::visit(ast::Negation* node)
 void
 TypeChecker::visit(ast::BinaryExpression* node)
 {
-
     // edge case where there is no right expression
     if (node->getBinaryExpressionType() ==
         ast::BinaryExpression::ExpressionOnlyStatement)
@@ -656,25 +655,23 @@ TypeChecker::visit(ast::BinaryExpression* node)
     {
         if (lType != rType)
         {
-            semanticErrorHandler->handle(new Error(
-                0, "Expected the same types on each side of greater than "
-                   "comparison. Instead recevied: " +
-                       lType + " and " + rType + "."));
+            semanticErrorHandler->handle(
+                new Error(0, "Expected the same types on each side of "
+                             "operation. Instead received: " +
+                                 lType + " and " + rType + "."));
         }
         else if (lType != "int" && lType != "flt")
         {
             semanticErrorHandler->handle(
                 new Error(0, "Expected either float or integer type on left "
-                             "side of greater than "
-                             "comparison. Instead received: " +
+                             "side of operation. Instead received: " +
                                  lType + "."));
         }
         else if (rType != "int" && rType != "flt")
         {
             semanticErrorHandler->handle(
                 new Error(0, "Expected either float or integer type on left "
-                             "side of greater than "
-                             "comparison. Instead received: " +
+                             "side of operation. Instead received: " +
                                  rType + "."));
         }
         break;
@@ -687,10 +684,10 @@ TypeChecker::visit(ast::BinaryExpression* node)
     {
         if (lType != rType)
         {
-            semanticErrorHandler->handle(new Error(
-                0, "Expected the same types on each side of equivalence "
-                   "comparison. Instead recevied: " +
-                       lType + " and " + rType + "."));
+            semanticErrorHandler->handle(
+                new Error(0, "Expected the same types on each side of "
+                             "operation. Instead received: " +
+                                 lType + " and " + rType + "."));
         }
         break;
     }
@@ -702,7 +699,7 @@ TypeChecker::visit(ast::BinaryExpression* node)
         if (lType != "Boolean")
         {
             semanticErrorHandler->handle(
-                new Error(0, "Expected boolean type on left side of and "
+                new Error(0, "Expected boolean type on left side of "
                              "comparison. Instead received: " +
                                  lType + "."));
         }
@@ -710,7 +707,7 @@ TypeChecker::visit(ast::BinaryExpression* node)
         else if (rType != "Boolean")
         {
             semanticErrorHandler->handle(
-                new Error(0, "Expected boolean type on right side of and "
+                new Error(0, "Expected boolean type on right side of "
                              "comparison. Instead received: " +
                                  rType + "."));
         }
@@ -826,17 +823,6 @@ TypeChecker::visit(ast::FunctionCall* node)
 {
     std::string name = node->getName()->getValue();
 
-    // ensure variable exists in symbol tabel
-    if (!symbolTable->hasVariable(name))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Function named: " + name + " has not been defined."));
-
-        // just bail
-        return;
-    }
-
     // parse out type info from symbol table form of type name
     int state = 0;
     std::vector<std::string> inputs;
@@ -921,17 +907,17 @@ TypeChecker::visit(ast::FunctionCall* node)
     int numArgs = args.size();
     int numInps = inputs.size();
 
-    std::cout << numArgs << " " << numInps << "\n";
-
     if (numArgs < numInps)
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Not enough args supplied to function."));
+        semanticErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Not enough args supplied to function: " + name + "."));
     }
     else if (numArgs > numInps)
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Too many args supplied to function."));
+        semanticErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Too many args supplied to function: " + name + "."));
     }
     else
     {

@@ -5,10 +5,11 @@
 #pragma once
 #include "BinaryExpression.h"
 #include "Expression.h"
+#include "Statement.h"
 
 namespace ast
 {
-class BinaryExpression
+class BinaryExpression : public Statement
 {
   private:
     Expression* leftExpr;
@@ -45,6 +46,13 @@ class BinaryExpression
 
     // destructor
     ~BinaryExpression(){};
+
+    // implement Statement
+    /* virtual */ StatementType
+    getStatementType()
+    {
+        return StatementType::BinaryExpressionStatement;
+    }
 
     // get methods
     virtual ast::Expression*

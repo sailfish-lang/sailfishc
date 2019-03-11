@@ -14,6 +14,7 @@ class Statement
         ReturnStatement,
         BlockStatement,
         GeneralDecleration,
+        BinaryExpressionStatement,
     };
     virtual StatementType getStatementType() = 0;
 };

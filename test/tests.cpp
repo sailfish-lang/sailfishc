@@ -98,6 +98,15 @@ TEST(ParserTest, AllTokens)
         "Addition",
         "ReturnStatement",
         "FunctionDefinition",
+        "Identifier: foo",
+        "IntegerLiteral: 10",
+        "IntegerLiteral: 1",
+        "IntegerLiteral: 2",
+        "Negation",
+        "OrComparison",
+        "AndComparison",
+        "EquivalenceComparison",
+        "Assignment",
         "IntegerLiteral: 10",
         "IntegerLiteral: 11",
         "IntegerLiteral: 2",
@@ -186,6 +195,13 @@ TEST(SeamanticTest, TypeCheckerFunctions)
         "outputDoesNotExist does not exist.",
         "Declared function named: flt illegally shares its name with a type or "
         "a keyword/reserved word.",
+        "Too many args supplied to function: foo.",
+        "Function: foo is undefined.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and unknown.",
+        "Supplied argument type of: int does not match expected type of: str.",
+        "Not enough args supplied to function: good.",
+        "Too many args supplied to function: good.",
     };
 
     Parser* p = new Parser();
@@ -197,7 +213,7 @@ TEST(SeamanticTest, TypeCheckerFunctions)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
-        // std::cout << err->getErrorMessage() << "\n";
+        std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
     }

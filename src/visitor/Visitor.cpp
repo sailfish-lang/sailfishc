@@ -410,6 +410,13 @@ Visitor::visit(ast::Block* node)
             visit(subnode);
             break;
         }
+        case ast::Statement::BinaryExpressionStatement:
+        {
+            ast::BinaryExpression* subnode =
+                dynamic_cast<ast::BinaryExpression*>(statement);
+            visit(subnode);
+            break;
+        }
         }
     }
 }
