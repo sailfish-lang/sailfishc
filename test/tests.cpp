@@ -281,6 +281,29 @@ TEST(SeamanticTest, TypeCheckerDictionaryDeclerations)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerPrimitiveDeclerations)
+{
+    static const std::string expected[] = {
+        "Declared list named: dec illegally shares its name with a type or a "
+        "keyword/reserved word.",
+        "Declared type: flt of primitive for variable named: function_foo does "
+        "not match assigned expression type of: int.",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root =
+        p->parse("../sailfish_examples/semantics_primitives.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
         // std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
