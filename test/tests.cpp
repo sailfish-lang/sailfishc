@@ -218,7 +218,7 @@ TEST(SeamanticTest, TypeCheckerFunctions)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerLists)
+TEST(SeamanticTest, TypeCheckerListsDeclerations)
 {
     static const std::string expected[] = {
         "Defined lists's type of: Foo for list: list_error_a does not exist.",
@@ -234,6 +234,47 @@ TEST(SeamanticTest, TypeCheckerLists)
 
     Parser* p = new Parser();
     ast::Start* root = p->parse("../sailfish_examples/semantics_lists.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+TEST(SeamanticTest, TypeCheckerDictionaryDeclerations)
+{
+    static const std::string expected[] = {
+        "Defined dictionary's key type of: Foo for dictionary: "
+        "dictionary_error_a does not exist.",
+        "Declared type of dictionary keys: Foo for variable named: "
+        "dictionary_error_a does not match assigned expression's dictionary "
+        "keys of type: int.",
+        "Defined dictionary's value type of: Foo for dictionary: "
+        "dictionary_error_b does not exist.",
+        "Declared type of dictionary values: Foo for variable named: "
+        "dictionary_error_b does not match assigned expression's dictionary "
+        "values of type: flt.",
+        "Declared definition named: str illegally shares its name with a type "
+        "or a keyword/reserved word.",
+        "Declared type of dictionary for variable named: dictionary_error_c "
+        "does not match assigned expression type of: list.",
+        "Dictionary is not homogenous. Received key types: flt and int which "
+        "do not match.",
+        "Declared type of dictionary keys: int for variable named: "
+        "dictionary_error_e does not match assigned expression's dictionary "
+        "keys of type: flt.",
+        "Declared type of dictionary values: flt for variable named: "
+        "dictionary_error_f does not match assigned expression's dictionary "
+        "values of type: int.",
+    };
+
+    Parser* p = new Parser();
+    ast::Start* root =
+        p->parse("../sailfish_examples/semantics_dictionaries.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
