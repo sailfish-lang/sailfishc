@@ -1,11 +1,11 @@
 start {
     // list assignment
     dec list some_list <[ int ]> new [ 1, 2, 3 ]
-    // some_list = [ 4, 5, 6, 7 ]
+    some_list = [ 4, 5, 6, 7 ]
 
     // dictionary assignment
     dec dictionary some_dict <[ int : flt ]> new { 2 : 20.0 }
-    // some_dict = { 1: 10.0 }
+    some_dict = { 1: 10.0 }
 
     // string literal
     dec str some_str = "hello world"

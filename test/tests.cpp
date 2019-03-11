@@ -261,8 +261,7 @@ TEST(SeamanticTest, TypeCheckerDictionaryDeclerations)
         "or a keyword/reserved word.",
         "Declared type of dictionary for variable named: dictionary_error_c "
         "does not match assigned expression type of: list.",
-        "Dictionary is not homogenous. Received key types: flt and int which "
-        "do not match.",
+        "Inconsistent key types in dictionary",
         "Declared type of dictionary keys: int for variable named: "
         "dictionary_error_e does not match assigned expression's dictionary "
         "keys of type: flt.",
@@ -436,12 +435,12 @@ TEST(SeamanticTest, TypeCheckerUDTDec)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
-        // std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
     }
 }
 
+// NOTE: should have no errors!
 TEST(SeamanticTest, TypeCheckerAssignments)
 {
     static const std::string expected[] = {
@@ -457,8 +456,8 @@ TEST(SeamanticTest, TypeCheckerAssignments)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
-        std::cout << err->getErrorMessage() << "\n";
-        // ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        // std::cout << err->getErrorMessage() << "\n";
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
     }
 }

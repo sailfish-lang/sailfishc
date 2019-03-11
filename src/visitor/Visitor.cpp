@@ -543,6 +543,13 @@ Visitor::visit(ast::Primary* node)
         visit(subnode);
         break;
     }
+    case ast::Primary::DictionaryLiteral:
+    {
+        ast::DictionaryLiteral* subnode =
+            dynamic_cast<ast::DictionaryLiteral*>(node);
+        visit(subnode);
+        break;
+    }
     case ast::Primary::AttributeAccessLiteral:
     {
         ast::AttributeAccess* subnode =

@@ -1115,6 +1115,13 @@ Parser::parsePrimary()
         return (ast::Primary*)new ast::StringLiteral(
             tk, currentToken->getLineNum());
     }
+    else if (kind == Kind::LCURLEY_TOKEN)
+    {
+        // consume '{'
+        getNextUsefulToken();
+
+        return (ast::Primary*)parseDictionaryLiteral();
+    }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
         ast::Identifier* ident =

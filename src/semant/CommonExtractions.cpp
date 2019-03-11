@@ -31,9 +31,11 @@ getReturnType(std::string fulltype)
     {
     case 'U':
     case 'P':
-    case 'L':
-    case 'D':
         return fulltype.substr(1, fulltype.length());
+    case 'L':
+        return "list_" + fulltype.substr(1, fulltype.length());
+    case 'D':
+        return "dictionary_" + fulltype.substr(1, fulltype.length());
     case 'F':
         return getFunctionReturnType(fulltype);
     default:
@@ -82,6 +84,53 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
         return "int";
     case ast::Primary::FloatLiteral:
         return "flt";
+    case ast::Primary::DictionaryLiteral:
+    {
+        ast::DictionaryLiteral* subsubnode =
+            dynamic_cast<ast::DictionaryLiteral*>(primary);
+
+        std::vector<ast::DictionaryItem*> dictionaryItems =
+            subsubnode->getItems();
+
+        if (dictionaryItems.size() == 0)
+            return "dictionary_empty_empty";
+
+        std::string expectedValueType =
+            primaryHelper(dictionaryItems.at(0)->getValue(), symbolTable,
+                          semanticErrorHandler, udtTable);
+        std::string expectedKeyType =
+            primaryHelper(dictionaryItems.at(0)->getKey(), symbolTable,
+                          semanticErrorHandler, udtTable);
+
+        for (ast::DictionaryItem* const& item : dictionaryItems)
+        {
+            std::string actualValueType = primaryHelper(
+                item->getValue(), symbolTable, semanticErrorHandler, udtTable);
+            std::string actualKeyType = primaryHelper(
+                item->getKey(), symbolTable, semanticErrorHandler, udtTable);
+
+            if (actualKeyType != expectedKeyType)
+            {
+                semanticErrorHandler->handle(
+                    new Error(subsubnode->getLineNum(),
+                              "Inconsistent key types in dictionary"));
+
+                // continue with semantic analysis
+                return "dictionary_empty_empty";
+            }
+
+            if (actualValueType != expectedValueType)
+            {
+                semanticErrorHandler->handle(
+                    new Error(subsubnode->getLineNum(),
+                              "Inconsistent value types in dictionary"));
+
+                return "dictionary_empty_empty";
+            }
+        }
+
+        return "dictionary_" + expectedKeyType + "_" + expectedValueType;
+    }
     case ast::Primary::AttributeAccessLiteral:
     {
         ast::AttributeAccess* subsubnode =
@@ -208,11 +257,9 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
                 // confirm the dictionary keys are homogenous
                 if (keyType != expectedKeyType)
                 {
-                    semanticErrorHandler->handle(new Error(
-                        subnode->getLineNum(),
-                        "Dictionary is not homogenous. Received key types: " +
-                            keyType + " and " + expectedKeyType +
-                            " which do not match."));
+                    semanticErrorHandler->handle(
+                        new Error(dictionaryLiteral->getLineNum(),
+                                  "Inconsistent key types in dictionary"));
 
                     // return list as empty to continue semantic analyis
                     return "dictionary_empty_empty";
@@ -221,11 +268,9 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
                 // confirm the dictionary values are homogenous
                 if (valueType != expectedValueType)
                 {
-                    semanticErrorHandler->handle(new Error(
-                        subnode->getLineNum(),
-                        "Dictionary is not homogenous. Received value types: " +
-                            valueType + " and " + expectedValueType +
-                            " which do not match."));
+                    semanticErrorHandler->handle(
+                        new Error(dictionaryLiteral->getLineNum(),
+                                  "Inconsistent value types in dictionary"));
 
                     // return list as empty to continue semantic analyis
                     return "dictionary_empty_empty";

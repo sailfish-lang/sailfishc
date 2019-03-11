@@ -4,10 +4,6 @@
  */
 #include "TypeChecker.h"
 
-// ------- Ugly/Hacky Helper Functions ------- //
-
-// ------- END ------- //
-
 // ------- Additions to the symbol table ------- //
 void
 TypeChecker::check(ast::Start* root)

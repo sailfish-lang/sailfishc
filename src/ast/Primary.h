@@ -16,6 +16,7 @@ class Primary
         BooleanLiteral,
         IntegerLiteral,
         FloatLiteral,
+        DictionaryLiteral,
         AttributeAccessLiteral,
         MethodAccessLiteral,
         FunctionCallLiteral,

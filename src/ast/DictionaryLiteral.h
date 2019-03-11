@@ -6,11 +6,12 @@
 #include "DictionaryItem.h"
 #include "New.h"
 #include "Node.h"
+#include "Primary.h"
 #include <vector>
 
 namespace ast
 {
-class DictionaryLiteral : public New, public Node
+class DictionaryLiteral : public New, public Node, public Primary
 {
   private:
     std::vector<DictionaryItem*> dictionaryItems;
@@ -29,6 +30,12 @@ class DictionaryLiteral : public New, public Node
     getNewType()
     {
         return NewType::DictionaryLiteral;
+    }
+    // implement Primary
+    /* virtual */ PrimaryType
+    getPrimaryType()
+    {
+        return Primary::DictionaryLiteral;
     }
     // get methods
     std::vector<DictionaryItem*>
