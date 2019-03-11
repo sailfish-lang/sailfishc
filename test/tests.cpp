@@ -304,7 +304,107 @@ TEST(SeamanticTest, TypeCheckerPrimitiveDeclerations)
     int i = 0;
     for (Error* const& err : s->testAnalyze())
     {
-        // std::cout << err->getErrorMessage() << "\n";
+        ASSERT_EQ(err->getErrorMessage(), expected[i]);
+        ++i;
+    }
+}
+
+// NOTE: all inherently test assignment
+TEST(SeamanticTest, TypeCheckerBinariesAndUnaries)
+{
+    static const std::string expected[] = {
+        "Expected either float or integer type on left side of operation. "
+        "Instead received: bool.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+
+        "Expected either float or integer type on left side of operation. "
+        "Instead received: bool.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+
+        "Expected either float or integer type on left side of operation. "
+        "Instead received: bool.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+
+        "Expected either float or integer type on left side of operation. "
+        "Instead received: bool.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+
+        "Expected either float or integer type on left side of operation. "
+        "Instead received: bool.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+
+        "Expected either float or integer type on left side of operation. "
+        "Instead received: bool.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+
+        "Expected either float or integer type on left side of operation. "
+        "Instead received: bool.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+
+        "Expected either float or integer type on left side of operation. "
+        "Instead received: bool.",
+        "Expected the same types on each side of operation. Instead received:"
+        " int and flt.",
+        "Expected the same types on each side of operation. Instead received: "
+        "flt and int.",
+
+        "Expected int type on left side of operation. Instead "
+        "received: flt.",
+        "Expected int type on left side of operation. Instead received: bool.",
+
+        "Expected the same types on each side of operation. Instead received: "
+        "bool and int.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and bool.",
+
+        "Expected the same types on each side of operation. Instead received: "
+        "bool and int.",
+        "Expected the same types on each side of operation. Instead received: "
+        "int and bool.",
+
+        "Expected boolean type on right side of comparison. Instead received: "
+        "int.",
+        "Expected boolean type on left side of comparison. Instead received: "
+        "int.",
+
+        "Expected boolean type on right side of comparison. Instead received: "
+        "int.",
+        "Expected boolean type on left side of comparison. Instead received: "
+        "int.",
+
+        "Expected boolean type following negation. Instead received: int."};
+
+    Parser* p = new Parser();
+    ast::Start* root =
+        p->parse("../sailfish_examples/semantics_binaries_unaries.fish");
+
+    SemanticAnalyzer* s = new SemanticAnalyzer(root);
+
+    int i = 0;
+    for (Error* const& err : s->testAnalyze())
+    {
+        std::cout << err->getErrorMessage() << "\n";
         ASSERT_EQ(err->getErrorMessage(), expected[i]);
         ++i;
     }
