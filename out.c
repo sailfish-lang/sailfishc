@@ -5,16 +5,45 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-float
-foo(int i, float f)
+void
+fizzbuzzhelper(int i)
 {
-    i10    return 1.0;    return 2.0;
+    int a = i;
+    a = 
+    if(a == 0)
+    {
+        printf("%s","FizzBuzz");
+    } else {
+        if(a == 0)
+    {
+        printf("%s","Fizz");
+    } else {
+        if(a == 0)
+    {
+        printf("%s","Buzz");
+    } else {
+        printf("%d",i);
+    printf("%s","\n");
+    }
+    }
+    }
+}
+
+void
+fizzbuzz(int i)
+{
+    fizzbuzzhelper(i);
+    i = i - 1;
+    if(i > 0)
+    {
+        fizzbuzz(i);
+    } else {
+    
+    }
 }
 
 int
 main()
 {
-    printf("Hello World.\n");
-    printf("Welcome to a new programming language!\n");
-    printf("One small computation for this Lenovo, one large leap for a frog.\n");
+    fizzbuzz(100);
 }

@@ -360,6 +360,10 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 
     std::string adjustedName = "F" + name + "{";
 
+    // capture inputs to add to inner function scope
+    // formatted: (name, type)
+    std::vector<std::tuple<std::string, std::string>> inputsToAdd;
+
     //  capture for the addition of the function to the symbol table
     for (auto const& input : node->getInputList())
     {
@@ -388,6 +392,9 @@ TypeChecker::visit(ast::FunctionDefinition* node)
                               " illegally shares its name with a "
                               "type or a keyword/reserved word."));
         }
+
+        inputsToAdd.push_back(
+            std::tuple<std::string, std::string>(inp_name, inp_type));
 
         adjustedName += "_" + inp_type;
     }
@@ -425,6 +432,23 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 
     // enter a scope for this function, starting with the parameters
     symbolTable->enterScope();
+
+    // add parameters to the symbol table in the inner scope of the function
+    // body
+
+    for (std::tuple<std::string, std::string> const& input : inputsToAdd)
+    {
+        std::string name = std::get<0>(input);
+        std::string type = std::get<1>(input);
+
+        std::string adjustedName = "U" + type;
+        if (isPrimitive(type))
+        {
+            std::string adjustedName = "P" + type;
+        }
+
+        symbolTable->addSymbol(name, adjustedName);
+    }
 
     // visit the function body
     visit(node->getBody());

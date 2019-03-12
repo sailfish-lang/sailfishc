@@ -18,8 +18,6 @@ ParserErrorHandler::handle(Error* err)
 void
 ParserErrorHandler::end()
 {
-    if (!foundError)
-        std::cout << "Parsed error free!\n";
-    else
+    if (foundError)
         std::cout << "Parsed and found one or more errors.\n";
 }

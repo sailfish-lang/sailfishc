@@ -14,7 +14,8 @@ helpMessage()
                  "\n\tsailfishc --help\n"
                  "\n\tsailfishc --version\n"
                  "\n\tsailfishc --lex_only [filename]\n"
-                 "\n\tsailfishc --parse_only [filename]\n\n";
+                 "\n\tsailfishc --parse_only [filename]\n\n"
+                 "\n\tsailfishc --semantic_analysis_only [filename]\n\n";
 }
 
 void
@@ -40,6 +41,8 @@ fullCompilation(std::string filename)
 
         Transpiler* t = new Transpiler(root, cFilename);
         t->transpile();
+
+        std::cout << "Success. Compiled to: " + filename;
     }
     catch (const std::string msg)
     {

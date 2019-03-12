@@ -21,9 +21,7 @@ SymbolTableErrorHandler::handle(Error* err)
 void
 SymbolTableErrorHandler::end()
 {
-    if (!foundError)
-        std::cout << "Symbol Table creation finished error free!\n";
-    else
+    if (foundError)
         std::cout
             << "Symbol Table creation stopped and found one or more errors.\n";
 }

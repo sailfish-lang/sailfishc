@@ -68,4 +68,41 @@ class Transpiler : public Visitor
 
     // blocks
     void visit(ast::Block*);
+
+    // if statement
+    void visit(ast::IfStatement*);
+
+    // binary expression
+    void visit(ast::BinaryExpression*);
+
+    // binaries
+    void visit(ast::BinaryGreaterThan*);
+    void visit(ast::BinaryLessThan*);
+    void visit(ast::BinaryGreaterThanOrEqual*);
+    void visit(ast::BinaryLessThanOrEqual*);
+    void visit(ast::EquivalenceComparison*);
+    void visit(ast::NonEquivalenceComparison*);
+    void visit(ast::AndComparison*);
+    void visit(ast::OrComparison*);
+    void visit(ast::Assignment*);
+
+    // arithmetic
+    void visit(ast::Exponentiation*);
+    void visit(ast::Multiplication*);
+    void visit(ast::Division*);
+    void visit(ast::Modulo*);
+    void visit(ast::Addition*);
+    void visit(ast::Subtraction*);
+
+    // unaries
+    void visit(ast::Negation*);
+
+    // grouping statement
+    void visit(ast::GroupingExpression*);
+
+    // primtive definition
+    void visit(ast::PrimitiveDefition* node);
+
+    // expression only binary expression
+    void visit(ast::ExpressionOnlyStatement*);
 };

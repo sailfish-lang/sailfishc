@@ -12,6 +12,7 @@
 #include "CommonExtractions.h"
 #include "SymbolTable.h"
 #include "UDTTable.h"
+#include <tuple>
 
 class TypeChecker : public Visitor
 {

@@ -18,9 +18,7 @@ SemanticErrorHandler::handle(Error* err)
 void
 SemanticErrorHandler::end()
 {
-    if (errors.size() == 0)
-        std::cout << "Semantic error free!\n";
-    else
+    if (errors.size() != 0)
     {
         std::cout
             << "Performed Semantic Analysis and found one or more errors:\n";
