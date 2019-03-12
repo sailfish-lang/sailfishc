@@ -25,12 +25,13 @@ class TypeChecker : public Visitor
     using Visitor::visit;
 
     // constructor
-    TypeChecker()
+    TypeChecker(SymbolTable* st, SymbolTableErrorHandler* steh,
+                SemanticErrorHandler* seh, UDTTable* udtt)
     {
-        symbolTableErrorHandler = new SymbolTableErrorHandler();
-        semanticErrorHandler = new SemanticErrorHandler();
-        symbolTable = new SymbolTable();
-        udtTable = new UDTTable();
+        symbolTableErrorHandler = steh;
+        semanticErrorHandler = seh;
+        symbolTable = st;
+        udtTable = udtt;
     }
     // destructor
     ~TypeChecker()

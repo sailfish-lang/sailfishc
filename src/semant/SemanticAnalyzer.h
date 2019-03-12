@@ -13,11 +13,19 @@ class SemanticAnalyzer
 {
   private:
     ast::Start* root;
+    SymbolTableErrorHandler* symbolTableErrorHandler;
+    SemanticErrorHandler* semanticErrorHandler;
+    SymbolTable* symbolTable;
+    UDTTable* udtTable;
 
   public:
     // constructor
     SemanticAnalyzer(ast::Start* r)
     {
+        symbolTableErrorHandler = new SymbolTableErrorHandler();
+        semanticErrorHandler = new SemanticErrorHandler();
+        symbolTable = new SymbolTable();
+        udtTable = new UDTTable();
         root = r;
     };
     // deconstructor

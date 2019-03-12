@@ -7,7 +7,11 @@
 void
 SemanticAnalyzer::analyze()
 {
-    TypeChecker* tc = new TypeChecker();
+    // add built-in print method
+    symbolTable->addSymbol("display", "Fdisplay{_str}(_void)");
+
+    TypeChecker* tc = new TypeChecker(symbolTable, symbolTableErrorHandler,
+                                      semanticErrorHandler, udtTable);
 
     // run type checker and symbol table creator
     tc->check(root);
@@ -24,7 +28,9 @@ SemanticAnalyzer::analyze()
 std::vector<Error*>
 SemanticAnalyzer::testAnalyze()
 {
-    TypeChecker* tc = new TypeChecker();
+    TypeChecker* tc = new TypeChecker(symbolTable, symbolTableErrorHandler,
+                                      semanticErrorHandler, udtTable);
+
     tc->check(root);
     return tc->getSemanticErrors();
 }

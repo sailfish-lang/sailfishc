@@ -3,8 +3,6 @@
  * Sailfish Programming Language
  */
 #include "CommandLine.h"
-#include <iostream>
-#include <string>
 
 void
 helpMessage()
@@ -26,16 +24,27 @@ versionInfo()
 }
 
 void
-fullCompilation()
+fullCompilation(std::string filename)
 {
-    std::cout << "Compilation not yet possible. It is the early days, the days "
-                 "of cavemen, drawing images on cave walls.\n"
-                 "These men and women have yet to see the light and yet to "
-                 "find any oceans. Besides the worship of the water diety, \n"
-                 "they have no concept of the mythical sailfish, the fastest "
-                 "fish in the sea ++. One day, they will know, one day. \n"
-                 "TLDR: not done yet, please check back later and leave a star "
-                 "on the repo :).\n";
+    try
+    {
+        std::cout << "Compiling " << filename << ".\n\n";
+
+        Parser* p = new Parser();
+        ast::Start* root = p->parse(filename);
+
+        SemanticAnalyzer* s = new SemanticAnalyzer(root);
+        s->analyze();
+
+        std::string cFilename = "out.c";
+
+        Transpiler* t = new Transpiler(root, cFilename);
+        t->transpile();
+    }
+    catch (const std::string msg)
+    {
+        std::cerr << msg;
+    }
 }
 
 int
@@ -61,7 +70,7 @@ handleCommandLine(int argc, char* const* argv)
         {
             // default is to just try to compile, assuming received text is a
             // filename
-            fullCompilation();
+            fullCompilation(argv[1]);
         }
 
         return 1;

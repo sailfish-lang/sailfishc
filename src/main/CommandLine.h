@@ -7,6 +7,9 @@
 #include "../lexar/Lexar.h"
 #include "../parser/Parser.h"
 #include "../semant/SemanticAnalyzer.h"
+#include "../transpiler/Transpiler.h"
 #include "../visitor/InOrderTraversal.h"
+#include <iostream>
+#include <string>
 
 int handleCommandLine(int, char* const* argv);

@@ -65,7 +65,7 @@ Lexar::getNextToken()
         }
         else
         {
-            if (!isspace(c))
+            if (state == State::STRING || !isspace(c))
             {
                 buffer += c;
             }
