@@ -1044,6 +1044,11 @@ Parser::parsePrimaryExpression()
  *            IntegerLiteral |
  *            FloatLiteral |
  *            StringLiteral |
+ *            DictionaryLiteral |
+ *            ListLiteral |
+ *            AttributeAccess |
+ *            MethodAccess |
+ *            FunctionCall |
  *            Identifier
  */
 ast::Primary*
@@ -1195,7 +1200,7 @@ Parser::parseDictionaryLiteral()
 }
 
 /**
- * DictionaryItem := Identifier ':' Identifier
+ * DictionaryItem := Primary ':' Primary
  */
 ast::DictionaryItem*
 Parser::parseDictionaryItem()
@@ -1258,7 +1263,7 @@ Parser::parseListLiteral(ast::Identifier* ident)
 }
 
 /**
- * ListItem := Identifier
+ * ListItem := Primary
  */
 ast::ListItem*
 Parser::parseListItem()

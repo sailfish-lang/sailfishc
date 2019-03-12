@@ -27,18 +27,18 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared udt named: " + name +
-                                    " illegally shares its name with a "
-                                    "type or a keyword/reserved word."));
+            var->getLineNum(), "Declared udt named: " + name +
+                                   " illegally shares its name with a "
+                                   "type or a keyword/reserved word."));
     }
 
     // make sure the type is either primitive or a udt
     if (!isPrimitive(type) && !udtTable->hasUDT(type))
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared udt type: " + type +
-                                    " for variable named: " + name +
-                                    " is not a legal or known type."));
+        semanticErrorHandler->handle(
+            new Error(var->getLineNum(), "Declared udt type: " + type +
+                                             " for variable named: " + name +
+                                             " is not a legal or known type."));
     }
 
     bool isUnique = symbolTable->addSymbol(name, adjustedName);
@@ -47,7 +47,7 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     if (!isUnique)
     {
         symbolTableErrorHandler->handle(
-            new Error(node->getLineNum(),
+            new Error(var->getLineNum(),
                       "Invalid redecleration of udt with name: " + name + "."));
     }
 
@@ -126,10 +126,11 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
     // make sure the name is not a reserved word, a primitive name, or a UDT
     if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared list named: " + name +
-                                    " illegally shares its name with a "
-                                    "type or a keyword/reserved word."));
+        semanticErrorHandler->handle(
+            new Error(node->getVariable()->getName()->getLineNum(),
+                      "Declared list named: " + name +
+                          " illegally shares its name with a "
+                          "type or a keyword/reserved word."));
     }
 
     std::string adjustedName = "P" + type;
@@ -140,7 +141,7 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
     if (!isUnique)
     {
         symbolTableErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getVariable()->getName()->getLineNum(),
             "Invalid redecleration of list with name: " + name + "."));
     }
 
@@ -148,9 +149,9 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
     if (!isPrimitive(type))
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Defined primitives's type of: " + type +
-                                    " for primitive: " + name +
-                                    " is not a recognized primitive."));
+            node->getVariable()->getType()->getLineNum(),
+            "Defined primitives's type of: " + type +
+                " for primitive: " + name + " is not a recognized primitive."));
     }
 
     // visit expression
@@ -164,7 +165,7 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
     if (exprType != type)
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getVariable()->getType()->getLineNum(),
             "Declared type: " + type +
                 " of primitive for variable named: " + name +
                 " does not match assigned expression type of: " + exprType +
@@ -181,10 +182,11 @@ TypeChecker::visit(ast::ListDefinition* node)
     // make sure the name is not a reserved word, a primitive name, or a UDT
     if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared primitive named: " + name +
-                                    " illegally shares its name with a "
-                                    "type or a keyword/reserved word."));
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Declared primitive named: " + name +
+                          " illegally shares its name with a "
+                          "type or a keyword/reserved word."));
     }
 
     std::string adjustedName = "L" + type;
@@ -195,7 +197,7 @@ TypeChecker::visit(ast::ListDefinition* node)
     if (!isUnique)
     {
         symbolTableErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getName()->getLineNum(),
             "Invalid redecleration of list with name: " + name + "."));
     }
 
@@ -221,7 +223,7 @@ TypeChecker::visit(ast::ListDefinition* node)
     if (baseType != "list")
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getName()->getLineNum(),
             "Declared type of list for variable named: " + name +
                 " does not match assigned expression type of: " + baseType +
                 "."));
@@ -229,7 +231,7 @@ TypeChecker::visit(ast::ListDefinition* node)
     else if (valType != "empty" && valType != type)
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getType()->getLineNum(),
             "Declared type of list: " + type + " for variable named: " + name +
                 " does not match assigned expression's list of type: " +
                 valType + "."));
@@ -246,10 +248,11 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     // make sure the name is not a reserved word, a primitive name, or a UDT
     if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared definition named: " + name +
-                                    " illegally shares its name with a "
-                                    "type or a keyword/reserved word."));
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Declared definition named: " + name +
+                          " illegally shares its name with a "
+                          "type or a keyword/reserved word."));
     }
 
     std::string adjustedName = "D" + keyType + "_" + valueType;
@@ -260,7 +263,7 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     if (!isUnique)
     {
         symbolTableErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getName()->getLineNum(),
             "Invalid redecleration of dictionary with name: " + name + "."));
     }
 
@@ -268,7 +271,7 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     if (!isPrimitive(keyType) && !udtTable->hasUDT(keyType))
     {
         semanticErrorHandler->handle(
-            new Error(node->getName()->getLineNum(),
+            new Error(node->getKeyType()->getLineNum(),
                       "Defined dictionary's key type of: " + keyType +
                           " for dictionary: " + name + " does not exist."));
     }
@@ -277,7 +280,7 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     if (!isPrimitive(valueType) && !udtTable->hasUDT(valueType))
     {
         semanticErrorHandler->handle(
-            new Error(node->getName()->getLineNum(),
+            new Error(node->getValueType()->getLineNum(),
                       "Defined dictionary's value type of: " + valueType +
                           " for dictionary: " + name + " does not exist."));
     }
@@ -301,28 +304,30 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     if (baseType != "dictionary")
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getName()->getLineNum(),
             "Declared type of dictionary for variable named: " + name +
                 " does not match assigned expression type of: " + baseType +
                 "."));
     }
     else if (receivedKeyType != "empty" && receivedKeyType != keyType)
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared type of dictionary keys: " + keyType +
-                                    " for variable named: " + name +
-                                    " does not match assigned expression's "
-                                    "dictionary keys of type: " +
-                                    receivedKeyType + "."));
+        semanticErrorHandler->handle(
+            new Error(node->getKeyType()->getLineNum(),
+                      "Declared type of dictionary keys: " + keyType +
+                          " for variable named: " + name +
+                          " does not match assigned expression's "
+                          "dictionary keys of type: " +
+                          receivedKeyType + "."));
     }
     else if (receivedValType != "empty" && receivedValType != valueType)
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared type of dictionary values: " +
-                                    valueType + " for variable named: " + name +
-                                    " does not match assigned expression's "
-                                    "dictionary values of type: " +
-                                    receivedValType + "."));
+        semanticErrorHandler->handle(
+            new Error(node->getValueType()->getLineNum(),
+                      "Declared type of dictionary values: " + valueType +
+                          " for variable named: " + name +
+                          " does not match assigned expression's "
+                          "dictionary values of type: " +
+                          receivedValType + "."));
     }
 }
 
@@ -346,10 +351,11 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     // make sure the name is not a reserved word, a primitive name, or a UDT
     if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared function named: " + name +
-                                    " illegally shares its name with a "
-                                    "type or a keyword/reserved word."));
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Declared function named: " + name +
+                          " illegally shares its name with a "
+                          "type or a keyword/reserved word."));
     }
 
     std::string adjustedName = "F" + name + "{";

@@ -141,7 +141,7 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
             if (actualKeyType != expectedKeyType)
             {
                 semanticErrorHandler->handle(
-                    new Error(subsubnode->getLineNum(),
+                    new Error(item->getLineNum(),
                               "Inconsistent key types in dictionary"));
 
                 // continue with semantic analysis
@@ -151,7 +151,7 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
             if (actualValueType != expectedValueType)
             {
                 semanticErrorHandler->handle(
-                    new Error(subsubnode->getLineNum(),
+                    new Error(item->getLineNum(),
                               "Inconsistent value types in dictionary"));
 
                 return "dictionary_empty_empty";
@@ -233,7 +233,7 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
             if (type != expectedType)
             {
                 semanticErrorHandler->handle(new Error(
-                    subnode->getLineNum(),
+                    item->getLineNum(),
                     "List is not homogenous. Received types: " + type +
                         " and " + expectedType + " which do not match."));
 
@@ -384,7 +384,7 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
                 if (keyType != expectedKeyType)
                 {
                     semanticErrorHandler->handle(
-                        new Error(dictionaryLiteral->getLineNum(),
+                        new Error(item->getLineNum(),
                                   "Inconsistent key types in dictionary"));
 
                     // return list as empty to continue semantic analyis
@@ -395,7 +395,7 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
                 if (valueType != expectedValueType)
                 {
                     semanticErrorHandler->handle(
-                        new Error(dictionaryLiteral->getLineNum(),
+                        new Error(item->getLineNum(),
                                   "Inconsistent value types in dictionary"));
 
                     // return list as empty to continue semantic analyis
@@ -432,7 +432,7 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
                 if (type != expectedType)
                 {
                     semanticErrorHandler->handle(new Error(
-                        subnode->getLineNum(),
+                        item->getLineNum(),
                         "List is not homogenous. Received types: " + type +
                             " and " + expectedType + " which do not match."));
 
