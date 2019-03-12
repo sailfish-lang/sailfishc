@@ -8,19 +8,20 @@
 void
 fizzbuzzhelper(int i)
 {
-    int a = i;
-    a = 
+    int a = i % 15;
+    int b = i % 3;
+    int c = i % 5;
     if(a == 0)
     {
-        printf("%s","FizzBuzz");
+        printf("%s","FizzBuzz\n");
     } else {
-        if(a == 0)
+        if(b == 0)
     {
-        printf("%s","Fizz");
+        printf("%s","Fizz\n");
     } else {
-        if(a == 0)
+        if(c == 0)
     {
-        printf("%s","Buzz");
+        printf("%s","Buzz\n");
     } else {
         printf("%d",i);
     printf("%s","\n");

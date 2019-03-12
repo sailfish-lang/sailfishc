@@ -21,6 +21,7 @@ class Modulo : public BinaryExpression, public Node
     /* virtual */ BinaryExpressionType
     getBinaryExpressionType()
     {
+        return ast::BinaryExpression::Modulo;
     }
 };
 }

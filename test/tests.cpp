@@ -101,6 +101,9 @@ TEST(ParserTest, AllTokens)
         "IntegerLiteral: 10",
         "IntegerLiteral: 1",
         "IntegerLiteral: 2",
+        "IntegerLiteral: 4",
+        "IntegerLiteral: 7",
+        "Modulo",
         "Negation",
         "OrComparison",
         "AndComparison",
@@ -367,6 +370,10 @@ TEST(SemanticTest, TypeCheckerBinariesAndUnaries)
         " int and flt.",
         "Expected the same types on each side of operation. Instead received: "
         "flt and int.",
+
+        "Expected int type on left side of operation. Instead "
+        "received: flt.",
+        "Expected int type on left side of operation. Instead received: bool.",
 
         "Expected int type on left side of operation. Instead "
         "received: flt.",

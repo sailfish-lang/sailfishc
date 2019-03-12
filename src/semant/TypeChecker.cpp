@@ -142,7 +142,7 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
     {
         symbolTableErrorHandler->handle(new Error(
             node->getVariable()->getName()->getLineNum(),
-            "Invalid redecleration of list with name: " + name + "."));
+            "Invalid redecleration of primitive with name: " + name + "."));
     }
 
     // ensure the type is a primitive

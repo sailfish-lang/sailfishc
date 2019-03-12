@@ -2,14 +2,15 @@ fun fizzbuzzhelper
 <- int i
 -> void
 {
-    dec int a = i
-    a = i % 15 == 0
+    dec int a = i % 15
+    dec int b = i % 3
+    dec int c = i % 5
 
-    if | a == 0 | { display_str("FizzBuzz") }
+    if | a == 0 | { display_str("FizzBuzz\n") }
     else {
-        if | a == 0 | { display_str("Fizz") }
+        if | b == 0 | { display_str("Fizz\n") }
         else {
-            if | a == 0 | { display_str("Buzz") }
+            if | c == 0 | { display_str("Buzz\n") }
             else {
                 display_int(i)
                 display_str("\n")
