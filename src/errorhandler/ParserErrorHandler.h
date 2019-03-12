@@ -4,9 +4,8 @@
  */
 #pragma once
 #include "Error.h"
-#include "ErrorHandler.h"
 
-class ParserErrorHandler : public ErrorHandler
+class ParserErrorHandler
 {
   private:
     bool foundError;
@@ -19,8 +18,6 @@ class ParserErrorHandler : public ErrorHandler
     };
     // destructor
     ~ParserErrorHandler(){};
-    // implement ErrorHandler
-    /* virtual */
     void handle(Error*);
     void end();
 };

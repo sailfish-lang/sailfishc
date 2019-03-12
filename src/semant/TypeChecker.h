@@ -6,7 +6,6 @@
 #include "../ast/Ast.h"
 #include "../common/ReservedWords.h"
 #include "../errorhandler/Error.h"
-#include "../errorhandler/ErrorHandler.h"
 #include "../errorhandler/SemanticErrorHandler.h"
 #include "../errorhandler/SymbolTableErrorHandler.h"
 #include "../visitor/Visitor.h"
@@ -17,7 +16,7 @@
 class TypeChecker : public Visitor
 {
   private:
-    ErrorHandler* symbolTableErrorHandler;
+    SymbolTableErrorHandler* symbolTableErrorHandler;
     SemanticErrorHandler* semanticErrorHandler;
     SymbolTable* symbolTable;
     UDTTable* udtTable;
@@ -28,7 +27,7 @@ class TypeChecker : public Visitor
     // constructor
     TypeChecker()
     {
-        symbolTableErrorHandler = (ErrorHandler*)new SymbolTableErrorHandler();
+        symbolTableErrorHandler = new SymbolTableErrorHandler();
         semanticErrorHandler = new SemanticErrorHandler();
         symbolTable = new SymbolTable();
         udtTable = new UDTTable();

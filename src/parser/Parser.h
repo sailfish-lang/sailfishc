@@ -5,17 +5,18 @@
 #pragma once
 #include "../ast/Ast.h"
 #include "../errorhandler/Error.h"
-#include "../errorhandler/ErrorHandler.h"
 #include "../errorhandler/ParserErrorHandler.h"
 #include "../lexar/Lexar.h"
+#include <iostream>
 #include <string>
+#include <vector>
 
 class Parser
 {
   private:
     Lexar* lexar;
     Token* currentToken; // LL(1)
-    ErrorHandler* errorHandler;
+    ParserErrorHandler* errorHandler;
 
     // helper function for ignoring extraneous tokens
     Token* getNextUsefulToken();
@@ -91,4 +92,9 @@ class Parser
     };
     // actual parse function -- given filename returns the root of the ast
     ast::Start* parse(const std::string);
+    void
+    checkErrors()
+    {
+        errorHandler->end();
+    }
 };

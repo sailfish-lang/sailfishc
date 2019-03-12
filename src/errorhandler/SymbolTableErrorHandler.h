@@ -4,9 +4,8 @@
  */
 #pragma once
 #include "Error.h"
-#include "ErrorHandler.h"
 
-class SymbolTableErrorHandler : public ErrorHandler
+class SymbolTableErrorHandler
 {
   private:
     bool foundError;
@@ -19,8 +18,6 @@ class SymbolTableErrorHandler : public ErrorHandler
     };
     // destructor
     ~SymbolTableErrorHandler(){};
-    // implement ErrorHandler
-    /* virtual */
     void handle(Error*);
     void end();
 };

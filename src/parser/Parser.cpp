@@ -3,9 +3,6 @@
  * Sailfish Programming Language
  */
 #include "Parser.h"
-#include "../ast/Ast.h"
-#include <iostream>
-#include <vector>
 
 // Parser takes in no args, we use a parse function to take in the filename
 Parser::Parser()

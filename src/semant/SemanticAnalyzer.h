@@ -5,6 +5,7 @@
 #pragma once
 #include "../ast/Ast.h"
 #include "../errorhandler/Error.h"
+#include "../visitor/InitialExecution.h"
 #include "./TypeChecker.h"
 #include <vector>
 
@@ -25,19 +26,8 @@ class SemanticAnalyzer
         delete root;
     };
 
-    void
-    analyze()
-    {
-        TypeChecker* tc = new TypeChecker();
-        tc->check(root);
-        tc->end();
-    }
+    void analyze();
 
-    std::vector<Error*>
-    testAnalyze()
-    {
-        TypeChecker* tc = new TypeChecker();
-        tc->check(root);
-        return tc->getSemanticErrors();
-    }
+    // strictly a helper for writing tests that returns all the semantic errors
+    std::vector<Error*> testAnalyze();
 };

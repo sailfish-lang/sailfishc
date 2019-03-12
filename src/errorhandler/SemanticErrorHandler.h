@@ -4,10 +4,9 @@
  */
 #pragma once
 #include "Error.h"
-#include "ErrorHandler.h"
 #include <vector>
 
-class SemanticErrorHandler : public ErrorHandler
+class SemanticErrorHandler
 {
   private:
     std::vector<Error*> errors;
@@ -23,8 +22,6 @@ class SemanticErrorHandler : public ErrorHandler
             delete error;
         }
     };
-    // implement ErrorHandler
-    /* virtual */
     void handle(Error*);
     void end();
     // get methods
