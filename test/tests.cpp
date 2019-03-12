@@ -183,7 +183,7 @@ TEST(SymbolTableDataStructure, SymbolTable)
     ASSERT_EQ(st->getSymbolScope("someArr"), 2);
 }
 
-TEST(SeamanticTest, TypeCheckerFunctions)
+TEST(SemanticTest, TypeCheckerFunctions)
 {
     static const std::string expected[] = {
         "Functions input type of:  nonExistentType for function: "
@@ -196,8 +196,7 @@ TEST(SeamanticTest, TypeCheckerFunctions)
         "nonExistentType.",
         "Declared function named: flt illegally shares its name with a type or "
         "a keyword/reserved word.",
-        "Too many args supplied to function: foo.",
-        "Function: foo is undefined.",
+        "Function: foo is not defined.",
         "Expected the same types on each side of operation. Instead received: "
         "int and unknown.",
         "Supplied argument type of: int does not match expected type of: str.",
@@ -219,7 +218,7 @@ TEST(SeamanticTest, TypeCheckerFunctions)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerListsDeclerations)
+TEST(SemanticTest, TypeCheckerListsDeclerations)
 {
     static const std::string expected[] = {
         "Defined lists's type of: Foo for list: list_error_a does not exist.",
@@ -246,7 +245,7 @@ TEST(SeamanticTest, TypeCheckerListsDeclerations)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerDictionaryDeclerations)
+TEST(SemanticTest, TypeCheckerDictionaryDeclerations)
 {
     static const std::string expected[] = {
         "Defined dictionary's key type of: Foo for dictionary: "
@@ -286,7 +285,7 @@ TEST(SeamanticTest, TypeCheckerDictionaryDeclerations)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerPrimitiveDeclerations)
+TEST(SemanticTest, TypeCheckerPrimitiveDeclerations)
 {
     static const std::string expected[] = {
         "Declared list named: dec illegally shares its name with a type or a "
@@ -310,7 +309,7 @@ TEST(SeamanticTest, TypeCheckerPrimitiveDeclerations)
 }
 
 // NOTE: all inherently test assignment
-TEST(SeamanticTest, TypeCheckerBinariesAndUnaries)
+TEST(SemanticTest, TypeCheckerBinariesAndUnaries)
 {
     static const std::string expected[] = {
         "Expected either float or integer type on left side of operation. "
@@ -409,7 +408,7 @@ TEST(SeamanticTest, TypeCheckerBinariesAndUnaries)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerUDTDec)
+TEST(SemanticTest, TypeCheckerUDTDec)
 {
     static const std::string expected[] = {
         "Declared udt named: bool illegally shares its name with a type or a "
@@ -443,7 +442,7 @@ TEST(SeamanticTest, TypeCheckerUDTDec)
 }
 
 // NOTE: should have no errors!
-TEST(SeamanticTest, TypeCheckerAssignments)
+TEST(SemanticTest, TypeCheckerAssignments)
 {
     static const std::string expected[] = {
 
@@ -463,7 +462,7 @@ TEST(SeamanticTest, TypeCheckerAssignments)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerIfElse)
+TEST(SemanticTest, TypeCheckerIfElse)
 {
     static const std::string expected[] = {
         "Expected grouping to result in a boolean.",
@@ -485,7 +484,7 @@ TEST(SeamanticTest, TypeCheckerIfElse)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerReturnStatements)
+TEST(SemanticTest, TypeCheckerReturnStatements)
 {
     static const std::string expected[] = {
         "Actual return type of: flt does not match expected return type of: "
@@ -507,7 +506,7 @@ TEST(SeamanticTest, TypeCheckerReturnStatements)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerDictionaryAndListAccessors)
+TEST(SemanticTest, TypeCheckerDictionaryAndListAccessors)
 {
     static const std::string expected[] = {
         "Expected the same types on each side of operation. Instead received: "
@@ -534,7 +533,7 @@ TEST(SeamanticTest, TypeCheckerDictionaryAndListAccessors)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerMethodAccess)
+TEST(SemanticTest, TypeCheckerMethodAccess)
 {
     static const std::string expected[] = {
         "Supplied argument type of: int does not match expected type of: flt.",
@@ -559,7 +558,7 @@ TEST(SeamanticTest, TypeCheckerMethodAccess)
     }
 }
 
-TEST(SeamanticTest, TypeCheckerAttributeAccess)
+TEST(SemanticTest, TypeCheckerAttributeAccess)
 {
     static const std::string expected[] = {
         "Attribute: f does not exists for udt type: Foo.",

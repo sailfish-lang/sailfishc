@@ -20,3 +20,6 @@ bool isLegalGrouping(ast::BinaryExpression*);
 
 std::vector<std::string> getFunctionParamTypes(std::string);
 std::string getFunctionReturnType(std::string);
+void compareFunctions(std::vector<std::string>, std::vector<ast::Primary*>,
+                      std::string, SymbolTable*, SemanticErrorHandler*,
+                      UDTTable*);

@@ -326,16 +326,11 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
         // ensure function exists
         if (!symbolTable->hasVariable(functionName))
         {
-            semanticErrorHandler->handle(
-                new Error(subsubnode->getLineNum(),
-                          "Function: " + functionName + " is undefined."));
             return "unknown";
         }
 
         // get function type from symbol table
         std::string fullType = symbolTable->getSymbolType(functionName);
-
-        // TODO: make sure that the args are as expected
 
         return getReturnType(fullType);
     }
@@ -480,8 +475,8 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
             new Error(subnode->getLineNum(),
                       "Unexpected grouping inside binary expression. "
                       "Groupings cannot be nested."));
-        // return list type to continue semantic analysis
-        return "list";
+
+        return "boolean";
     }
     case ast::Expression::PrimaryExpression:
     {
@@ -539,5 +534,95 @@ isLegalGrouping(ast::BinaryExpression* node)
     {
         return true;
     }
+    }
+}
+
+void
+compareFunctions(std::vector<std::string> inputs,
+                 std::vector<ast::Primary*> args, std::string name,
+                 SymbolTable* symbolTable,
+                 SemanticErrorHandler* semanticErrorHandler, UDTTable* udtTable)
+{
+    int numArgs = args.size();
+    int numInps = inputs.size();
+
+    if (numArgs < numInps)
+    {
+        semanticErrorHandler->handle(new Error(
+            0, "Not enough args supplied to function: " + name + "."));
+    }
+    else if (numArgs > numInps)
+    {
+        semanticErrorHandler->handle(
+            new Error(0, "Too many args supplied to function: " + name + "."));
+    }
+    else
+    {
+        for (int i = 0; i < numArgs; i++)
+        {
+            ast::Primary* arg = args.at(i);
+            std::string actual =
+                primaryHelper(arg, symbolTable, semanticErrorHandler, udtTable);
+
+            // if not primitive, see if it is a variable in the symbol table
+            if (!isPrimitive(actual))
+            {
+                if (!symbolTable->hasVariable(actual))
+                {
+                    semanticErrorHandler->handle(new Error(
+                        0, "Undefined argument: " + actual +
+                               " supplied for function: " + name + "."));
+                }
+                else
+                {
+                    std::string fullActual = symbolTable->getSymbolType(actual);
+                    char identChar = fullActual.at(0);
+                    switch (identChar)
+                    {
+                    case 'U':
+                    case 'P':
+                        actual = fullActual.substr(1, fullActual.length());
+                        break;
+                    case 'F':
+                        semanticErrorHandler->handle(new Error(
+                            0,
+                            "Illegal argument: " + actual +
+                                " supplied for function: " + name +
+                                ". Sorry, functions are not first order :("));
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    case 'L':
+                        new Error(0,
+                                  "Illegal argument: " + actual +
+                                      " supplied for function: " + name +
+                                      ". Lists cannot be passed to functions");
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    case 'D':
+                        new Error(
+                            0,
+                            "Illegal argument: " + actual +
+                                " supplied for function: " + name +
+                                ". Dictionaries cannot be passed to functions");
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    }
+                }
+            }
+
+            if (actual != inputs[i])
+            {
+                semanticErrorHandler->handle(new Error(
+                    0, "Supplied argument type of: " + actual +
+                           " does not match expected type of: " + inputs[i] +
+                           "."));
+            }
+        }
     }
 }
