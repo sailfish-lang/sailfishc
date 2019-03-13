@@ -7,44 +7,46 @@
 
 void
 fizzbuzzhelper(int i)
+
 {
-    int a = i%15;
-    int b = i%3;
-    int c = i%5;
-    if(a==0)
-    {
-        printf("%s","FizzBuzz\n");
-    } else {
-        if(b==0)
-    {
-        printf("%s","Fizz\n");
-    } else {
-        if(c==0)
-    {
-        printf("%s","Buzz\n");
-    } else {
-        printf("%d",i);
+    if(0==i%15)
+{
+    printf("%s","FizzBuzz\n");
+}
+else if(0==i%3)
+{
+    printf("%s","Fizz\n");
+}
+else if(0==i%5)
+{
+    printf("%s","Buzz\n");
+}
+else 
+{
+    printf("%d",i);
     printf("%s","\n");
-    }
-    }
-    }
 }
 
+}
 void
 fizzbuzz(int i)
+
 {
     fizzbuzzhelper(i);
     i = i-1;
     if(i>0)
-    {
-        fizzbuzz(i);
-    } else {
-    
-    }
+{
+    fizzbuzz(i);
+}
+else 
+{
+
 }
 
+}
 int
 main()
+
 {
     fizzbuzz(100);
 }

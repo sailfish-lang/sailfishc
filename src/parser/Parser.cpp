@@ -1257,7 +1257,7 @@ Parser::parseStatement()
 }
 
 /**
- * IfStatement := 'if' GroupingExpression Block 'else' Block
+ * IfStatement := 'if' GroupingExpression Block 'else' Statement
  */
 ast::IfStatement*
 Parser::parseIfStatement()
@@ -1275,7 +1275,25 @@ Parser::parseIfStatement()
     // skip 'else'
     getNextUsefulToken();
 
-    ast::Block* elseStatements = parseBlock();
+    ast::Statement* elseStatements = parseStatement();
+
+    switch (elseStatements->getStatementType())
+    {
+    case ast::Statement::BinaryExpressionStatement:
+    case ast::Statement::GeneralDecleration:
+    {
+        errorHandler->handle(new Error(
+            currentToken->getLineNum(),
+            "Received unsupported statement type following an else: " +
+                currentToken->getValue() + "."));
+    }
+    case ast::Statement::BlockStatement:
+    case ast::Statement::ReturnStatement:
+    case ast::Statement::IfStatement:
+    {
+        // do nothing, all good!
+    }
+    }
 
     return new ast::IfStatement(ifExpr, ifStatements, elseStatements,
                                 currentToken->getLineNum());

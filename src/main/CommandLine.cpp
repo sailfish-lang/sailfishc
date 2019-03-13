@@ -42,7 +42,7 @@ fullCompilation(std::string filename)
         Transpiler* t = new Transpiler(root, cFilename);
         t->transpile();
 
-        std::cout << "Success. Compiled to: " + filename;
+        std::cout << "Success. Compiled to: out.c";
     }
     catch (const std::string msg)
     {

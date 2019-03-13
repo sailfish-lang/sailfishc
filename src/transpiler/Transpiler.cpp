@@ -63,9 +63,8 @@ Transpiler::transpile()
 void
 Transpiler::visit(ast::InitialExecutionBody* node)
 {
-    fileBuffer += "int\nmain()\n{\n";
+    fileBuffer += "int\nmain()\n";
     visit(node->getBody());
-    fileBuffer += "\n}\n";
 }
 
 /**
@@ -96,11 +95,11 @@ Transpiler::visit(ast::FunctionDefinition* node)
         }
     }
 
-    fileBuffer += ")\n{\n";
+    fileBuffer += ")\n";
 
     visit(node->getBody());
 
-    fileBuffer += "\n}\n\n";
+    fileBuffer += "";
 }
 
 /**
@@ -212,6 +211,7 @@ Transpiler::visit(ast::ReturnStatement* node)
 void
 Transpiler::visit(ast::Block* node)
 {
+    fileBuffer += "\n{\n";
     std::vector<ast::Statement*> statements = node->getStatements();
     for (int i = 0; i < statements.size(); i++)
     {
@@ -264,6 +264,7 @@ Transpiler::visit(ast::Block* node)
             fileBuffer += "\n";
         }
     }
+    fileBuffer += "\n}\n";
 }
 
 /**
@@ -276,15 +277,11 @@ Transpiler::visit(ast::IfStatement* node)
 
     visit(node->getIfConditional());
 
-    fileBuffer += "\n    {\n    ";
-
     visit(node->getIfStatements());
 
-    fileBuffer += "\n    } else {\n    ";
+    fileBuffer += "else ";
 
     visit(node->getElseStatements());
-
-    fileBuffer += "\n    }";
 }
 
 void

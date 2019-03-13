@@ -223,6 +223,46 @@ Visitor::visit(ast::Expression* node)
     }
 }
 void
+Visitor::visit(ast::Statement* node)
+{
+    switch (node->getStatementType())
+    {
+    case ast::Statement::BlockStatement:
+    {
+        ast::Block* subnode = dynamic_cast<ast::Block*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::Statement::BinaryExpressionStatement:
+    {
+        ast::BinaryExpression* subnode =
+            dynamic_cast<ast::BinaryExpression*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::Statement::IfStatement:
+    {
+        ast::IfStatement* subnode = dynamic_cast<ast::IfStatement*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::Statement::ReturnStatement:
+    {
+        ast::ReturnStatement* subnode =
+            dynamic_cast<ast::ReturnStatement*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::Statement::GeneralDecleration:
+    {
+        ast::GeneralDecleration* subnode =
+            dynamic_cast<ast::GeneralDecleration*>(node);
+        visit(subnode);
+        break;
+    }
+    }
+}
+void
 Visitor::visit(ast::FunctionDefinition* node)
 {
     visit(node->getName());

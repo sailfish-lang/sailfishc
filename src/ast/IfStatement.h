@@ -15,11 +15,11 @@ class IfStatement : public Statement, public Node
   private:
     GroupingExpression* ifConditional;
     Block* ifStatements;
-    Block* elseStatements;
+    Statement* elseStatements;
 
   public:
     // constructor
-    IfStatement(GroupingExpression* e, Block* b1, Block* b2, int lineNum)
+    IfStatement(GroupingExpression* e, Block* b1, Statement* b2, int lineNum)
         : Node(lineNum)
     {
         ifConditional = e;
@@ -50,7 +50,7 @@ class IfStatement : public Statement, public Node
     {
         return ifStatements;
     }
-    Block*
+    Statement*
     getElseStatements()
     {
         return elseStatements;
