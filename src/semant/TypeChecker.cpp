@@ -4,6 +4,51 @@
  */
 #include "TypeChecker.h"
 
+// ------- Helper Functions       -------- //
+// given a symbol table, ensure a variable name is legal
+bool
+TypeChecker::nameIsLegal(std::string name, int lineNumber)
+{
+    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
+    {
+        semanticErrorHandler->handle(
+            new Error(lineNumber, "Declared variable named: " + name +
+                                      " illegally shares its name with a "
+                                      "type or a keyword/reserved word."));
+        return false;
+    }
+
+    return true;
+}
+
+// given a type and its name, ensure the type exists
+bool
+TypeChecker::typeExists(std::string type, std::string name, int lineNumber)
+{
+    if (!isPrimitive(type) && !udtTable->hasUDT(type))
+    {
+        semanticErrorHandler->handle(new Error(
+            lineNumber, "Declared type: " + type + " for variable named: " +
+                            name + " is not a legal or known type."));
+    }
+}
+
+// encapsulate addition to symbol table and error handling for it
+bool
+TypeChecker::tryAddToSymbolTable(std::string name, std::string type,
+                                 SymbolTable* symbolTable, int lineNumber)
+{
+    bool isUnique = symbolTable->addSymbol(name, type);
+
+    // symbol table entry must be unique for current scope
+    if (!isUnique)
+    {
+        symbolTableErrorHandler->handle(new Error(
+            lineNumber,
+            "Invalid redecleration of variable with name: " + name + "."));
+    }
+}
+
 // ------- Additions to the symbol table ------- //
 void
 TypeChecker::check(ast::Start* root)
@@ -20,36 +65,13 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     ast::Variable* var = node->getVariable();
     std::string name = var->getName()->getValue();
     std::string type = var->getType()->getType();
+    int lineNumber = var->getLineNum();
 
     std::string adjustedName = "U" + type;
 
-    // make sure the name is not a reserved word, a primitive name, or a UDT
-    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
-    {
-        semanticErrorHandler->handle(new Error(
-            var->getLineNum(), "Declared udt named: " + name +
-                                   " illegally shares its name with a "
-                                   "type or a keyword/reserved word."));
-    }
-
-    // make sure the type is either primitive or a udt
-    if (!isPrimitive(type) && !udtTable->hasUDT(type))
-    {
-        semanticErrorHandler->handle(
-            new Error(var->getLineNum(), "Declared udt type: " + type +
-                                             " for variable named: " + name +
-                                             " is not a legal or known type."));
-    }
-
-    bool isUnique = symbolTable->addSymbol(name, adjustedName);
-
-    // symbol table entry must be unique for current scope
-    if (!isUnique)
-    {
-        symbolTableErrorHandler->handle(
-            new Error(var->getLineNum(),
-                      "Invalid redecleration of udt with name: " + name + "."));
-    }
+    nameIsLegal(name, lineNumber);
+    typeExists(type, name, lineNumber);
+    tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
 
     // enter into the symbol table for udt
     SymbolTable* tempST = symbolTable;
@@ -122,28 +144,13 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
 {
     std::string name = node->getVariable()->getName()->getValue();
     std::string type = node->getVariable()->getType()->getType();
+    int lineNumber = node->getLineNum();
 
-    // make sure the name is not a reserved word, a primitive name, or a UDT
-    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getVariable()->getName()->getLineNum(),
-                      "Declared list named: " + name +
-                          " illegally shares its name with a "
-                          "type or a keyword/reserved word."));
-    }
+    nameIsLegal(name, lineNumber);
 
     std::string adjustedName = "P" + type;
 
-    bool isUnique = symbolTable->addSymbol(name, adjustedName);
-
-    // symbol table entry must be unique for current scope
-    if (!isUnique)
-    {
-        symbolTableErrorHandler->handle(new Error(
-            node->getVariable()->getName()->getLineNum(),
-            "Invalid redecleration of primitive with name: " + name + "."));
-    }
+    tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
 
     // ensure the type is a primitive
     if (!isPrimitive(type))
@@ -178,37 +185,14 @@ TypeChecker::visit(ast::ListDefinition* node)
 {
     std::string name = node->getName()->getValue();
     std::string type = node->getType()->getType();
+    int lineNumber = node->getLineNum();
 
-    // make sure the name is not a reserved word, a primitive name, or a UDT
-    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getName()->getLineNum(),
-                      "Declared primitive named: " + name +
-                          " illegally shares its name with a "
-                          "type or a keyword/reserved word."));
-    }
+    nameIsLegal(name, lineNumber);
 
     std::string adjustedName = "L" + type;
 
-    bool isUnique = symbolTable->addSymbol(name, adjustedName);
-
-    // symbol table entry must be unique for current scope
-    if (!isUnique)
-    {
-        symbolTableErrorHandler->handle(new Error(
-            node->getName()->getLineNum(),
-            "Invalid redecleration of list with name: " + name + "."));
-    }
-
-    // ensure the type exists, i.e. is a primitive or udt
-    if (!isPrimitive(type) && !udtTable->hasUDT(type))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getName()->getLineNum(),
-                      "Defined lists's type of: " + type +
-                          " for list: " + name + " does not exist."));
-    }
+    tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
+    typeExists(type, name, lineNumber);
 
     // visit expression
     visit(node->getExpression());
@@ -244,46 +228,15 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     std::string name = node->getName()->getValue();
     std::string keyType = node->getKeyType()->getType();
     std::string valueType = node->getValueType()->getType();
+    int lineNumber = node->getLineNum();
 
-    // make sure the name is not a reserved word, a primitive name, or a UDT
-    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getName()->getLineNum(),
-                      "Declared definition named: " + name +
-                          " illegally shares its name with a "
-                          "type or a keyword/reserved word."));
-    }
+    nameIsLegal(name, lineNumber);
 
     std::string adjustedName = "D" + keyType + "_" + valueType;
 
-    bool isUnique = symbolTable->addSymbol(name, adjustedName);
-
-    // symbol table entry must be unique for current scope
-    if (!isUnique)
-    {
-        symbolTableErrorHandler->handle(new Error(
-            node->getName()->getLineNum(),
-            "Invalid redecleration of dictionary with name: " + name + "."));
-    }
-
-    // ensure the keyType exists, i.e. is a primitive or udt
-    if (!isPrimitive(keyType) && !udtTable->hasUDT(keyType))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getKeyType()->getLineNum(),
-                      "Defined dictionary's key type of: " + keyType +
-                          " for dictionary: " + name + " does not exist."));
-    }
-
-    // ensure the valueType exists, i.e. is a primitive or udt
-    if (!isPrimitive(valueType) && !udtTable->hasUDT(valueType))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getValueType()->getLineNum(),
-                      "Defined dictionary's value type of: " + valueType +
-                          " for dictionary: " + name + " does not exist."));
-    }
+    tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
+    typeExists(keyType, keyType, lineNumber);
+    typeExists(valueType, valueType, lineNumber);
 
     // visit expression
     visit(node->getExpression());
@@ -336,27 +289,10 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 {
     // if we hit errors, do not add it to the symbol table
     bool isGood = true;
-
-    // ensure scope is global since functions cannot be in blocks
-    if (!symbolTable->isGlobalScope())
-    {
-        symbolTableErrorHandler->handle(
-            new Error(node->getName()->getLineNum(),
-                      "Functions can only be declared at the global level, "
-                      "i.e. cannot be nested!"));
-    }
-
     std::string name = node->getName()->getValue();
+    int lineNumber = node->getLineNum();
 
-    // make sure the name is not a reserved word, a primitive name, or a UDT
-    if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getName()->getLineNum(),
-                      "Declared function named: " + name +
-                          " illegally shares its name with a "
-                          "type or a keyword/reserved word."));
-    }
+    nameIsLegal(name, lineNumber);
 
     std::string adjustedName = "F" + name + "{";
 
@@ -371,14 +307,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
         std::string inp_type = var->getType()->getType();
         std::string inp_name = var->getName()->getValue();
 
-        // ensure the type exists, i.e. is a primitive or udt
-        if (!isPrimitive(inp_type) && !udtTable->hasUDT(inp_type))
-        {
-            semanticErrorHandler->handle(
-                new Error(node->getName()->getLineNum(),
-                          "Functions input type of:  " + inp_type +
-                              " for function: " + name + " does not exist."));
-        }
+        typeExists(inp_type, inp_name, lineNumber);
 
         // make sure the name is not a reserved word, a primitive name, or a
         // UDT, however edge case where is void exists
@@ -406,28 +335,14 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     ast::Typename* var = output->getOutput();
     std::string out_type = var->getType();
 
-    if (!isPrimitive(out_type) && !symbolTable->hasVariable(out_type))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getName()->getLineNum(),
-                      "Functions output type of:  " + out_type +
-                          " for function: " + name + " does not exist."));
-    }
+    typeExists(out_type, out_type, lineNumber);
 
     adjustedName += "_" + out_type;
     adjustedName += ")";
 
     if (isGood)
     {
-        bool isUnique = symbolTable->addSymbol(name, adjustedName);
-
-        // symbol table entry must be unique for current scope
-        if (!isUnique)
-        {
-            symbolTableErrorHandler->handle(new Error(
-                node->getLineNum(),
-                "Invalid redecleration of function with name: " + name + "."));
-        }
+        tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
     }
 
     // enter a scope for this function, starting with the parameters
@@ -504,31 +419,14 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 void
 TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
 {
-
-    // ensure scope is global since functions cannot be in blocks
-    if (!symbolTable->isGlobalScope())
-    {
-        symbolTableErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "UDT's can only be declared at the global level, "
-                      "i.e. cannot be nested!"));
-    }
-
     std::vector<ast::Variable*> attributes = node->getAttributes();
     std::vector<ast::FunctionDefinition*> methods = node->getMethods();
 
     // capture the name
     std::string udt_name = node->getName()->getValue();
+    int lineNumber = node->getLineNum();
 
-    // make sure the name is not a reserved word, a primitive name, or a UDT
-    if (isPrimitive(udt_name) || isKeyword(udt_name) ||
-        udtTable->hasUDT(udt_name))
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Declared udt named: " + udt_name +
-                                    " illegally shares its name with a "
-                                    "type or a keyword/reserved word."));
-    }
+    nameIsLegal(udt_name, lineNumber);
 
     // create a symbol table for the attributes
     SymbolTable* st_a = new SymbolTable();
@@ -542,15 +440,9 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     {
         std::string name = var->getName()->getValue();
         std::string type = var->getType()->getType();
+        int lineNumber = node->getLineNum();
 
-        // make sure the name is not a reserved word, a primitive name, or a UDT
-        if (isPrimitive(name) || isKeyword(name) || udtTable->hasUDT(name))
-        {
-            semanticErrorHandler->handle(new Error(
-                node->getLineNum(), "Declared udt attribute named: " + name +
-                                        " illegally shares its name with a "
-                                        "type or a keyword/reserved word."));
-        }
+        nameIsLegal(name, lineNumber);
 
         // ensure the type exists, i.e. is a primitive or udt and not a void,
         // makes no sense here
@@ -568,15 +460,7 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
             std::string adjustedName = "P" + type;
         }
 
-        bool isUnique = symbolTable->addSymbol(name, adjustedName);
-
-        // symbol table entry must be unique for current scope
-        if (!isUnique)
-        {
-            symbolTableErrorHandler->handle(new Error(
-                node->getLineNum(),
-                "Invalid redecleration of method with name: " + name + "."));
-        }
+        tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
     }
 
     // capture the decorated symbol table and reset the class field back
@@ -602,18 +486,9 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
 
     std::string adjustedName = "U" + udt_name;
 
-    // add to both symbol table and udt table
-    bool isUnique = symbolTable->addSymbol(udt_name, adjustedName);
+    tryAddToSymbolTable(udt_name, adjustedName, symbolTable, lineNumber);
 
-    // symbol table entry must be unique for current scope
-    if (!isUnique)
-    {
-        symbolTableErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Invalid redecleration of udt with name: " + udt_name + "."));
-    }
-
-    isUnique = udtTable->addUDT(udt_name, st_a, st_m);
+    bool isUnique = udtTable->addUDT(udt_name, st_a, st_m);
 
     // udt table entries MUST be unique unlike symbol table (for now)
     if (!isUnique)

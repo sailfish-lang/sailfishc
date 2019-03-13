@@ -189,22 +189,40 @@ TEST(SymbolTableDataStructure, SymbolTable)
 TEST(SemanticTest, TypeCheckerFunctions)
 {
     static const std::string expected[] = {
-        "Functions input type of:  nonExistentType for function: "
-        "inputDoesNotExist does not exist.",
+        "Declared type: nonExistentType for variable named: foo is not a legal "
+        "or known type.",
         "Declared function input named: flt illegally shares its name with a "
         "type or a keyword/reserved word.",
-        "Functions output type of:  nonExistentType for function: "
-        "outputDoesNotExist does not exist.",
+        "Declared type: nonExistentType for variable named: nonExistentType is "
+        "not a legal or known type.",
         "Actual return type of: int does not match expected return type of: "
         "nonExistentType.",
-        "Declared function named: flt illegally shares its name with a type or "
+        "Declared variable named: flt illegally shares its name with a type or "
         "a keyword/reserved word.",
-        "Function: foo is not defined.",
+        "Variable: i is undefined.",
+        "Undefined argument: unknown supplied for function: good.",
+        "Supplied argument type of: unknown does not match expected type of: "
+        "int.",
+        "Variable: i is undefined.",
         "Expected the same types on each side of operation. Instead received: "
-        "int and unknown.",
-        "Supplied argument type of: int does not match expected type of: str.",
+        "unknown and int.",
+        "Function: foo is not defined.",
+        "Variable: i is undefined.",
+        "Variable: i is undefined.",
+        "Undefined argument: unknown supplied for function: good.",
+        "Supplied argument type of: unknown does not match expected type of: "
+        "str.",
+        "Variable: i is undefined.",
+        "Expected the same types on each side of operation. Instead received: "
+        "unknown and int.",
         "Not enough args supplied to function: good.",
+        "Variable: i is undefined.",
+        "Expected the same types on each side of operation. Instead received: "
+        "unknown and int.",
         "Too many args supplied to function: good.",
+        "Variable: i is undefined.",
+        "Expected the same types on each side of operation. Instead received: "
+        "unknown and int.",
     };
 
     Parser* p = new Parser();
@@ -224,7 +242,8 @@ TEST(SemanticTest, TypeCheckerFunctions)
 TEST(SemanticTest, TypeCheckerListsDeclerations)
 {
     static const std::string expected[] = {
-        "Defined lists's type of: Foo for list: list_error_a does not exist.",
+        "Declared type: Foo for variable named: list_error_a is not a legal or "
+        "known type.",
         "Declared type of list: Foo for variable named: list_error_a does not "
         "match assigned expression's list of type: int.",
         "Declared type of list for variable named: list_error_b does not match "
@@ -251,17 +270,18 @@ TEST(SemanticTest, TypeCheckerListsDeclerations)
 TEST(SemanticTest, TypeCheckerDictionaryDeclerations)
 {
     static const std::string expected[] = {
-        "Defined dictionary's key type of: Foo for dictionary: "
-        "dictionary_error_a does not exist.",
+
+        "Declared type: Foo for variable named: Foo is not a legal or known "
+        "type.",
         "Declared type of dictionary keys: Foo for variable named: "
         "dictionary_error_a does not match assigned expression's dictionary "
         "keys of type: int.",
-        "Defined dictionary's value type of: Foo for dictionary: "
-        "dictionary_error_b does not exist.",
+        "Declared type: Foo for variable named: Foo is not a legal or known "
+        "type.",
         "Declared type of dictionary values: Foo for variable named: "
         "dictionary_error_b does not match assigned expression's dictionary "
         "values of type: flt.",
-        "Declared definition named: str illegally shares its name with a type "
+        "Declared variable named: str illegally shares its name with a type "
         "or a keyword/reserved word.",
         "Declared type of dictionary for variable named: dictionary_error_c "
         "does not match assigned expression type of: list.",
@@ -291,7 +311,8 @@ TEST(SemanticTest, TypeCheckerDictionaryDeclerations)
 TEST(SemanticTest, TypeCheckerPrimitiveDeclerations)
 {
     static const std::string expected[] = {
-        "Declared list named: dec illegally shares its name with a type or a "
+        "Declared variable named: dec illegally shares its name with a type or "
+        "a "
         "keyword/reserved word.",
         "Declared type: flt of primitive for variable named: function_foo does "
         "not match assigned expression type of: int.",
@@ -418,11 +439,14 @@ TEST(SemanticTest, TypeCheckerBinariesAndUnaries)
 TEST(SemanticTest, TypeCheckerUDTDec)
 {
     static const std::string expected[] = {
-        "Declared udt named: bool illegally shares its name with a type or a "
+        "Declared variable named: bool illegally shares its name with a type "
+        "or a "
         "keyword/reserved word.",
-        "Declared udt attribute named: flt illegally shares its name with a "
+        "Declared variable named: flt illegally shares its name with "
+        "a "
         "type or a keyword/reserved word.",
-        "Declared udt attribute named: void illegally shares its name with a "
+        "Declared variable named: void illegally shares its name "
+        "with a "
         "type or a keyword/reserved word.",
         "Udt attribute type of:  void for attribute: void and for udt: bool "
         "does not exist.",

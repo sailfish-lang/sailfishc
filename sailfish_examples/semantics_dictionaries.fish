@@ -7,3 +7,5 @@ dec dictionary dictionary_error_c <[ int : flt ]> new [ 1 ] // error type is not
 dec dictionary dictionary_error_d <[ int : flt ]> new { 1 : 1.0, 1.0 : 1} // error dictionary is not homogenous
 dec dictionary dictionary_error_e <[ int : flt ]> new { 1.0 : 1.0 } // error dictionary keys don't match
 dec dictionary dictionary_error_f <[ int : flt ]> new { 1 : 1 } // error dictionary values don't match
+
+start {}

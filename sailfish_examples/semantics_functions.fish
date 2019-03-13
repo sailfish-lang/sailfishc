@@ -35,7 +35,7 @@ fun flt
 
 start {
     // -------       function  calls     -------- //
-    dec int i = 10
+    dec int n = 10
     i = good(i, "hello world") // ok
     i = foo(10, i) // error undefined function
     i = good(10, i) // error arg type mismatch

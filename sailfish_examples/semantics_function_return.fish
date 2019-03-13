@@ -23,3 +23,5 @@ fun alsoBad
 {
     return 10
 }
+
+start {}

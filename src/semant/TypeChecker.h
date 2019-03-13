@@ -94,4 +94,9 @@ class TypeChecker : public Visitor
 
     // grouping
     void visit(ast::GroupingExpression*);
+
+    // common helper methods
+    bool nameIsLegal(std::string, int);
+    bool typeExists(std::string, std::string, int);
+    bool tryAddToSymbolTable(std::string, std::string, SymbolTable*, int);
 };

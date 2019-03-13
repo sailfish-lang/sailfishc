@@ -57,7 +57,7 @@ handleCommandLine(int argc, char* const* argv)
     {
     case 1:
         helpMessage();
-        return 1;
+        return 0;
 
     case 2:
     {
@@ -76,7 +76,7 @@ handleCommandLine(int argc, char* const* argv)
             fullCompilation(argv[1]);
         }
 
-        return 1;
+        return 0;
     }
 
     case 3:
@@ -130,7 +130,7 @@ handleCommandLine(int argc, char* const* argv)
             }
         }
 
-        return 1;
+        return 0;
 
     default:
         std::cout << "Unexpected number of arguments. "
