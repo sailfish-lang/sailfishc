@@ -122,36 +122,21 @@ InOrderTraversal::visit(ast::Output* node)
 void
 InOrderTraversal::visit(ast::UserDefinedTypeDefinition* node)
 {
-    visit(node->getAttributes());
-    visit(node->getMethods());
-
-    push("UserDefinedTypeDefinition");
-}
-
-void
-InOrderTraversal::visit(ast::UserDefinedTypeAttributes* node)
-{
     visit(node->getName());
 
+    push("UserDefinedTypeAttributes");
     for (auto const& attribute : node->getAttributes())
     {
         visit(attribute);
     }
 
-    push("UserDefinedTypeAttributes");
-}
-
-void
-InOrderTraversal::visit(ast::UserDefinedTypeMethods* node)
-{
-    visit(node->getName());
-
+    push("UserDefinedTypeMethods");
     for (auto const& method : node->getMethods())
     {
         visit(method);
     }
 
-    push("UserDefinedTypeMethods");
+    push("UserDefinedTypeDefinition");
 }
 
 void

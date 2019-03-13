@@ -334,31 +334,9 @@ Parser::parseGeneralDefinition()
 ast::UserDefinedTypeDefinition*
 Parser::parseUserDefinedTypeDefinition()
 {
-    ast::UserDefinedTypeAttributes* attributes = UserDefinedTypeAttributes();
-    ast::UserDefinedTypeMethods* methods = UserDefinedTypeMethods();
-
-    if (attributes->getName()->getValue() != methods->getName()->getValue())
-    {
-        errorHandler->handle(
-            new Error(currentToken->getLineNum(),
-                      "Expected UDT method declerations for " +
-                          methods->getName()->getValue() +
-                          " to follow UDT attribute declerations for " +
-                          attributes->getName()->getValue() + "."));
-    }
-
-    return new ast::UserDefinedTypeDefinition(attributes, methods,
-                                              currentToken->getLineNum());
-}
-
-/**
- * UserDefinedTypeAttributes := Identifier '{' Variable* '}'
- */
-ast::UserDefinedTypeAttributes*
-Parser::UserDefinedTypeAttributes()
-{
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
-                                                currentToken->getLineNum());
+    // --------         parse attributes       -------- //
+    ast::Identifier* attributesName = new ast::Identifier(
+        currentToken->getValue(), currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
@@ -390,21 +368,12 @@ Parser::UserDefinedTypeAttributes()
     // consume '}'
     getNextUsefulToken();
 
-    return new ast::UserDefinedTypeAttributes(name, attributes,
-                                              currentToken->getLineNum());
-}
-
-/**
- * UserDefinedTypeMethods := 'Cfn' Identifier '{' FunctionDefinition* '}'
- */
-ast::UserDefinedTypeMethods*
-Parser::UserDefinedTypeMethods()
-{
+    // -------       parse methods       -------- //
     // consume 'Cfn'
     getNextUsefulToken();
 
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
-                                                currentToken->getLineNum());
+    ast::Identifier* methodsName = new ast::Identifier(
+        currentToken->getValue(), currentToken->getLineNum());
 
     // consume identifier
     getNextUsefulToken();
@@ -437,8 +406,17 @@ Parser::UserDefinedTypeMethods()
     // skip '}'
     getNextUsefulToken();
 
-    return new ast::UserDefinedTypeMethods(name, methods,
-                                           currentToken->getLineNum());
+    if (attributesName->getValue() != methodsName->getValue())
+    {
+        errorHandler->handle(new Error(
+            currentToken->getLineNum(),
+            "Expected UDT method declerations for " + methodsName->getValue() +
+                " to follow UDT attribute declerations for " +
+                attributesName->getValue() + "."));
+    }
+
+    return new ast::UserDefinedTypeDefinition(methodsName, attributes, methods,
+                                              currentToken->getLineNum());
 }
 
 /**

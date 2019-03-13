@@ -42,7 +42,7 @@ class FunctionDefinition : public SourcePart, public Exportable, public Node
     /* virtual */ SourcePartType
     getSourcePartType()
     {
-        return SourcePartType::FunctionDefinition;
+        return SourcePartType::FunctionDefinitionPart;
     }
     // implementation for Exportable
     /* virtual */ ExportableType

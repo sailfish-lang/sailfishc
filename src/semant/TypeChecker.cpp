@@ -509,16 +509,16 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     if (!symbolTable->isGlobalScope())
     {
         symbolTableErrorHandler->handle(
-            new Error(node->getAttributes()->getName()->getLineNum(),
+            new Error(node->getLineNum(),
                       "UDT's can only be declared at the global level, "
                       "i.e. cannot be nested!"));
     }
 
-    ast::UserDefinedTypeAttributes* attributes = node->getAttributes();
-    ast::UserDefinedTypeMethods* methods = node->getMethods();
+    std::vector<ast::Variable*> attributes = node->getAttributes();
+    std::vector<ast::FunctionDefinition*> methods = node->getMethods();
 
     // capture the name
-    std::string udt_name = attributes->getName()->getValue();
+    std::string udt_name = node->getName()->getValue();
 
     // make sure the name is not a reserved word, a primitive name, or a UDT
     if (isPrimitive(udt_name) || isKeyword(udt_name) ||
@@ -538,7 +538,7 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     SymbolTable* tempTable = symbolTable;
     symbolTable = st_a;
 
-    for (auto const& var : attributes->getAttributes())
+    for (auto const& var : attributes)
     {
         std::string name = var->getName()->getValue();
         std::string type = var->getType()->getType();
@@ -591,7 +591,7 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     tempTable = symbolTable;
     symbolTable = st_m;
 
-    for (auto const& func : methods->getMethods())
+    for (auto const& func : methods)
     {
         visit(func);
     }

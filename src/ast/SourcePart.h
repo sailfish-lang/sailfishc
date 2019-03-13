@@ -13,7 +13,7 @@ class SourcePart
     {
         ExportDefinition,
         GeneralDecleration,
-        FunctionDefinition,
+        FunctionDefinitionPart,
         UserDefinedTypeDefinition,
         InitialExecutionBody,
     };

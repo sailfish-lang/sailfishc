@@ -5,33 +5,28 @@
 #pragma once
 #include "Node.h"
 #include "SourcePart.h"
-#include "UserDefinedTypeAttributes.h"
-#include "UserDefinedTypeMethods.h"
 
 namespace ast
 {
 class UserDefinedTypeDefinition : public SourcePart, public Node
 {
   private:
-    UserDefinedTypeAttributes* attributes;
-    // methods are optional
-    UserDefinedTypeMethods* methods;
+    ast::Identifier* name;
+    std::vector<Variable*> attributes;
+    std::vector<FunctionDefinition*> methods;
 
   public:
     // constructor
-    UserDefinedTypeDefinition(UserDefinedTypeAttributes* a,
-                              UserDefinedTypeMethods* m, int lineNum)
+    UserDefinedTypeDefinition(ast::Identifier* n, std::vector<Variable*> a,
+                              std::vector<FunctionDefinition*> m, int lineNum)
         : Node(lineNum)
     {
+        name = n;
         attributes = a;
         methods = m;
     }
     // destructor
-    ~UserDefinedTypeDefinition()
-    {
-        delete attributes;
-        delete methods;
-    };
+    ~UserDefinedTypeDefinition(){};
     // implementation for SourcePart
     /* virtual */ SourcePartType
     getSourcePartType()
@@ -39,15 +34,20 @@ class UserDefinedTypeDefinition : public SourcePart, public Node
         return SourcePartType::UserDefinedTypeDefinition;
     }
     // get methods
-    UserDefinedTypeAttributes*
+    std::vector<Variable*>
     getAttributes()
     {
         return attributes;
     }
-    UserDefinedTypeMethods*
+    std::vector<FunctionDefinition*>
     getMethods()
     {
         return methods;
+    }
+    Identifier*
+    getName()
+    {
+        return name;
     }
 };
 }

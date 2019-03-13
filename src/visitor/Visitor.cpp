@@ -32,7 +32,7 @@ Visitor::visit(ast::Source* node)
             visit(subnode);
             break;
         }
-        case ast::SourcePart::FunctionDefinition:
+        case ast::SourcePart::FunctionDefinitionPart:
         {
             ast::FunctionDefinition* subnode =
                 dynamic_cast<ast::FunctionDefinition*>(srcPart);
@@ -249,24 +249,11 @@ Visitor::visit(ast::Output* node)
 void
 Visitor::visit(ast::UserDefinedTypeDefinition* node)
 {
-    visit(node->getAttributes());
-    visit(node->getMethods());
-}
-void
-Visitor::visit(ast::UserDefinedTypeAttributes* node)
-{
     visit(node->getName());
-
     for (auto const& attribute : node->getAttributes())
     {
         visit(attribute);
     }
-}
-void
-Visitor::visit(ast::UserDefinedTypeMethods* node)
-{
-    visit(node->getName());
-
     for (auto const& method : node->getMethods())
     {
         visit(method);
