@@ -4,6 +4,7 @@ fun good
 <- int i, str s
 -> int
 {
+    i = i + 1
     return 10
 }
 
@@ -35,7 +36,7 @@ fun flt
 
 start {
     // -------       function  calls     -------- //
-    dec int n = 10
+    dec int i = 10
     i = good(i, "hello world") // ok
     i = foo(10, i) // error undefined function
     i = good(10, i) // error arg type mismatch

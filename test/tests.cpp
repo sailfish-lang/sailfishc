@@ -199,30 +199,12 @@ TEST(SemanticTest, TypeCheckerFunctions)
         "nonExistentType.",
         "Declared variable named: flt illegally shares its name with a type or "
         "a keyword/reserved word.",
-        "Variable: i is undefined.",
-        "Undefined argument: unknown supplied for function: good.",
-        "Supplied argument type of: unknown does not match expected type of: "
-        "int.",
-        "Variable: i is undefined.",
-        "Expected the same types on each side of operation. Instead received: "
-        "unknown and int.",
         "Function: foo is not defined.",
-        "Variable: i is undefined.",
-        "Variable: i is undefined.",
-        "Undefined argument: unknown supplied for function: good.",
-        "Supplied argument type of: unknown does not match expected type of: "
-        "str.",
-        "Variable: i is undefined.",
         "Expected the same types on each side of operation. Instead received: "
-        "unknown and int.",
+        "int and unknown.",
+        "Supplied argument type of: int does not match expected type of: str.",
         "Not enough args supplied to function: good.",
-        "Variable: i is undefined.",
-        "Expected the same types on each side of operation. Instead received: "
-        "unknown and int.",
         "Too many args supplied to function: good.",
-        "Variable: i is undefined.",
-        "Expected the same types on each side of operation. Instead received: "
-        "unknown and int.",
     };
 
     Parser* p = new Parser();
