@@ -22,6 +22,9 @@ class TypeChecker : public Visitor
     SymbolTable* symbolTable;
     UDTTable* udtTable;
 
+    //  hacks: REMOVE ASAP
+    std::string curUDT;
+
   public:
     using Visitor::visit;
 
@@ -33,6 +36,9 @@ class TypeChecker : public Visitor
         semanticErrorHandler = seh;
         symbolTable = st;
         udtTable = udtt;
+
+        // hacks: REMOVE ASAP
+        curUDT = "";
     }
     // destructor
     ~TypeChecker()

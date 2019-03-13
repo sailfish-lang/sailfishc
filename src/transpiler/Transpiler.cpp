@@ -8,13 +8,13 @@ std::string
 builtinFunctionTranslator(std::string name)
 {
     if (name == "display_str")
-        return "printf(\"%s\",";
+        return "print_str(";
 
     if (name == "display_int")
-        return "printf(\"%d\",";
+        return "print_int(";
 
     if (name == "display_flt")
-        return "printf(\"%f\",";
+        return "print_flt(";
 
     else
         return name + "(";

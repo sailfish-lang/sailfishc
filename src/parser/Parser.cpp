@@ -966,6 +966,29 @@ Parser::parsePrimary()
 
         return (ast::Primary*)parseListLiteral(new ast::Identifier("", 0));
     }
+    else if (kind == Kind::OWN_ACCESSOR_TOKEN)
+    {
+        ast::Identifier* ident =
+            new ast::Identifier(tk, currentToken->getLineNum());
+
+        // consume identifier
+        getNextUsefulToken();
+
+        if (currentToken->getKind() == Kind::DOT_TOKEN)
+        {
+            // consume '.'
+            getNextUsefulToken();
+
+            return (ast::Primary*)parseAttributeAccess(ident);
+        }
+        else if (currentToken->getKind() == Kind::TRIPLE_DOT_TOKEN)
+        {
+            // consume '...'
+            getNextUsefulToken();
+
+            return (ast::Primary*)parseMethodAccess(ident);
+        }
+    }
     else if (kind == Kind::IDENTIFIER_TOKEN)
     {
         ast::Identifier* ident =

@@ -8,13 +8,14 @@
 ast::Expression* binaryExpressionHelper(ast::BinaryExpression* node);
 
 std::string primaryHelper(ast::Primary*, SymbolTable*, SemanticErrorHandler*,
-                          UDTTable*);
+                          UDTTable*, std::string);
 
 std::string expressionHelper(ast::Expression*, SymbolTable*,
-                             SemanticErrorHandler*, UDTTable*);
+                             SemanticErrorHandler*, UDTTable*, std::string);
 
 std::string getRightExpressionType(ast::BinaryExpression*, SymbolTable*,
-                                   SemanticErrorHandler*, UDTTable*);
+                                   SemanticErrorHandler*, UDTTable*,
+                                   std ::string);
 
 bool isLegalGrouping(ast::BinaryExpression*);
 
@@ -22,4 +23,4 @@ std::vector<std::string> getFunctionParamTypes(std::string);
 std::string getFunctionReturnType(std::string);
 void compareFunctions(std::vector<std::string>, std::vector<ast::Primary*>,
                       std::string, SymbolTable*, SemanticErrorHandler*,
-                      UDTTable*);
+                      UDTTable*, std::string);

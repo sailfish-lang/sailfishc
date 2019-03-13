@@ -16,6 +16,8 @@ Token::Token(Kind k, std::string v, int i, int c)
             kind = KEYWORD_TOKEN;
         else if (v == "start")
             kind = START_TOKEN;
+        else if (v == "own")
+            kind = OWN_ACCESSOR_TOKEN;
         else if (v == "and" || v == "or")
             kind = OPERATION_TOKEN;
         else if (v == "true" || v == "false")
@@ -33,6 +35,8 @@ kindToString(Kind k)
     {
     case START_TOKEN:
         return "Start";
+    case OWN_ACCESSOR_TOKEN:
+        return "own access";
     case IDENTIFIER_TOKEN:
         return "Identifier";
     case INTEGER_TOKEN:

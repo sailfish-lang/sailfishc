@@ -74,7 +74,8 @@ getReturnType(std::string fulltype)
 
 std::string
 primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
-              SemanticErrorHandler* semanticErrorHandler, UDTTable* udtTable)
+              SemanticErrorHandler* semanticErrorHandler, UDTTable* udtTable,
+              std::string curUDT)
 {
     ast::Primary::PrimaryType type = primary->getPrimaryType();
 
@@ -126,17 +127,19 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
 
         std::string expectedValueType =
             primaryHelper(dictionaryItems.at(0)->getValue(), symbolTable,
-                          semanticErrorHandler, udtTable);
+                          semanticErrorHandler, udtTable, curUDT);
         std::string expectedKeyType =
             primaryHelper(dictionaryItems.at(0)->getKey(), symbolTable,
-                          semanticErrorHandler, udtTable);
+                          semanticErrorHandler, udtTable, curUDT);
 
         for (ast::DictionaryItem* const& item : dictionaryItems)
         {
-            std::string actualValueType = primaryHelper(
-                item->getValue(), symbolTable, semanticErrorHandler, udtTable);
-            std::string actualKeyType = primaryHelper(
-                item->getKey(), symbolTable, semanticErrorHandler, udtTable);
+            std::string actualValueType =
+                primaryHelper(item->getValue(), symbolTable,
+                              semanticErrorHandler, udtTable, curUDT);
+            std::string actualKeyType =
+                primaryHelper(item->getKey(), symbolTable, semanticErrorHandler,
+                              udtTable, curUDT);
 
             if (actualKeyType != expectedKeyType)
             {
@@ -174,7 +177,7 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
 
         std::string expectedType =
             primaryHelper(items.at(0)->getValue(), symbolTable,
-                          semanticErrorHandler, udtTable);
+                          semanticErrorHandler, udtTable, curUDT);
 
         if (subnode->isListIndex() || subnode->isDictionaryIndex())
         {
@@ -226,8 +229,9 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
 
         for (ast::ListItem* const& item : items)
         {
-            std::string type = primaryHelper(item->getValue(), symbolTable,
-                                             semanticErrorHandler, udtTable);
+            std::string type =
+                primaryHelper(item->getValue(), symbolTable,
+                              semanticErrorHandler, udtTable, curUDT);
 
             // confirm the list is homogenous
             if (type != expectedType)
@@ -251,34 +255,42 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
         std::string attributeName = subsubnode->getAttribute()->getValue();
         std::string variableName = subsubnode->getUDT()->getValue();
 
-        // ensure variable exists - double checked so no need for another
-        // error message
-        if (!symbolTable->hasVariable(variableName))
+        // hacks: REMOVE ASAP
+        if (variableName == "own")
         {
-            return "unknown";
+            variableName = curUDT;
         }
+        else
+        {
+            // ensure variable exists - double checked so no need for another
+            // error message
+            if (!symbolTable->hasVariable(variableName))
+            {
+                return "unknown";
+            }
 
-        std::string udtTypeFull = symbolTable->getSymbolType(variableName);
-        std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
+            std::string udtTypeFull = symbolTable->getSymbolType(variableName);
+            variableName = udtTypeFull.substr(1, udtTypeFull.length());
+        }
 
         // ensure udt exists - double checked so no need for another
         // error message
-        if (!udtTable->hasUDT(udtType))
+        if (!udtTable->hasUDT(variableName))
         {
             return "unknown";
         }
 
         // ensure attribute exists for udt - double checked so only return error
         // once
-        if (!udtTable->getAttributeSymbolTable(udtType)->hasVariable(
-                attributeName))
+        if (!udtTable->getAttributeSymbolTable(variableName)
+                 ->hasVariable(attributeName))
         {
             return "unknown";
         }
 
         std::string fullAttributeType =
-            udtTable->getAttributeSymbolTable(udtType)->getSymbolType(
-                attributeName);
+            udtTable->getAttributeSymbolTable(variableName)
+                ->getSymbolType(attributeName);
 
         return getReturnType(fullAttributeType);
     }
@@ -288,33 +300,42 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
         std::string methodName = node->getName()->getValue();
         std::string variableUDTname = node->getUDT()->getValue();
 
-        // ensure variable's udt exists - double checked so no need for another
-        // error message
-        if (!symbolTable->hasVariable(variableUDTname))
+        // hacks: REMOVE ASAP
+        if (variableUDTname == "own")
         {
-            return "unknown";
+            variableUDTname = curUDT;
         }
-
-        std::string udtname = symbolTable->getSymbolType(variableUDTname);
-
-        // ensure variable's udt exists - double checked so no need for another
-        // error message
-        if (!udtTable->hasUDT(udtname.substr(1, udtname.length())))
+        else
         {
-            return "unknown";
-        }
+            // ensure variable's udt exists - double checked so no need for
+            // another error message
+            if (!symbolTable->hasVariable(variableUDTname))
+            {
+                return "unknown";
+            }
 
-        std::string udtType = udtname.substr(1, udtname.length());
+            std::string udtname = symbolTable->getSymbolType(variableUDTname);
+
+            // ensure variable's udt exists - double checked so no need for
+            // another error message
+            if (!udtTable->hasUDT(udtname.substr(1, udtname.length())))
+            {
+                return "unknown";
+            }
+
+            variableUDTname = udtname.substr(1, udtname.length());
+        }
 
         // ensure metho exists for udt - double checked so no need for another
         // error message
-        if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(methodName))
+        if (!udtTable->getMethodSymbolTable(variableUDTname)
+                 ->hasVariable(methodName))
         {
             return "unknown";
         }
 
-        return getReturnType(
-            udtTable->getMethodSymbolTable(udtType)->getSymbolType(methodName));
+        return getReturnType(udtTable->getMethodSymbolTable(variableUDTname)
+                                 ->getSymbolType(methodName));
     }
     case ast::Primary::FunctionCallLiteral:
     {
@@ -339,7 +360,8 @@ primaryHelper(ast::Primary* primary, SymbolTable* symbolTable,
 
 std::string
 expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
-                 SemanticErrorHandler* semanticErrorHandler, UDTTable* udtTable)
+                 SemanticErrorHandler* semanticErrorHandler, UDTTable* udtTable,
+                 std::string curUDT)
 {
     switch (node->getExpressionType())
     {
@@ -366,19 +388,19 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
 
             std::string expectedKeyType =
                 primaryHelper(items.at(0)->getKey(), symbolTable,
-                              semanticErrorHandler, udtTable);
+                              semanticErrorHandler, udtTable, curUDT);
             std::string expectedValueType =
                 primaryHelper(items.at(0)->getValue(), symbolTable,
-                              semanticErrorHandler, udtTable);
+                              semanticErrorHandler, udtTable, curUDT);
 
             for (ast::DictionaryItem* const& item : items)
             {
                 std::string keyType =
                     primaryHelper(item->getKey(), symbolTable,
-                                  semanticErrorHandler, udtTable);
+                                  semanticErrorHandler, udtTable, curUDT);
                 std::string valueType =
                     primaryHelper(item->getValue(), symbolTable,
-                                  semanticErrorHandler, udtTable);
+                                  semanticErrorHandler, udtTable, curUDT);
 
                 // confirm the dictionary keys are homogenous
                 if (keyType != expectedKeyType)
@@ -420,13 +442,13 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
 
             std::string expectedType =
                 primaryHelper(items.at(0)->getValue(), symbolTable,
-                              semanticErrorHandler, udtTable);
+                              semanticErrorHandler, udtTable, curUDT);
 
             for (ast::ListItem* const& item : items)
             {
                 std::string type =
                     primaryHelper(item->getValue(), symbolTable,
-                                  semanticErrorHandler, udtTable);
+                                  semanticErrorHandler, udtTable, curUDT);
 
                 // confirm the list is homogenous
                 if (type != expectedType)
@@ -454,12 +476,13 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
 
             for (ast::DictionaryItem* const& item : udt->getAttributes())
             {
-                fullTypeName += "_" +
-                                primaryHelper(item->getKey(), symbolTable,
-                                              semanticErrorHandler, udtTable) +
-                                "_" +
-                                primaryHelper(item->getValue(), symbolTable,
-                                              semanticErrorHandler, udtTable);
+                fullTypeName +=
+                    "_" +
+                    primaryHelper(item->getKey(), symbolTable,
+                                  semanticErrorHandler, udtTable, curUDT) +
+                    "_" +
+                    primaryHelper(item->getValue(), symbolTable,
+                                  semanticErrorHandler, udtTable, curUDT);
             }
 
             return fullTypeName;
@@ -484,7 +507,7 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
             dynamic_cast<ast::PrimaryExpression*>(node);
 
         return primaryHelper(subnode->getPrimary(), symbolTable,
-                             semanticErrorHandler, udtTable);
+                             semanticErrorHandler, udtTable, curUDT);
     }
     case ast::Expression::UnaryExpression:
     {
@@ -500,10 +523,10 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
 std::string
 getRightExpressionType(ast::BinaryExpression* node, SymbolTable* symbolTable,
                        SemanticErrorHandler* semanticErrorHandler,
-                       UDTTable* udtTable)
+                       UDTTable* udtTable, std::string curUDT)
 {
     return expressionHelper(binaryExpressionHelper(node), symbolTable,
-                            semanticErrorHandler, udtTable);
+                            semanticErrorHandler, udtTable, curUDT);
 }
 
 bool
@@ -526,7 +549,8 @@ void
 compareFunctions(std::vector<std::string> inputs,
                  std::vector<ast::Primary*> args, std::string name,
                  SymbolTable* symbolTable,
-                 SemanticErrorHandler* semanticErrorHandler, UDTTable* udtTable)
+                 SemanticErrorHandler* semanticErrorHandler, UDTTable* udtTable,
+                 std::string curUDT)
 {
     int numArgs = args.size();
     int numInps = inputs.size();
@@ -546,8 +570,8 @@ compareFunctions(std::vector<std::string> inputs,
         for (int i = 0; i < numArgs; i++)
         {
             ast::Primary* arg = args.at(i);
-            std::string actual =
-                primaryHelper(arg, symbolTable, semanticErrorHandler, udtTable);
+            std::string actual = primaryHelper(
+                arg, symbolTable, semanticErrorHandler, udtTable, curUDT);
 
             // if not primitive, see if it is a variable in the symbol table
             if (!isPrimitive(actual))

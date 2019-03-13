@@ -11,6 +11,7 @@ Cfn Foo {
     <- int i
     -> flt
     {
+        i = this.f
         return 10.0
     }
 }

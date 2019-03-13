@@ -80,8 +80,9 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     // visit expression
     visit(node->getExpression());
 
-    std::string exprType = expressionHelper(node->getExpression(), symbolTable,
-                                            semanticErrorHandler, udtTable);
+    std::string exprType =
+        expressionHelper(node->getExpression(), symbolTable,
+                         semanticErrorHandler, udtTable, curUDT);
 
     std::string temp;
     std::string prev;
@@ -166,7 +167,7 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
 
     std::string exprType =
         getRightExpressionType(node->getBinaryExpression(), symbolTable,
-                               semanticErrorHandler, udtTable);
+                               semanticErrorHandler, udtTable, curUDT);
 
     // ensure assignment is the expected type
     if (exprType != type)
@@ -197,8 +198,9 @@ TypeChecker::visit(ast::ListDefinition* node)
     // visit expression
     visit(node->getExpression());
 
-    std::string exprType = expressionHelper(node->getExpression(), symbolTable,
-                                            semanticErrorHandler, udtTable);
+    std::string exprType =
+        expressionHelper(node->getExpression(), symbolTable,
+                         semanticErrorHandler, udtTable, curUDT);
 
     std::string baseType = exprType.substr(0, exprType.find("_"));
     std::string valType =
@@ -241,8 +243,9 @@ TypeChecker::visit(ast::DictionaryDefinition* node)
     // visit expression
     visit(node->getExpression());
 
-    std::string exprType = expressionHelper(node->getExpression(), symbolTable,
-                                            semanticErrorHandler, udtTable);
+    std::string exprType =
+        expressionHelper(node->getExpression(), symbolTable,
+                         semanticErrorHandler, udtTable, curUDT);
 
     std::string baseType = exprType.substr(0, exprType.find("_"));
 
@@ -392,8 +395,9 @@ TypeChecker::visit(ast::FunctionDefinition* node)
             ast::BinaryExpression* returnedExpr =
                 subnode->getBinaryExpression();
 
-            std::string actualReturnType = getRightExpressionType(
-                returnedExpr, symbolTable, semanticErrorHandler, udtTable);
+            std::string actualReturnType =
+                getRightExpressionType(returnedExpr, symbolTable,
+                                       semanticErrorHandler, udtTable, curUDT);
 
             if (actualReturnType != out_type)
             {
@@ -425,6 +429,9 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     // capture the name
     std::string udt_name = node->getName()->getValue();
     int lineNumber = node->getLineNum();
+
+    // hacks: REMOVE ASAP
+    curUDT = udt_name;
 
     nameIsLegal(udt_name, lineNumber);
 
@@ -475,19 +482,13 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     tempTable = symbolTable;
     symbolTable = st_m;
 
-    for (auto const& func : methods)
-    {
-        visit(func);
-    }
-
     // capture the decorated symbol table and reset the class field back
     st_m = symbolTable;
     symbolTable = tempTable;
 
+    // ADD BOTH BEFORE VISITING METHODS
     std::string adjustedName = "U" + udt_name;
-
     tryAddToSymbolTable(udt_name, adjustedName, symbolTable, lineNumber);
-
     bool isUnique = udtTable->addUDT(udt_name, st_a, st_m);
 
     // udt table entries MUST be unique unlike symbol table (for now)
@@ -497,6 +498,17 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
             node->getLineNum(),
             "Invalid redecleration of udt with name: " + udt_name + "."));
     }
+
+    for (auto const& func : methods)
+    {
+        visit(func);
+    }
+
+    // std::string adjustedName = "U" + udt_name;
+
+    // tryAddToSymbolTable(udt_name, adjustedName, symbolTable, lineNumber);
+
+    // bool isUnique = udtTable->addUDT(udt_name, st_a, st_m);
 }
 
 // ------- END ------- //
@@ -548,7 +560,7 @@ TypeChecker::visit(ast::Negation* node)
     // ensure that all negations are boolean
     std::string type =
         getRightExpressionType(node->getBinaryExpression(), symbolTable,
-                               semanticErrorHandler, udtTable);
+                               semanticErrorHandler, udtTable, curUDT);
     if (type != "bool")
     {
         semanticErrorHandler->handle(new Error(
@@ -572,10 +584,13 @@ TypeChecker::visit(ast::BinaryExpression* node)
     visit(node->getLeftExpr());
     visit(node->getRightExpr());
 
-    std::string lType = expressionHelper(node->getLeftExpr(), symbolTable,
-                                         semanticErrorHandler, udtTable);
-    std::string rType = getRightExpressionType(
-        node->getRightExpr(), symbolTable, semanticErrorHandler, udtTable);
+    std::string lType =
+        expressionHelper(node->getLeftExpr(), symbolTable, semanticErrorHandler,
+                         udtTable, curUDT);
+
+    std::string rType =
+        getRightExpressionType(node->getRightExpr(), symbolTable,
+                               semanticErrorHandler, udtTable, curUDT);
 
     switch (node->getBinaryExpressionType())
     {
@@ -672,6 +687,7 @@ TypeChecker::visit(ast::BinaryExpression* node)
             switch (subnode->getPrimary()->getPrimaryType())
             {
             case ast::Primary::IdentifierLiteral:
+            case ast::Primary::AttributeAccessLiteral:
             {
                 ast::Identifier* z = dynamic_cast<ast::Identifier*>(subnode);
 
@@ -743,38 +759,47 @@ TypeChecker::visit(ast::AttributeAccess* node)
     std::string attributeName = node->getAttribute()->getValue();
     std::string variableName = node->getUDT()->getValue();
 
-    // ensure variable exists
-    if (!symbolTable->hasVariable(variableName))
+    // hacks: REMOVE ASAP
+    if (variableName == "own")
+    {
+        variableName = curUDT;
+    }
+    else
+    {
+        // ensure variable exists
+        if (!symbolTable->hasVariable(variableName))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getLineNum(),
+                "Attribute: " + attributeName +
+                    " called on undeclared variable: " + variableName + "."));
+
+            return;
+        }
+
+        std::string udtTypeFull = symbolTable->getSymbolType(variableName);
+        variableName = udtTypeFull.substr(1, udtTypeFull.length());
+    }
+
+    // ensure udt exists
+    if (!udtTable->hasUDT(variableName))
     {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(),
             "Attribute: " + attributeName +
-                " called on undeclared variable: " + variableName + "."));
-
-        return;
-    }
-
-    std::string udtTypeFull = symbolTable->getSymbolType(variableName);
-    std::string udtType = udtTypeFull.substr(1, udtTypeFull.length());
-
-    // ensure udt exists
-    if (!udtTable->hasUDT(udtType))
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Attribute: " + attributeName +
-                          " called on nonexistent udt type: " + udtType + "."));
+                " called on nonexistent udt type: " + variableName + "."));
 
         return;
     }
 
     // ensure attribute exists for udt
-    if (!udtTable->getAttributeSymbolTable(udtType)->hasVariable(attributeName))
+    if (!udtTable->getAttributeSymbolTable(variableName)
+             ->hasVariable(attributeName))
     {
-        semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
-                      "Attribute: " + attributeName +
-                          " does not exists for udt type: " + udtType + "."));
+        semanticErrorHandler->handle(new Error(
+            node->getLineNum(),
+            "Attribute: " + attributeName +
+                " does not exists for udt type: " + variableName + "."));
 
         return;
     }
@@ -786,31 +811,41 @@ TypeChecker::visit(ast::MethodAccess* node)
     std::string methodName = node->getName()->getValue();
     std::string variableUDTname = node->getUDT()->getValue();
 
-    // ensure variable's udt exists
-    if (!symbolTable->hasVariable(variableUDTname))
+    // hacks: REMOVE ASAP
+    if (variableUDTname == "own")
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Method: " + methodName +
-                " called on nonexistent udt type: " + variableUDTname + "."));
+        variableUDTname = curUDT;
+    }
+    else
+    {
+        // ensure variable's udt exists
+        if (!symbolTable->hasVariable(variableUDTname))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getLineNum(), "Method: " + methodName +
+                                        " called on nonexistent udt type: " +
+                                        variableUDTname + "."));
 
-        return;
+            return;
+        }
+
+        std::string variableUDTname =
+            symbolTable->getSymbolType(variableUDTname);
+
+        // ensure variable's udt exists
+        if (!udtTable->hasUDT(
+                variableUDTname.substr(1, variableUDTname.length())))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getLineNum(), "Method: " + methodName +
+                                        " called on nonexistent udt type: " +
+                                        variableUDTname + "."));
+
+            return;
+        }
     }
 
-    std::string udtname = symbolTable->getSymbolType(variableUDTname);
-
-    // ensure variable's udt exists
-    if (!udtTable->hasUDT(udtname.substr(1, udtname.length())))
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Method: " + methodName +
-                " called on nonexistent udt type: " + variableUDTname + "."));
-
-        return;
-    }
-
-    std::string udtType = udtname.substr(1, udtname.length());
+    std::string udtType = variableUDTname.substr(1, variableUDTname.length());
 
     // ensure metho exists for udt
     if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(methodName))
@@ -833,7 +868,7 @@ TypeChecker::visit(ast::MethodAccess* node)
     std::vector<ast::Primary*> args = node->getFunctionCall()->getArguments();
 
     compareFunctions(inputs, args, methodName, symbolTable,
-                     semanticErrorHandler, udtTable);
+                     semanticErrorHandler, udtTable, curUDT);
 
     for (auto const& arg : args)
     {
@@ -863,7 +898,7 @@ TypeChecker::visit(ast::FunctionCall* node)
     std::vector<ast::Primary*> args = node->getArguments();
 
     compareFunctions(inputs, args, name, symbolTable, semanticErrorHandler,
-                     udtTable);
+                     udtTable, curUDT);
 
     for (auto const& arg : args)
     {
