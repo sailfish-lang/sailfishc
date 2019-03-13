@@ -44,10 +44,10 @@ SymbolTable::exitScope()
         auto value = globalScopeTable.find(varName);
         if (value != globalScopeTable.end())
         {
-            value->second->pop();
+            value->second.pop();
 
             // we will remove vars from table if their scope is empty
-            if (value->second->isEmpty())
+            if (value->second.empty())
             {
                 globalScopeTable.erase(varName);
             }
@@ -76,7 +76,7 @@ SymbolTable::getSymbolType(std::string varName)
 {
     if (hasVariable(varName))
     {
-        return globalScopeTable.find(varName)->second->peek()->getType();
+        return globalScopeTable.find(varName)->second.top()->getType();
     }
 
     return "";
@@ -87,7 +87,7 @@ SymbolTable::getSymbolScope(std::string varName)
 {
     if (hasVariable(varName))
     {
-        return globalScopeTable.find(varName)->second->peek()->getScopeLevel();
+        return globalScopeTable.find(varName)->second.top()->getScopeLevel();
     }
 
     return -1;
@@ -102,14 +102,16 @@ SymbolTable::addSymbol(std::string varName, std::string type)
         if (getSymbolScope(varName) == scopeLevel)
             return false;
 
-        globalScopeTable.find(varName)->second->push(type, scopeLevel);
+        SymbolMetaData* smd = new SymbolMetaData(type, scopeLevel);
+        globalScopeTable.find(varName)->second.push(smd);
         localCache = addToLocalCache(varName, localCache);
         return true;
     }
     else
     {
-        ScopeStack* ss = new ScopeStack();
-        ss->push(type, scopeLevel);
+        std::stack<SymbolMetaData*> ss;
+        SymbolMetaData* smd = new SymbolMetaData(type, scopeLevel);
+        ss.push(smd);
         globalScopeTable.insert({varName, ss});
         localCache = addToLocalCache(varName, localCache);
         return true;

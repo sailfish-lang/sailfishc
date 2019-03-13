@@ -3,8 +3,9 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "ScopeStack.h"
+#include "SymbolMetaData.h"
 #include <iostream>
+#include <stack>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -14,7 +15,8 @@ class SymbolTable
 {
   private:
     int scopeLevel;
-    std::unordered_map<std::string, ScopeStack*> globalScopeTable;
+    std::unordered_map<std::string, std::stack<SymbolMetaData*>>
+        globalScopeTable;
     std::vector<std::string> localCache;
 
   public:

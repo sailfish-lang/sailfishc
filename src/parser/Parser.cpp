@@ -884,7 +884,8 @@ Parser::parseBinaryExpression()
     // Expression ['and' | 'or'] Expression
     if (tk == "and" || tk == "or")
     {
-        std::string op = tk;
+        // since I know I am transpiling to c
+        std::string op = tk == "and" ? "&&" : "||";
 
         // consume op
         getNextUsefulToken();
