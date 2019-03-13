@@ -511,29 +511,14 @@ isLegalGrouping(ast::BinaryExpression* node)
 {
     switch (node->getBinaryExpressionType())
     {
-    case ast::BinaryExpression::Multiplication:
-    case ast::BinaryExpression::Exponentiation:
-    case ast::BinaryExpression::Division:
-    case ast::BinaryExpression::Modulo:
-    case ast::BinaryExpression::Addition:
-    case ast::BinaryExpression::Subtraction:
     case ast::BinaryExpression::Assignment:
     case ast::BinaryExpression::ExpressionOnlyStatement:
-    {
         return false;
-    }
 
-    case ast::BinaryExpression::OrComparison:
-    case ast::BinaryExpression::AndComparison:
-    case ast::BinaryExpression::NonEquivalenceComparison:
-    case ast::BinaryExpression::EquivalenceComparison:
-    case ast::BinaryExpression::BinaryLessThanOrEqual:
-    case ast::BinaryExpression::BinaryGreaterThanOrEqual:
-    case ast::BinaryExpression::BinaryLessThan:
-    case ast::BinaryExpression::BinaryGreaterThan:
-    {
-        return true;
-    }
+    case ast::BinaryExpression::BinaryCompOrArith:
+        ast::BinaryCompOrArith* subnode =
+            dynamic_cast<ast::BinaryCompOrArith*>(node);
+        return subnode->isComparison();
     }
 }
 

@@ -705,69 +705,78 @@ TypeChecker::visit(ast::BinaryExpression* node)
     switch (node->getBinaryExpressionType())
     {
     // only int AND int
-    case ast::BinaryExpression::Modulo:
-    case ast::BinaryExpression::Exponentiation:
+    case ast::BinaryExpression::BinaryCompOrArith:
     {
-        if (lType != "int")
+        ast::BinaryCompOrArith* subnode =
+            dynamic_cast<ast::BinaryCompOrArith*>(node);
+        if (subnode->onlyAcceptsInt())
         {
-            semanticErrorHandler->handle(
-                new Error(0, "Expected int type on left "
-                             "side of operation. Instead received: " +
-                                 lType + "."));
+            if (lType != "int")
+            {
+                semanticErrorHandler->handle(
+                    new Error(0, "Expected int type on left "
+                                 "side of operation. Instead received: " +
+                                     lType + "."));
+            }
+            else if (rType != "int")
+            {
+                semanticErrorHandler->handle(
+                    new Error(0, "Expected int type on left "
+                                 "side of operation. Instead received: " +
+                                     rType + "."));
+            }
         }
-        else if (rType != "int")
+        else if (subnode->onlyAcceptsBool())
         {
-            semanticErrorHandler->handle(
-                new Error(0, "Expected int type on left "
-                             "side of operation. Instead received: " +
-                                 rType + "."));
-        }
-        break;
-    }
-    // only int AND int or flt AND flt
-    case ast::BinaryExpression::Addition:
-    case ast::BinaryExpression::Subtraction:
-    case ast::BinaryExpression::Multiplication:
-    case ast::BinaryExpression::Division:
-    case ast::BinaryExpression::BinaryLessThan:
-    case ast::BinaryExpression::BinaryLessThanOrEqual:
-    case ast::BinaryExpression::BinaryGreaterThanOrEqual:
-    case ast::BinaryExpression::BinaryGreaterThan:
-    {
-        if (lType != rType)
-        {
-            semanticErrorHandler->handle(
-                new Error(0, "Expected the same types on each side of "
-                             "operation. Instead received: " +
-                                 lType + " and " + rType + "."));
-        }
-        else if (lType != "int" && lType != "flt")
-        {
-            semanticErrorHandler->handle(
-                new Error(0, "Expected either float or integer type on left "
-                             "side of operation. Instead received: " +
-                                 lType + "."));
-        }
-        else if (rType != "int" && rType != "flt")
-        {
-            semanticErrorHandler->handle(
-                new Error(0, "Expected either float or integer type on left "
-                             "side of operation. Instead received: " +
-                                 rType + "."));
-        }
-        break;
-    }
+            if (lType != "bool")
+            {
+                semanticErrorHandler->handle(
+                    new Error(0, "Expected boolean type on left side of "
+                                 "operation. Instead received: " +
+                                     lType + "."));
+            }
 
-    // both sides same type
-    case ast::BinaryExpression::EquivalenceComparison:
-    case ast::BinaryExpression::NonEquivalenceComparison:
-    {
-        if (lType != rType)
+            else if (rType != "bool")
+            {
+                semanticErrorHandler->handle(
+                    new Error(0, "Expected boolean type on right side of "
+                                 "operation. Instead received: " +
+                                     rType + "."));
+            }
+        }
+        else if (subnode->onlyAcceptsFltOrInt())
         {
-            semanticErrorHandler->handle(
-                new Error(0, "Expected the same types on each side of "
-                             "operation. Instead received: " +
-                                 lType + " and " + rType + "."));
+            if (lType != rType)
+            {
+                semanticErrorHandler->handle(
+                    new Error(0, "Expected the same types on each side of "
+                                 "operation. Instead received: " +
+                                     lType + " and " + rType + "."));
+            }
+            else if (lType != "int" && lType != "flt")
+            {
+                semanticErrorHandler->handle(new Error(
+                    0, "Expected either float or integer type on left "
+                       "side of operation. Instead received: " +
+                           lType + "."));
+            }
+            else if (rType != "int" && rType != "flt")
+            {
+                semanticErrorHandler->handle(new Error(
+                    0, "Expected either float or integer type on left "
+                       "side of operation. Instead received: " +
+                           rType + "."));
+            }
+        }
+        else
+        {
+            if (lType != rType)
+            {
+                semanticErrorHandler->handle(
+                    new Error(0, "Expected the same types on each side of "
+                                 "operation. Instead received: " +
+                                     lType + " and " + rType + "."));
+            }
         }
         break;
     }
@@ -814,28 +823,6 @@ TypeChecker::visit(ast::BinaryExpression* node)
                 new Error(0, "Expected the same types on each side of "
                              "operation. Instead received: " +
                                  lType + " and " + rType + "."));
-        }
-        break;
-    }
-
-    // both side boolean
-    case ast::BinaryExpression::AndComparison:
-    case ast::BinaryExpression::OrComparison:
-    {
-        if (lType != "bool")
-        {
-            semanticErrorHandler->handle(
-                new Error(0, "Expected boolean type on left side of "
-                             "comparison. Instead received: " +
-                                 lType + "."));
-        }
-
-        else if (rType != "bool")
-        {
-            semanticErrorHandler->handle(
-                new Error(0, "Expected boolean type on right side of "
-                             "comparison. Instead received: " +
-                                 rType + "."));
         }
         break;
     }

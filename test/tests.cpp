@@ -94,7 +94,7 @@ TEST(ParserTest, AllTokens)
         "Output",
         "Identifier: i",
         "FloatLiteral: 10.0",
-        "Addition",
+        "BinaryCompOrArith",
         "ReturnStatement",
         "FunctionDefinition",
         "Identifier: foo",
@@ -103,17 +103,17 @@ TEST(ParserTest, AllTokens)
         "IntegerLiteral: 2",
         "IntegerLiteral: 4",
         "IntegerLiteral: 7",
-        "Modulo",
+        "BinaryCompOrArith",
         "Negation",
-        "OrComparison",
-        "AndComparison",
-        "EquivalenceComparison",
+        "BinaryCompOrArith",
+        "BinaryCompOrArith",
+        "BinaryCompOrArith",
         "Assignment",
         "IntegerLiteral: 10",
         "IntegerLiteral: 11",
         "IntegerLiteral: 2",
-        "NonEquivalenceComparison",
-        "Subtraction",
+        "BinaryCompOrArith",
+        "BinaryCompOrArith",
         "IfStatement",
         "InitialExecutionBody",
     };
@@ -389,14 +389,14 @@ TEST(SemanticTest, TypeCheckerBinariesAndUnaries)
         "Expected the same types on each side of operation. Instead received: "
         "int and bool.",
 
-        "Expected boolean type on right side of comparison. Instead received: "
+        "Expected boolean type on right side of operation. Instead received: "
         "int.",
-        "Expected boolean type on left side of comparison. Instead received: "
+        "Expected boolean type on left side of operation. Instead received: "
         "int.",
 
-        "Expected boolean type on right side of comparison. Instead received: "
+        "Expected boolean type on right side of operation. Instead received: "
         "int.",
-        "Expected boolean type on left side of comparison. Instead received: "
+        "Expected boolean type on left side of operation. Instead received: "
         "int.",
 
         "Expected boolean type following negation. Instead received: int."};

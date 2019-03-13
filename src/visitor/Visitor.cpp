@@ -147,95 +147,14 @@ Visitor::visit(ast::BinaryExpression* node)
 {
     switch (node->getBinaryExpressionType())
     {
-    case ast::BinaryExpression::Exponentiation:
+    case ast::BinaryExpression::BinaryCompOrArith:
     {
-        ast::Exponentiation* subnode = dynamic_cast<ast::Exponentiation*>(node);
+        ast::BinaryCompOrArith* subnode =
+            dynamic_cast<ast::BinaryCompOrArith*>(node);
         visit(subnode);
         break;
     }
-    case ast::BinaryExpression::Multiplication:
-    {
-        ast::Multiplication* subnode = dynamic_cast<ast::Multiplication*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::Division:
-    {
-        ast::Division* subnode = dynamic_cast<ast::Division*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::Modulo:
-    {
-        ast::Modulo* subnode = dynamic_cast<ast::Modulo*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::Addition:
-    {
-        ast::Addition* subnode = dynamic_cast<ast::Addition*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::Subtraction:
-    {
-        ast::Subtraction* subnode = dynamic_cast<ast::Subtraction*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::BinaryGreaterThan:
-    {
-        ast::BinaryGreaterThan* subnode =
-            dynamic_cast<ast::BinaryGreaterThan*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::BinaryLessThan:
-    {
-        ast::BinaryLessThan* subnode = dynamic_cast<ast::BinaryLessThan*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::BinaryGreaterThanOrEqual:
-    {
-        ast::BinaryGreaterThanOrEqual* subnode =
-            dynamic_cast<ast::BinaryGreaterThanOrEqual*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::BinaryLessThanOrEqual:
-    {
-        ast::BinaryLessThanOrEqual* subnode =
-            dynamic_cast<ast::BinaryLessThanOrEqual*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::EquivalenceComparison:
-    {
-        ast::EquivalenceComparison* subnode =
-            dynamic_cast<ast::EquivalenceComparison*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::NonEquivalenceComparison:
-    {
-        ast::NonEquivalenceComparison* subnode =
-            dynamic_cast<ast::NonEquivalenceComparison*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::AndComparison:
-    {
-        ast::AndComparison* subnode = dynamic_cast<ast::AndComparison*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::OrComparison:
-    {
-        ast::OrComparison* subnode = dynamic_cast<ast::OrComparison*>(node);
-        visit(subnode);
-        break;
-    }
+
     case ast::BinaryExpression::Assignment:
     {
         ast::Assignment* subnode = dynamic_cast<ast::Assignment*>(node);
@@ -613,90 +532,12 @@ Visitor::visit(ast::Negation* node)
     visit(node->getBinaryExpression());
 }
 void
-Visitor::visit(ast::Exponentiation* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::Multiplication* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::Division* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::Modulo* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::Addition* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::Subtraction* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
 Visitor::visit(ast::GroupingExpression* node)
 {
     visit(node->getBinaryExpressionList());
 }
 void
-Visitor::visit(ast::BinaryGreaterThan* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::BinaryLessThan* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::BinaryGreaterThanOrEqual* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::BinaryLessThanOrEqual* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::EquivalenceComparison* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::NonEquivalenceComparison* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::AndComparison* node)
-{
-    visit(node->getLeftExpr());
-    visit(node->getRightExpr());
-}
-void
-Visitor::visit(ast::OrComparison* node)
+Visitor::visit(ast::BinaryCompOrArith* node)
 {
     visit(node->getLeftExpr());
     visit(node->getRightExpr());

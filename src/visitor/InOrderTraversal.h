@@ -53,20 +53,7 @@ class InOrderTraversal : public Visitor
     void visit(ast::Identifier*);
     void visit(ast::Typename*);
     void visit(ast::Negation*);
-    void visit(ast::Exponentiation*);
-    void visit(ast::Multiplication*);
-    void visit(ast::Division*);
-    void visit(ast::Modulo*);
-    void visit(ast::Addition*);
-    void visit(ast::Subtraction*);
-    void visit(ast::BinaryGreaterThan*);
-    void visit(ast::BinaryLessThan*);
-    void visit(ast::BinaryGreaterThanOrEqual*);
-    void visit(ast::BinaryLessThanOrEqual*);
-    void visit(ast::EquivalenceComparison*);
-    void visit(ast::NonEquivalenceComparison*);
-    void visit(ast::AndComparison*);
-    void visit(ast::OrComparison*);
+    void visit(ast::BinaryCompOrArith*);
     void visit(ast::Assignment*);
 
     // return a vector of strings in an order traversal

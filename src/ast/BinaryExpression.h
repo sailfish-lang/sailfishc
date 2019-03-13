@@ -18,21 +18,8 @@ class BinaryExpression : public Statement
   public:
     enum BinaryExpressionType
     {
-        Exponentiation,
-        Multiplication,
-        Division,
-        Modulo,
-        Addition,
-        Subtraction,
-        BinaryGreaterThan,
-        BinaryLessThan,
-        BinaryGreaterThanOrEqual,
-        BinaryLessThanOrEqual,
-        EquivalenceComparison,
-        NonEquivalenceComparison,
-        AndComparison,
-        OrComparison,
         Assignment,
+        BinaryCompOrArith,
         ExpressionOnlyStatement,
     };
     virtual BinaryExpressionType getBinaryExpressionType() = 0;

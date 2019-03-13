@@ -837,179 +837,62 @@ Parser::parseBinaryExpression()
             leftExpr, lineNum);
     }
 
-    // Expression ** Expression
-    if (tk == "**")
+    if (tk == "%" || tk == "**")
     {
-        // consume '**'
+        std::string op = tk;
+
+        // consume op
         getNextUsefulToken();
 
         ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
-        return (ast::BinaryExpression*)new ast::Exponentiation(
-            leftExpr, rightExpr, lineNum);
+        return (ast::BinaryExpression*)new ast::BinaryCompOrArith(
+            op, false, true, false, false, leftExpr, rightExpr, lineNum);
     }
 
-    // Expression ['*' | '/' | '%'] Expression
-    if (tk == "*" || tk == "/" || tk == "%")
+    if (tk == "<" || tk == "<=" || tk == ">" || tk == ">=" || tk == "+" ||
+        tk == "-" || tk == "/" || tk == "*")
     {
-        if (tk == "*")
-        {
-            // consume '*'
-            getNextUsefulToken();
+        std::string op = tk;
 
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
+        // consume op
+        getNextUsefulToken();
 
-            return (ast::BinaryExpression*)new ast::Multiplication(
-                leftExpr, rightExpr, lineNum);
-        }
+        bool isComp =
+            (tk == "<" || tk == "<=" || tk == ">" || tk == ">=") ? true : false;
 
-        if (tk == "/")
-        {
-            // consume '/'
-            getNextUsefulToken();
+        ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::Division(
-                leftExpr, rightExpr, lineNum);
-        }
-
-        if (tk == "%")
-        {
-            // consume '%'
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::Modulo(leftExpr, rightExpr,
-                                                           lineNum);
-        }
-    }
-
-    // Expression ['+' | '-'] Expression
-    if (tk == "+" || tk == "-")
-    {
-        if (tk == "+")
-        {
-            // consume '+'
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::Addition(
-                leftExpr, rightExpr, lineNum);
-        }
-
-        if (tk == "-")
-        {
-            // consume '-'
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::Subtraction(
-                leftExpr, rightExpr, lineNum);
-        }
-    }
-
-    // Expression ['>', '>=', '<', '<='] Expression
-    if (tk == ">" || tk == ">=" || tk == "<" || tk == "<=")
-    {
-        if (tk == ">")
-        {
-            // consume '>'
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::BinaryGreaterThan(
-                leftExpr, rightExpr, lineNum);
-        }
-
-        if (tk == ">=")
-        {
-            // consume '>='
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::BinaryGreaterThanOrEqual(
-                leftExpr, rightExpr, lineNum);
-        }
-
-        if (tk == "<")
-        {
-            // consume '<'
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::BinaryLessThan(
-                leftExpr, rightExpr, lineNum);
-        }
-
-        if (tk == "<=")
-        {
-            // consume '<='
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::BinaryLessThanOrEqual(
-                leftExpr, rightExpr, lineNum);
-        }
+        return (ast::BinaryExpression*)new ast::BinaryCompOrArith(
+            op, isComp, false, false, true, leftExpr, rightExpr, lineNum);
     }
 
     // Expression ['==' | '!='] Expression
     if (tk == "==" || tk == "!=")
     {
-        if (tk == "==")
-        {
-            // consume '=='
-            getNextUsefulToken();
+        std::string op = tk;
 
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
+        // consume op
+        getNextUsefulToken();
 
-            return (ast::BinaryExpression*)new ast::EquivalenceComparison(
-                leftExpr, rightExpr, lineNum);
-        }
+        ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
-        if (tk == "!=")
-        {
-            // consume '!='
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::NonEquivalenceComparison(
-                leftExpr, rightExpr, lineNum);
-        }
+        return (ast::BinaryExpression*)new ast::BinaryCompOrArith(
+            op, true, false, false, false, leftExpr, rightExpr, lineNum);
     }
 
     // Expression ['and' | 'or'] Expression
     if (tk == "and" || tk == "or")
     {
-        if (tk == "and")
-        {
-            // consume 'and'
-            getNextUsefulToken();
+        std::string op = tk;
 
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
+        // consume op
+        getNextUsefulToken();
 
-            return (ast::BinaryExpression*)new ast::AndComparison(
-                leftExpr, rightExpr, lineNum);
-        }
+        ast::BinaryExpression* rightExpr = parseBinaryExpression();
 
-        if (tk == "or")
-        {
-            // consume 'or'
-            getNextUsefulToken();
-
-            ast::BinaryExpression* rightExpr = parseBinaryExpression();
-
-            return (ast::BinaryExpression*)new ast::OrComparison(
-                leftExpr, rightExpr, lineNum);
-        }
+        return (ast::BinaryExpression*)new ast::BinaryCompOrArith(
+            op, true, false, true, false, leftExpr, rightExpr, lineNum);
     }
 
     // Expression '=' Expression

@@ -76,23 +76,8 @@ class Transpiler : public Visitor
     void visit(ast::BinaryExpression*);
 
     // binaries
-    void visit(ast::BinaryGreaterThan*);
-    void visit(ast::BinaryLessThan*);
-    void visit(ast::BinaryGreaterThanOrEqual*);
-    void visit(ast::BinaryLessThanOrEqual*);
-    void visit(ast::EquivalenceComparison*);
-    void visit(ast::NonEquivalenceComparison*);
-    void visit(ast::AndComparison*);
-    void visit(ast::OrComparison*);
+    void visit(ast::BinaryCompOrArith*);
     void visit(ast::Assignment*);
-
-    // arithmetic
-    void visit(ast::Exponentiation*);
-    void visit(ast::Multiplication*);
-    void visit(ast::Division*);
-    void visit(ast::Modulo*);
-    void visit(ast::Addition*);
-    void visit(ast::Subtraction*);
 
     // unaries
     void visit(ast::Negation*);
