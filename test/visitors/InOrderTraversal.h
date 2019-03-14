@@ -3,7 +3,7 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Visitor.h"
+#include "../../src/visitor/Visitor.h"
 #include <iostream>
 
 class InOrderTraversal : public Visitor

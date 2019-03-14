@@ -6,17 +6,17 @@ ADD_LIBRARY(SailfishcLibs
     ../src/lexar/Scanner.cpp
     ../src/lexar/Token.cpp
     ../src/parser/Parser.cpp
-    ../src/visitor/InOrderTraversal.cpp
+    visitors/InOrderTraversal.cpp
     ../src/visitor/Visitor.cpp
-    ../src/semant/SymbolTable.cpp 
-    ../src/semant/SemanticAnalyzer.cpp 
-    ../src/semant/TypeChecker.cpp 
-    ../src/semant/UDTTable.cpp 
+    ../src/semantics/SymbolTable.cpp 
+    ../src/semantics/SemanticAnalyzer.cpp 
+    ../src/semantics/TypeChecker.cpp 
+    ../src/semantics/UDTTable.cpp 
     ../src/errorhandler/SemanticErrorHandler.cpp 
     ../src/errorhandler/SymbolTableErrorHandler.cpp 
     ../src/errorhandler/ParserErrorHandler.cpp
     ../src/common/ReservedWords.cpp
-    ../src/semant/CommonExtractions.cpp
+    ../src/semantics/CommonExtractions.cpp
     ../src/visitor/InitialExecution.cpp
 )
 

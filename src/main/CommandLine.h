@@ -6,7 +6,7 @@
 #include "../ast/Ast.h"
 #include "../lexar/Lexar.h"
 #include "../parser/Parser.h"
-#include "../semant/SemanticAnalyzer.h"
+#include "../semantics/SemanticAnalyzer.h"
 #include "../transpiler/Transpiler.h"
 #include "../visitor/InOrderTraversal.h"
 #include <iostream>

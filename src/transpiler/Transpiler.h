@@ -4,7 +4,7 @@
  */
 #pragma once
 #include "../ast/Ast.h"
-#include "../semant/CommonExtractions.h"
+#include "../semantics/CommonExtractions.h"
 #include "../visitor/Visitor.h"
 #include <fstream>
 #include <iostream>

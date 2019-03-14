@@ -8,10 +8,10 @@
 #include "../src/errorhandler/Error.h"
 #include "../src/lexar/Lexar.h"
 #include "../src/parser/Parser.h"
-#include "../src/semant/SemanticAnalyzer.h"
-#include "../src/semant/SymbolTable.h"
-#include "../src/semant/TypeChecker.h"
-#include "../src/visitor/InOrderTraversal.h"
+#include "../src/semantics/SemanticAnalyzer.h"
+#include "../src/semantics/SymbolTable.h"
+#include "../src/semantics/TypeChecker.h"
+#include "visitors/InOrderTraversal.h"
 #include <gtest/gtest.h>
 
 TEST(LexarTest, HelloWorld)
@@ -198,75 +198,6 @@ TEST(SemanticTest, TypeCheckerFunctions)
     Parser* p = new Parser();
     ast::Start* root =
         p->parse("../sailfish_examples/semantics_functions.fish");
-
-    SemanticAnalyzer* s = new SemanticAnalyzer(root);
-
-    int i = 0;
-    for (Error* const& err : s->testAnalyze())
-    {
-        ASSERT_EQ(err->getErrorMessage(), expected[i]);
-        ++i;
-    }
-}
-
-TEST(SemanticTest, TypeCheckerListsDeclerations)
-{
-    static const std::string expected[] = {
-        "Declared type: Foo for variable named: list_error_a is not a legal or "
-        "known type.",
-        "Declared type of list: Foo for variable named: list_error_a does not "
-        "match assigned expression's list of type: int.",
-        "Declared type of list for variable named: list_error_b does not match "
-        "assigned expression type of: dictionary.",
-        "List is not homogenous. Received types: flt and int which do not "
-        "match.",
-        "Declared type of list: int for variable named: list_error_d does not "
-        "match assigned expression's list of type: flt.",
-    };
-
-    Parser* p = new Parser();
-    ast::Start* root = p->parse("../sailfish_examples/semantics_lists.fish");
-
-    SemanticAnalyzer* s = new SemanticAnalyzer(root);
-
-    int i = 0;
-    for (Error* const& err : s->testAnalyze())
-    {
-        ASSERT_EQ(err->getErrorMessage(), expected[i]);
-        ++i;
-    }
-}
-
-TEST(SemanticTest, TypeCheckerDictionaryDeclerations)
-{
-    static const std::string expected[] = {
-
-        "Declared type: Foo for variable named: Foo is not a legal or known "
-        "type.",
-        "Declared type of dictionary keys: Foo for variable named: "
-        "dictionary_error_a does not match assigned expression's dictionary "
-        "keys of type: int.",
-        "Declared type: Foo for variable named: Foo is not a legal or known "
-        "type.",
-        "Declared type of dictionary values: Foo for variable named: "
-        "dictionary_error_b does not match assigned expression's dictionary "
-        "values of type: flt.",
-        "Declared variable named: str illegally shares its name with a type "
-        "or a keyword/reserved word.",
-        "Declared type of dictionary for variable named: dictionary_error_c "
-        "does not match assigned expression type of: list.",
-        "Inconsistent key types in dictionary",
-        "Declared type of dictionary keys: int for variable named: "
-        "dictionary_error_e does not match assigned expression's dictionary "
-        "keys of type: flt.",
-        "Declared type of dictionary values: flt for variable named: "
-        "dictionary_error_f does not match assigned expression's dictionary "
-        "values of type: int.",
-    };
-
-    Parser* p = new Parser();
-    ast::Start* root =
-        p->parse("../sailfish_examples/semantics_dictionaries.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -486,33 +417,6 @@ TEST(SemanticTest, TypeCheckerReturnStatements)
     Parser* p = new Parser();
     ast::Start* root =
         p->parse("../sailfish_examples/semantics_function_return.fish");
-
-    SemanticAnalyzer* s = new SemanticAnalyzer(root);
-
-    int i = 0;
-    for (Error* const& err : s->testAnalyze())
-    {
-        ASSERT_EQ(err->getErrorMessage(), expected[i]);
-        ++i;
-    }
-}
-
-TEST(SemanticTest, TypeCheckerDictionaryAndListAccessors)
-{
-    static const std::string expected[] = {
-        "Expected the same types on each side of operation. Instead received: "
-        "flt and int.",
-        "Supplied key type: flt does not match expected key type: int for: "
-        "someDict.",
-        "Expected the same types on each side of operation. Instead received: "
-        "flt and unknown.",
-        "Expected the same types on each side of operation. Instead received: "
-        "int and flt.",
-    };
-
-    Parser* p = new Parser();
-    ast::Start* root = p->parse(
-        "../sailfish_examples/semantics_dictionary_list_accessors.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
