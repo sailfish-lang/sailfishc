@@ -21,7 +21,7 @@ TEST(LexarTest, HelloWorld)
                                     Kind::LPAREN_TOKEN,  Kind::STRING_TOKEN,
                                     Kind::RPAREN_TOKEN,  Kind::RCURLEY_TOKEN};
 
-    Lexar* lexar = new Lexar("../sailfish_examples/helloworld.fish");
+    Lexar* lexar = new Lexar("./examples/helloworld.fish");
 
     Token* t;
     int i = 0;
@@ -55,7 +55,7 @@ TEST(LexarTest, Nonsense)
         Kind::RCURLEY_TOKEN,
     };
 
-    Lexar* lexar = new Lexar("../sailfish_examples/nonsense_lexar.fish");
+    Lexar* lexar = new Lexar("./examples/nonsense_lexar.fish");
 
     Token* t;
     int i = 0;
@@ -107,7 +107,7 @@ TEST(ParserTest, AllTokens)
     };
 
     Parser* parser = new Parser();
-    ast::Start* root = parser->parse("../sailfish_examples/parser.fish");
+    ast::Start* root = parser->parse("./examples/parser.fish");
 
     InOrderTraversal* v = new InOrderTraversal();
 
@@ -196,8 +196,7 @@ TEST(SemanticTest, TypeCheckerFunctions)
     };
 
     Parser* p = new Parser();
-    ast::Start* root =
-        p->parse("../sailfish_examples/semantics_functions.fish");
+    ast::Start* root = p->parse("./examples/semantics_functions.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -220,8 +219,7 @@ TEST(SemanticTest, TypeCheckerPrimitiveDeclerations)
     };
 
     Parser* p = new Parser();
-    ast::Start* root =
-        p->parse("../sailfish_examples/semantics_primitives.fish");
+    ast::Start* root = p->parse("./examples/semantics_primitives.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -324,8 +322,7 @@ TEST(SemanticTest, TypeCheckerBinariesAndUnaries)
         "Expected boolean type following negation. Instead received: int."};
 
     Parser* p = new Parser();
-    ast::Start* root =
-        p->parse("../sailfish_examples/semantics_binaries_unaries.fish");
+    ast::Start* root = p->parse("./examples/semantics_binaries_unaries.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -351,7 +348,7 @@ TEST(SemanticTest, TypeCheckerUDTDec)
     };
 
     Parser* p = new Parser();
-    ast::Start* root = p->parse("../sailfish_examples/semantics_udt.fish");
+    ast::Start* root = p->parse("./examples/semantics_udt.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -371,8 +368,7 @@ TEST(SemanticTest, TypeCheckerAssignments)
     };
 
     Parser* p = new Parser();
-    ast::Start* root =
-        p->parse("../sailfish_examples/semantics_assignment.fish");
+    ast::Start* root = p->parse("./examples/semantics_assignment.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -393,7 +389,7 @@ TEST(SemanticTest, TypeCheckerIfElse)
     };
 
     Parser* p = new Parser();
-    ast::Start* root = p->parse("../sailfish_examples/semantics_if_else.fish");
+    ast::Start* root = p->parse("./examples/semantics_if_else.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -415,8 +411,7 @@ TEST(SemanticTest, TypeCheckerReturnStatements)
     };
 
     Parser* p = new Parser();
-    ast::Start* root =
-        p->parse("../sailfish_examples/semantics_function_return.fish");
+    ast::Start* root = p->parse("./examples/semantics_function_return.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -440,8 +435,7 @@ TEST(SemanticTest, TypeCheckerMethodAccess)
     };
 
     Parser* p = new Parser();
-    ast::Start* root =
-        p->parse("../sailfish_examples/semantics_methodaccess.fish");
+    ast::Start* root = p->parse("./examples/semantics_methodaccess.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
@@ -470,8 +464,7 @@ TEST(SemanticTest, TypeCheckerAttributeAccess)
     };
 
     Parser* p = new Parser();
-    ast::Start* root =
-        p->parse("../sailfish_examples/semantics_attributeaccess.fish");
+    ast::Start* root = p->parse("./examples/semantics_attributeaccess.fish");
 
     SemanticAnalyzer* s = new SemanticAnalyzer(root);
 
