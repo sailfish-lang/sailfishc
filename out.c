@@ -5,15 +5,14 @@
 #include "stdlib/display.h"
 
 typedef struct _Stack_ {
-    int* stack;
     int size;
 } Stack;
 
 Stack*
-construct_Stack(int* stack_,int size_)
+construct_Stack(int size_)
 {
     Stack* a = (Stack*)malloc(sizeof(Stack));
-    a->stack = stack_;    a->size = size_;
+    a->size = size_;
     return a;
 }
 
@@ -21,28 +20,12 @@ int
 is_empty(Stack* _own_)
 {
     int ret_val = 1;
-    ret_val = (0==_own_->size);
+    ret_val = (0==1);
     return ret_val;
-}
-int
-pop(Stack* _own_)
-{
-    int i = 0;
-    if(1==!is_empty(own);)
-{
-
-}
-else 
-{
-
-}
-
-    return i;
 }
 int
 main()
 {
-    int* l = {1, 2, 3};
-    Stack* s = construct_Stack(l,10);
+    Stack* s = construct_Stack(10);
     int c = is_empty(s);
 }

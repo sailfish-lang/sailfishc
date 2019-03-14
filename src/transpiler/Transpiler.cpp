@@ -98,8 +98,6 @@ Transpiler::visit(ast::FunctionDefinition* node)
     fileBuffer += ")";
 
     visit(node->getBody());
-
-    fileBuffer += "";
 }
 
 /**
@@ -147,8 +145,6 @@ Transpiler::visit(ast::FunctionDefinition* node, std::string udtTypeName)
     fileBuffer += ")";
 
     visit(node->getBody());
-
-    fileBuffer += "";
 }
 
 /**
@@ -517,8 +513,6 @@ Transpiler::visit(ast::MethodAccess* node)
     fileBuffer += "(";
 
     visit(node->getUDT());
-
-    // fileBuffer += ",";
 
     for (int i = 0; i < node->getFunctionCall()->getArguments().size(); i++)
     {

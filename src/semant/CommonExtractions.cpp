@@ -61,10 +61,6 @@ getReturnType(std::string fulltype)
     case 'U':
     case 'P':
         return fulltype.substr(1, fulltype.length());
-    case 'L':
-        return "list_" + fulltype.substr(1, fulltype.length());
-    case 'D':
-        return "dictionary_" + fulltype.substr(1, fulltype.length());
     case 'F':
         return getFunctionReturnType(fulltype);
     default:
@@ -386,25 +382,6 @@ compareFunctions(std::vector<std::string> inputs,
                             "Illegal argument: " + actual +
                                 " supplied for function: " + name +
                                 ". Sorry, functions are not first order :("));
-
-                        // to continue semantic analysis
-                        actual = inputs[i];
-                        break;
-                    case 'L':
-                        new Error(0,
-                                  "Illegal argument: " + actual +
-                                      " supplied for function: " + name +
-                                      ". Lists cannot be passed to functions");
-
-                        // to continue semantic analysis
-                        actual = inputs[i];
-                        break;
-                    case 'D':
-                        new Error(
-                            0,
-                            "Illegal argument: " + actual +
-                                " supplied for function: " + name +
-                                ". Dictionaries cannot be passed to functions");
 
                         // to continue semantic analysis
                         actual = inputs[i];
