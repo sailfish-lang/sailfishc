@@ -51,24 +51,6 @@ InOrderTraversal::visit(ast::ExportDefinition* node)
 }
 
 void
-InOrderTraversal::visit(ast::ListDefinition* node)
-{
-    visit(node->getName());
-    visit(node->getExpression());
-
-    push("ListDefinition");
-}
-
-void
-InOrderTraversal::visit(ast::DictionaryDefinition* node)
-{
-    visit(node->getName());
-    visit(node->getExpression());
-
-    push("DictionaryDefinition");
-}
-
-void
 InOrderTraversal::visit(ast::NewUDTDefinition* node)
 {
     visit(node->getVariable());
@@ -194,19 +176,6 @@ InOrderTraversal::visit(ast::NewExpression* node)
 
     switch (type)
     {
-    case ast::New::DictionaryLiteral:
-    {
-        ast::DictionaryLiteral* subnode =
-            dynamic_cast<ast::DictionaryLiteral*>(newVal);
-        visit(subnode);
-        break;
-    }
-    case ast::New::ListLiteral:
-    {
-        ast::ListLiteral* subnode = dynamic_cast<ast::ListLiteral*>(newVal);
-        visit(subnode);
-        break;
-    }
     case ast::New::UserDefinedType:
     {
         ast::UserDefinedType* subnode =
@@ -256,37 +225,6 @@ void
 InOrderTraversal::visit(ast::BooleanLiteral* node)
 {
     push("BooleanLiteral");
-}
-void
-InOrderTraversal::visit(ast::DictionaryLiteral* node)
-{
-    for (auto const& dictionaryItem : node->getItems())
-    {
-        visit(dictionaryItem);
-    }
-
-    push("DictionaryLiteral");
-}
-void
-InOrderTraversal::visit(ast::DictionaryItem* node)
-{
-    push("DictionaryItem");
-}
-void
-InOrderTraversal::visit(ast::ListLiteral* node)
-{
-    for (auto const& listItem : node->getItems())
-    {
-        visit(listItem);
-    }
-
-    push("ListLiteral");
-}
-
-void
-InOrderTraversal::visit(ast::ListItem* node)
-{
-    push("ListItem");
 }
 
 void

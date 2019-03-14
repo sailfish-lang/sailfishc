@@ -65,12 +65,6 @@ class TypeChecker : public Visitor
     // primitives
     void visit(ast::PrimitiveDefition*);
 
-    // list
-    void visit(ast::ListDefinition*);
-
-    // dictionary
-    void visit(ast::DictionaryDefinition*);
-
     // function
     void visit(ast::FunctionDefinition*);
 

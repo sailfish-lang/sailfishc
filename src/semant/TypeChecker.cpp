@@ -113,27 +113,27 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     // ensure all attributes exist
     else
     {
-        SymbolTable* st = udtTable->getAttributeSymbolTable(udtTypeName);
+        // SymbolTable* st = udtTable->getAttributeSymbolTable(udtTypeName);
 
-        while (temp.length() != prev.length())
-        {
-            std::string varName = temp.substr(0, temp.find("_"));
-            temp = temp.substr(temp.find("_") + 1, temp.length());
+        // while (temp.length() != prev.length())
+        // {
+        //     std::string varName = temp.substr(0, temp.find("_"));
+        //     temp = temp.substr(temp.find("_") + 1, temp.length());
 
-            std::string varType = temp.substr(0, temp.find("_"));
-            temp = temp.substr(temp.find("_") + 1, temp.length());
-            prev = varType;
+        //     std::string varType = temp.substr(0, temp.find("_"));
+        //     temp = temp.substr(temp.find("_") + 1, temp.length());
+        //     prev = varType;
 
-            // ensure attribute type matches attribute name
-            if (varName != varType)
-            {
-                semanticErrorHandler->handle(new Error(
-                    node->getLineNum(),
-                    "Attribute: " + varType + " for declared udt of type: " +
-                        varName + " does not match expected type: " + "."));
-                break;
-            }
-        }
+        //     // ensure attribute type matches attribute name
+        //     if (varName != varType)
+        //     {
+        //         semanticErrorHandler->handle(new Error(
+        //             node->getLineNum(),
+        //             "Attribute: " + varType + " for declared udt of type: " +
+        //                 varName + " does not match expected type: " + "."));
+        //         break;
+        //     }
+        // }
     }
 
     // exit the symbol table for udt
@@ -178,112 +178,6 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
                 " of primitive for variable named: " + name +
                 " does not match assigned expression type of: " + exprType +
                 "."));
-    }
-}
-
-void
-TypeChecker::visit(ast::ListDefinition* node)
-{
-    std::string name = node->getName()->getValue();
-    std::string type = node->getType()->getType();
-    int lineNumber = node->getLineNum();
-
-    nameIsLegal(name, lineNumber);
-
-    std::string adjustedName = "L" + type;
-
-    tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
-    typeExists(type, name, lineNumber);
-
-    // visit expression
-    visit(node->getExpression());
-
-    std::string exprType =
-        expressionHelper(node->getExpression(), symbolTable,
-                         semanticErrorHandler, udtTable, curUDT);
-
-    std::string baseType = exprType.substr(0, exprType.find("_"));
-    std::string valType =
-        exprType.substr(exprType.find("_") + 1, exprType.length());
-
-    if (baseType != "list")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getName()->getLineNum(),
-            "Declared type of list for variable named: " + name +
-                " does not match assigned expression type of: " + baseType +
-                "."));
-    }
-    else if (valType != "empty" && valType != type)
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getType()->getLineNum(),
-            "Declared type of list: " + type + " for variable named: " + name +
-                " does not match assigned expression's list of type: " +
-                valType + "."));
-    }
-}
-
-void
-TypeChecker::visit(ast::DictionaryDefinition* node)
-{
-    std::string name = node->getName()->getValue();
-    std::string keyType = node->getKeyType()->getType();
-    std::string valueType = node->getValueType()->getType();
-    int lineNumber = node->getLineNum();
-
-    nameIsLegal(name, lineNumber);
-
-    std::string adjustedName = "D" + keyType + "_" + valueType;
-
-    tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
-    typeExists(keyType, keyType, lineNumber);
-    typeExists(valueType, valueType, lineNumber);
-
-    // visit expression
-    visit(node->getExpression());
-
-    std::string exprType =
-        expressionHelper(node->getExpression(), symbolTable,
-                         semanticErrorHandler, udtTable, curUDT);
-
-    std::string baseType = exprType.substr(0, exprType.find("_"));
-
-    std::string temp =
-        exprType.substr(exprType.find("_") + 1, exprType.length());
-
-    std::string receivedKeyType = temp.substr(0, temp.find("_"));
-
-    std::string receivedValType =
-        temp.substr(temp.find("_") + 1, temp.length());
-
-    if (baseType != "dictionary")
-    {
-        semanticErrorHandler->handle(new Error(
-            node->getName()->getLineNum(),
-            "Declared type of dictionary for variable named: " + name +
-                " does not match assigned expression type of: " + baseType +
-                "."));
-    }
-    else if (receivedKeyType != "empty" && receivedKeyType != keyType)
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getKeyType()->getLineNum(),
-                      "Declared type of dictionary keys: " + keyType +
-                          " for variable named: " + name +
-                          " does not match assigned expression's "
-                          "dictionary keys of type: " +
-                          receivedKeyType + "."));
-    }
-    else if (receivedValType != "empty" && receivedValType != valueType)
-    {
-        semanticErrorHandler->handle(
-            new Error(node->getValueType()->getLineNum(),
-                      "Declared type of dictionary values: " + valueType +
-                          " for variable named: " + name +
-                          " does not match assigned expression's "
-                          "dictionary values of type: " +
-                          receivedValType + "."));
     }
 }
 

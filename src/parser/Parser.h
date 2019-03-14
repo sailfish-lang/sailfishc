@@ -42,8 +42,6 @@ class Parser
     ast::UserDefinedType* parseUserDefinedType();
     ast::UDTitem* parseUDTitem();
 
-    ast::DictionaryDefinition* parseDictionaryDefinition();
-    ast::ListDefinition* parseListDefinition();
     ast::NewUDTDefinition* parseNewUDTDefinition();
     ast::PrimitiveDefition* parsePrimitiveDefinition();
 
@@ -62,12 +60,6 @@ class Parser
 
     ast::PrimaryExpression* parsePrimaryExpression();
     ast::Primary* parsePrimary();
-
-    ast::DictionaryLiteral* parseDictionaryLiteral();
-    ast::DictionaryItem* parseDictionaryItem();
-
-    ast::ListLiteral* parseListLiteral(ast::Identifier*);
-    ast::ListItem* parseListItem();
 
     ast::Block* parseBlock();
 

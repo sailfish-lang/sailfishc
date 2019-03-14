@@ -1,8 +1,3 @@
-// export definition
-exp dec dictionary someDict <[ int : str ]> new {1 : "hello"}
-
-dec list someList <[ flt ]> new [1.0]
-
 fun foo
 <- void
 -> void

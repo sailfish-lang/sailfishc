@@ -23,8 +23,6 @@ class InOrderTraversal : public Visitor
 
     // overloaded, overriden methods
     void visit(ast::ExportDefinition*);
-    void visit(ast::ListDefinition*);
-    void visit(ast::DictionaryDefinition*);
     void visit(ast::NewUDTDefinition*);
     void visit(ast::PrimitiveDefition*);
     void visit(ast::FunctionDefinition*);
@@ -41,10 +39,6 @@ class InOrderTraversal : public Visitor
     void visit(ast::MethodAccess*);
     void visit(ast::FunctionCall*);
     void visit(ast::BooleanLiteral*);
-    void visit(ast::DictionaryLiteral*);
-    void visit(ast::DictionaryItem*);
-    void visit(ast::ListLiteral*);
-    void visit(ast::ListItem*);
     void visit(ast::IntegerLiteral*);
     void visit(ast::FloatLiteral*);
     void visit(ast::StringLiteral*);

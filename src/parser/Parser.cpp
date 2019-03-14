@@ -285,9 +285,7 @@ Parser::parseGeneralDecleration()
 }
 
 /**
- * GeneralDefinition := ListDefinition |
- *                      DictionaryDefinition |
- *                      NewUDTDefinition |
+ * GeneralDefinition := NewUDTDefinition |
  *                      PrimitiveDefinition
  */
 ast::GeneralDefinition*
@@ -295,27 +293,9 @@ Parser::parseGeneralDefinition()
 {
     std::string val = currentToken->getValue();
 
-    // list
-    if (val == "list")
-    {
-        // consume 'list'
-        getNextUsefulToken();
-
-        return (ast::GeneralDefinition*)parseListDefinition();
-    }
-
-    // dictionary
-    else if (val == "dictionary")
-    {
-        // consume 'dictionary'
-        getNextUsefulToken();
-
-        return (ast::GeneralDefinition*)parseDictionaryDefinition();
-    }
-
     // primitives
-    else if (val == "bool" || val == "str" || val == "int" || val == "flt" ||
-             val == "void")
+    if (val == "bool" || val == "str" || val == "int" || val == "flt" ||
+        val == "void")
     {
         return (ast::GeneralDefinition*)parsePrimitiveDefinition();
     }
@@ -499,113 +479,6 @@ Parser::parseInitialExecutionBody()
 }
 
 /**
- * ListDefinition := 'list' Identifier '<[' Typename ']>' NewExpression
- */
-ast::ListDefinition*
-Parser::parseListDefinition()
-{
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
-                                                currentToken->getLineNum());
-
-    // move to next token
-    getNextUsefulToken();
-
-    // check for '<['
-    if (currentToken->getKind() != Kind::LFISH_TAIL_TOKEN)
-    {
-        errorHandler->handle(new Error(currentToken->getLineNum(),
-                                       "Expected a left fish tail. Received: " +
-                                           currentToken->getValue() + "."));
-    }
-    // consume fishtail
-    getNextUsefulToken();
-
-    ast::Typename* type =
-        new ast::Typename(currentToken->getValue(), currentToken->getLineNum());
-
-    // consume typename
-    getNextUsefulToken();
-
-    // check for ']>'
-    if (currentToken->getKind() != Kind::RFISH_TAIL_TOKEN)
-    {
-        errorHandler->handle(
-            new Error(currentToken->getLineNum(),
-                      "Expected a right fish tail. Received: " +
-                          currentToken->getValue() + "."));
-    }
-    // consume fishtail
-    getNextUsefulToken();
-
-    ast::NewExpression* expr = parseNewExpression();
-
-    return new ast::ListDefinition(name, type, expr,
-                                   currentToken->getLineNum());
-}
-
-/**
- * DictionaryDefinition := ''dictionary' Identifier '<[' Typename : Typename
- * ']>' NewExpression
- */
-ast::DictionaryDefinition*
-Parser::parseDictionaryDefinition()
-{
-    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
-                                                currentToken->getLineNum());
-
-    // consume identifier
-    getNextUsefulToken();
-
-    // check for '<['
-    if (currentToken->getKind() != Kind::LFISH_TAIL_TOKEN)
-    {
-        errorHandler->handle(new Error(currentToken->getLineNum(),
-                                       "Expected a left fish tail. Received: " +
-                                           currentToken->getValue() + "."));
-    }
-    // consume fishtail
-    getNextUsefulToken();
-
-    ast::Typename* keyType =
-        new ast::Typename(currentToken->getValue(), currentToken->getLineNum());
-
-    // consume typename
-    getNextUsefulToken();
-
-    // check for ':'
-    if (currentToken->getKind() != Kind::COLON_TOKEN)
-    {
-        errorHandler->handle(new Error(
-            currentToken->getLineNum(),
-            "Expected a colon. Received: " + currentToken->getValue() + "."));
-    }
-    // consume colon
-    getNextUsefulToken();
-
-    ast::Typename* valueType =
-        new ast::Typename(currentToken->getValue(), currentToken->getLineNum());
-
-    // consume typename
-    getNextUsefulToken();
-
-    // check for ']>'
-    if (currentToken->getKind() != Kind::RFISH_TAIL_TOKEN)
-    {
-        errorHandler->handle(
-            new Error(currentToken->getLineNum(),
-                      "Expected a right fish tail. Received: " +
-                          currentToken->getValue() + "."));
-    }
-    // consume fishtail
-    getNextUsefulToken();
-
-    ast::NewExpression* expr = parseNewExpression();
-
-    return new ast::DictionaryDefinition(name, keyType, valueType, expr,
-                                         currentToken->getLineNum());
-}
-
-/**
  * NewUDTDefinition := Variable '=' NewExpression
  */
 ast::NewUDTDefinition*
@@ -693,7 +566,7 @@ Parser::parseNewExpression()
 }
 
 /**
- * NewExpression := ListLiteral | DictionaryLiteral | UserDefinedType
+ * NewExpression := UserDefinedType
  */
 ast::New*
 Parser::parseNew()
@@ -702,22 +575,7 @@ Parser::parseNew()
     getNextUsefulToken();
 
     Kind kind = currentToken->getKind();
-    if (kind == Kind::LBRACKET_TOKEN)
-    {
-        // consume '['
-        getNextUsefulToken();
-        return (ast::New*)parseListLiteral(new ast::Identifier("", 0));
-    }
-    else if (kind == Kind::LCURLEY_TOKEN)
-    {
-        // consume '{'
-        getNextUsefulToken();
-        return (ast::New*)parseDictionaryLiteral();
-    }
-    else
-    {
-        return (ast::New*)parseUserDefinedType();
-    }
+    return (ast::New*)parseUserDefinedType();
 }
 
 /**
@@ -933,8 +791,6 @@ Parser::parsePrimaryExpression()
  *            IntegerLiteral |
  *            FloatLiteral |
  *            StringLiteral |
- *            DictionaryLiteral |
- *            ListLiteral |
  *            AttributeAccess |
  *            MethodAccess |
  *            FunctionCall |
@@ -978,20 +834,6 @@ Parser::parsePrimary()
 
         return (ast::Primary*)new ast::StringLiteral(
             tk, currentToken->getLineNum());
-    }
-    else if (kind == Kind::LCURLEY_TOKEN)
-    {
-        // consume '{'
-        getNextUsefulToken();
-
-        return (ast::Primary*)parseDictionaryLiteral();
-    }
-    else if (kind == Kind::LBRACKET_TOKEN)
-    {
-        // consume '['
-        getNextUsefulToken();
-
-        return (ast::Primary*)parseListLiteral(new ast::Identifier("", 0));
     }
     else if (kind == Kind::OWN_ACCESSOR_TOKEN)
     {
@@ -1063,13 +905,6 @@ Parser::parsePrimary()
             return (ast::Primary*)new ast::FunctionCall(
                 ident, idents, currentToken->getLineNum());
         }
-        else if (currentToken->getKind() == Kind::LBRACKET_TOKEN)
-        {
-            // consume '['
-            getNextUsefulToken();
-
-            return (ast::Primary*)parseListLiteral(ident);
-        }
         else
         {
             return (ast::Primary*)ident;
@@ -1083,106 +918,6 @@ Parser::parsePrimary()
             "or a UDT. Instead received: " +
                 tk + "."));
     }
-}
-
-/**
- * DictionaryLiteral := '{' [DictionaryItem (',' DictionaryItem)] '}'
- */
-ast::DictionaryLiteral*
-Parser::parseDictionaryLiteral()
-{
-    std::vector<ast::DictionaryItem*> dictionaryItems;
-
-    while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
-    {
-        dictionaryItems.push_back(parseDictionaryItem());
-
-        if (currentToken->isEOF())
-        {
-            errorHandler->handle(new Error(currentToken->getLineNum(),
-                                           "Missing a right curley."));
-        }
-    }
-
-    // consume '}'
-    getNextUsefulToken();
-
-    return new ast::DictionaryLiteral(dictionaryItems,
-                                      currentToken->getLineNum());
-}
-
-/**
- * DictionaryItem := Primary ':' Primary
- */
-ast::DictionaryItem*
-Parser::parseDictionaryItem()
-{
-    ast::Primary* key = parsePrimary();
-
-    // check for ':'
-    if (currentToken->getKind() != Kind::COLON_TOKEN)
-    {
-        errorHandler->handle(new Error(
-            currentToken->getLineNum(),
-            "Expected a colon. Received: " + currentToken->getValue() + "."));
-    }
-    // consume ':'
-    getNextUsefulToken();
-
-    ast::Primary* value = parsePrimary();
-
-    return new ast::DictionaryItem(key, value, currentToken->getLineNum());
-}
-
-/**
- * ListLiteral := '[' [ListItem (',' ListItem)] ']'
- */
-ast::ListLiteral*
-Parser::parseListLiteral(ast::Identifier* ident)
-{
-    std::vector<ast::ListItem*> listItems;
-
-    while (currentToken->getKind() != Kind::RBRACKET_TOKEN)
-    {
-        listItems.push_back(parseListItem());
-
-        if (currentToken->isEOF())
-        {
-            errorHandler->handle(new Error(currentToken->getLineNum(),
-                                           "Missing a right bracket."));
-        }
-    }
-
-    // consume ']'
-    getNextUsefulToken();
-
-    bool isListIndex = false;
-    bool isDictionaryIndex = false;
-    if (listItems.size() == 1)
-    {
-        ast::ListItem* li = listItems.at(0);
-
-        isDictionaryIndex = true;
-
-        if (li->getValue()->getPrimaryType() == ast::Primary::IntegerLiteral)
-        {
-            isListIndex = true;
-        }
-    }
-
-    return new ast::ListLiteral(listItems, isListIndex, isDictionaryIndex,
-                                ident, currentToken->getLineNum());
-}
-
-/**
- * ListItem := Primary
- */
-ast::ListItem*
-Parser::parseListItem()
-{
-    ast::Primary* value = parsePrimary();
-
-    return new ast::ListItem(value, currentToken->getLineNum());
 }
 
 /**

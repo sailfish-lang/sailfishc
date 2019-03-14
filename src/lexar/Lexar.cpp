@@ -98,9 +98,6 @@ Lexar::getNextToken()
                     case ',':
                         return new Token(Kind::COMMA_TOKEN, buffer,
                                          currentLineNum, currentColNum);
-                    case '[':
-                        return new Token(Kind::LBRACKET_TOKEN, buffer,
-                                         currentLineNum, currentColNum);
                     case '{':
                         return new Token(Kind::LCURLEY_TOKEN, buffer,
                                          currentLineNum, currentColNum);
@@ -125,6 +122,11 @@ Lexar::getNextToken()
                     case ';':
                         return new Token(Kind::ERROR_TOKEN,
                                          "No semi-colons in sailfish",
+                                         currentLineNum, currentColNum);
+                    case '[':
+                    case ']':
+                        return new Token(Kind::ERROR_TOKEN,
+                                         "No brackets in sailfish",
                                          currentLineNum, currentColNum);
 
                     // these require multiple other states
@@ -154,9 +156,6 @@ Lexar::getNextToken()
                         break;
                     case '.':
                         state = State::DOUBLE_DOT_PRESTATE;
-                        break;
-                    case ']':
-                        state = State::RBRACKET_PRESTATE;
                         break;
                     default:
                         return new Token(Kind::ERROR_TOKEN,
@@ -273,9 +272,6 @@ Lexar::getNextToken()
                 else if (c == '-')
                     return new Token(Kind::ARROW_TOKEN, buffer, currentLineNum,
                                      currentColNum);
-                else if (c == '[')
-                    return new Token(Kind::LFISH_TAIL_TOKEN, buffer,
-                                     currentLineNum, currentColNum);
                 else
                     return createTokenPutback(Kind::LOGIC_TOKEN, c, buffer,
                                               scanner, currentLineNum,
@@ -306,15 +302,6 @@ Lexar::getNextToken()
                                               currentColNum);
                 else
                     return new Token(Kind::TRIPLE_DOT_TOKEN, buffer,
-                                     currentLineNum, currentColNum);
-
-            case State::RBRACKET_PRESTATE:
-                if (c != '>')
-                    return createTokenPutback(Kind::RBRACKET_TOKEN, c, buffer,
-                                              scanner, currentLineNum,
-                                              currentColNum);
-                else
-                    return new Token(Kind::RFISH_TAIL_TOKEN, buffer,
                                      currentLineNum, currentColNum);
             }
         }

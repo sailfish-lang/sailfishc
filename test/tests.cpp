@@ -45,15 +45,14 @@ TEST(LexarTest, Nonsense)
         Kind::KEYWORD_TOKEN,    Kind::IDENTIFIER_TOKEN, Kind::OPERATION_TOKEN,
         Kind::INTEGER_TOKEN,    Kind::LOGIC_TOKEN,      Kind::LOGIC_TOKEN,
         Kind::ARROW_TOKEN,      Kind::ARROW_TOKEN,      Kind::UNDERSCORE_TOKEN,
-        Kind::COMMA_TOKEN,      Kind::LBRACKET_TOKEN,   Kind::RBRACKET_TOKEN,
-        Kind::LPAREN_TOKEN,     Kind::RPAREN_TOKEN,     Kind::ERROR_TOKEN,
+        Kind::COMMA_TOKEN,      Kind::LPAREN_TOKEN,     Kind::RPAREN_TOKEN,
+        Kind::ERROR_TOKEN,      Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
         Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
-        Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
-        Kind::OPERATION_TOKEN,  Kind::COMMENT_TOKEN,    Kind::PIPE_TOKEN,
-        Kind::PIPE_TOKEN,       Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,
-        Kind::BOOL_TOKEN,       Kind::BOOL_TOKEN,       Kind::LFISH_TAIL_TOKEN,
-        Kind::RFISH_TAIL_TOKEN, Kind::RCURLEY_TOKEN,
+        Kind::OPERATION_TOKEN,  Kind::OPERATION_TOKEN,  Kind::COMMENT_TOKEN,
+        Kind::PIPE_TOKEN,       Kind::PIPE_TOKEN,       Kind::OPERATION_TOKEN,
+        Kind::OPERATION_TOKEN,  Kind::BOOL_TOKEN,       Kind::BOOL_TOKEN,
+        Kind::RCURLEY_TOKEN,
     };
 
     Lexar* lexar = new Lexar("../sailfish_examples/nonsense_lexar.fish");
@@ -74,19 +73,8 @@ TEST(LexarTest, Nonsense)
 TEST(ParserTest, AllTokens)
 {
     static const std::string expected[] = {
-        "Identifier: someDict",
-        "DictionaryItem",
-        "DictionaryLiteral",
-        "NewExpression",
-        "DictionaryDefinition",
-        "ExportDefintion",
-        "Identifier: someList",
-        "ListItem",
-        "ListLiteral",
-        "NewExpression",
-        "ListDefinition",
         "Identifier: foo",
-        "Identifier: void",
+        "Identifier: ",
         "Typename: void",
         "Variable",
         "Input",
@@ -422,23 +410,13 @@ TEST(SemanticTest, TypeCheckerUDTDec)
 {
     static const std::string expected[] = {
         "Declared variable named: bool illegally shares its name with a type "
-        "or a "
-        "keyword/reserved word.",
-        "Declared variable named: flt illegally shares its name with "
-        "a "
-        "type or a keyword/reserved word.",
-        "Declared variable named: void illegally shares its name "
-        "with a "
-        "type or a keyword/reserved word.",
-        "Udt attribute type of:  void for attribute: void and for udt: bool "
-        "does not exist.",
+        "or a keyword/reserved word.",
+        "Declared variable named: flt illegally shares its name with a type or "
+        "a keyword/reserved word.",
+        "Udt attribute type of:  void for attribute:  and for udt: bool does "
+        "not exist.",
         "Udt attribute type of:  udt for attribute: u and for udt: bool does "
         "not exist.",
-        "Variable: a is undefined.",
-        "Attribute: int for declared udt of type: unknown does not match "
-        "expected type: .",
-        "Attribute: flt for declared udt of type: int does not match expected "
-        "type: .",
     };
 
     Parser* p = new Parser();

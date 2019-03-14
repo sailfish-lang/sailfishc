@@ -89,19 +89,6 @@ Visitor::visit(ast::GeneralDefinition* node)
 {
     switch (node->getGeneralDefinitionType())
     {
-    case ast::GeneralDefinition::ListDefinition:
-    {
-        ast::ListDefinition* subnode = dynamic_cast<ast::ListDefinition*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::GeneralDefinition::DictionaryDefinition:
-    {
-        ast::DictionaryDefinition* subnode =
-            dynamic_cast<ast::DictionaryDefinition*>(node);
-        visit(subnode);
-        break;
-    }
     case ast::GeneralDefinition::NewUDTDefinition:
     {
         ast::NewUDTDefinition* subnode =
@@ -117,19 +104,6 @@ Visitor::visit(ast::GeneralDefinition* node)
         break;
     }
     }
-}
-void
-Visitor::visit(ast::ListDefinition* node)
-{
-    visit(node->getType());
-    visit(node->getName());
-    visit(node->getExpression());
-}
-void
-Visitor::visit(ast::DictionaryDefinition* node)
-{
-    visit(node->getName());
-    visit(node->getExpression());
 }
 void
 Visitor::visit(ast::NewUDTDefinition* node)
@@ -378,19 +352,6 @@ Visitor::visit(ast::NewExpression* node)
 
     switch (type)
     {
-    case ast::New::DictionaryLiteral:
-    {
-        ast::DictionaryLiteral* subnode =
-            dynamic_cast<ast::DictionaryLiteral*>(newVal);
-        visit(subnode);
-        break;
-    }
-    case ast::New::ListLiteral:
-    {
-        ast::ListLiteral* subnode = dynamic_cast<ast::ListLiteral*>(newVal);
-        visit(subnode);
-        break;
-    }
     case ast::New::UserDefinedType:
     {
         ast::UserDefinedType* subnode =
@@ -482,13 +443,6 @@ Visitor::visit(ast::Primary* node)
         visit(subnode);
         break;
     }
-    case ast::Primary::DictionaryLiteral:
-    {
-        ast::DictionaryLiteral* subnode =
-            dynamic_cast<ast::DictionaryLiteral*>(node);
-        visit(subnode);
-        break;
-    }
     case ast::Primary::AttributeAccessLiteral:
     {
         ast::AttributeAccess* subnode =
@@ -513,34 +467,6 @@ Visitor::visit(ast::Primary* node)
 void
 Visitor::visit(ast::BooleanLiteral* node)
 {
-}
-void
-Visitor::visit(ast::DictionaryLiteral* node)
-{
-    for (auto const& dictionaryItem : node->getItems())
-    {
-        visit(dictionaryItem);
-    }
-}
-void
-Visitor::visit(ast::DictionaryItem* node)
-{
-    visit(node->getKey());
-    visit(node->getValue());
-}
-void
-Visitor::visit(ast::ListLiteral* node)
-{
-    visit(node->getName());
-    for (auto const& listItem : node->getItems())
-    {
-        visit(listItem);
-    }
-}
-void
-Visitor::visit(ast::ListItem* node)
-{
-    visit(node->getValue());
 }
 void
 Visitor::visit(ast::IntegerLiteral* node)

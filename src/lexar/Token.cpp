@@ -47,10 +47,6 @@ kindToString(Kind k)
         return "Operation";
     case STRING_TOKEN:
         return "String";
-    case LBRACKET_TOKEN:
-        return "Left Bracket";
-    case RBRACKET_TOKEN:
-        return "Right Brakcet";
     case LCURLEY_TOKEN:
         return "Left Curly";
     case RCURLEY_TOKEN:
@@ -83,6 +79,8 @@ kindToString(Kind k)
         return "Colon";
     case PIPE_TOKEN:
         return "Pipe";
+    case BOOL_TOKEN:
+        return "Bool";
     case ERROR_TOKEN:
         return "Error";
     case EOF_TOKEN:

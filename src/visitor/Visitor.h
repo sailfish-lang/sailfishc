@@ -13,8 +13,6 @@ class Visitor
     virtual void visit(ast::ExportDefinition*);
     virtual void visit(ast::GeneralDecleration*);
     virtual void visit(ast::GeneralDefinition*);
-    virtual void visit(ast::ListDefinition*);
-    virtual void visit(ast::DictionaryDefinition*);
     virtual void visit(ast::NewUDTDefinition*);
     virtual void visit(ast::PrimitiveDefition*);
     virtual void visit(ast::FunctionDefinition*);
@@ -37,10 +35,6 @@ class Visitor
     virtual void visit(ast::PrimaryExpression*);
     virtual void visit(ast::Primary*);
     virtual void visit(ast::BooleanLiteral*);
-    virtual void visit(ast::DictionaryLiteral*);
-    virtual void visit(ast::DictionaryItem*);
-    virtual void visit(ast::ListLiteral*);
-    virtual void visit(ast::ListItem*);
     virtual void visit(ast::IntegerLiteral*);
     virtual void visit(ast::FloatLiteral*);
     virtual void visit(ast::StringLiteral*);
