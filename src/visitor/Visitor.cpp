@@ -402,6 +402,7 @@ Visitor::visit(ast::NewExpression* node)
 void
 Visitor::visit(ast::AttributeAccess* node)
 {
+    visit(node->getUDT());
     visit(node->getAttribute());
 }
 void

@@ -52,3 +52,18 @@ UDTTable::addUDT(std::string name, SymbolTable* attributes,
 
     return true;
 }
+
+// HACK: remove asap
+// allows us to set the method table after it has been initiated
+bool
+UDTTable::updateUDTMethods(std::string name, SymbolTable* methods)
+{
+    if (!hasUDT(name))
+    {
+        return false;
+    }
+
+    udtTable.at(name)->setMethodSymbolTable(methods);
+
+    return true;
+}

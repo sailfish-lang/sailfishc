@@ -47,6 +47,9 @@ class Transpiler : public Visitor
     // function declerations
     void visit(ast::FunctionDefinition*);
 
+    // special function definition for insertion of udt param
+    void visit(ast::FunctionDefinition*, std::string);
+
     // function call
     void visit(ast::FunctionCall*);
 
@@ -90,4 +93,15 @@ class Transpiler : public Visitor
 
     // expression only binary expression
     void visit(ast::ExpressionOnlyStatement*);
+
+    // user defined type
+    void visit(ast::UserDefinedTypeDefinition*);
+
+    // declared udt
+    void visit(ast::NewUDTDefinition*);
+    void visit(ast::UserDefinedType* node);
+
+    // member accessors for udts
+    void visit(ast::AttributeAccess*);
+    void visit(ast::MethodAccess*);
 };

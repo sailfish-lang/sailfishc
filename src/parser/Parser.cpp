@@ -1171,7 +1171,7 @@ Parser::parseVariable()
         ast::Typename* type =
             new ast::Typename("void", currentToken->getLineNum());
         ast::Identifier* id =
-            new ast::Identifier("void", currentToken->getLineNum());
+            new ast::Identifier("", currentToken->getLineNum());
 
         // consume void
         getNextUsefulToken();

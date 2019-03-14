@@ -34,4 +34,10 @@ class UDTMetaData
     {
         return methods;
     }
+    // set methods
+    SymbolTable*
+    setMethodSymbolTable(SymbolTable* m)
+    {
+        methods = m;
+    }
 };

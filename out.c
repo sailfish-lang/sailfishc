@@ -4,16 +4,29 @@
  */
 #include "stdlib/display.h"
 
-Fooint ifloat fchar* sfloat
-foo(float i)
+typedef struct _Stack_ {
+    int size;
+} Stack;
 
+Stack*
+construct_Stack(int size_)
 {
-    i = f;
-    return 10.0;
+    Stack* a = (Stack*)malloc(sizeof(Stack));
+    a->size = size_;
+    return a;
+}
+
+int
+add_to_self(Stack* _own_)
+{
+    int ret_val = _own_->size;
+    ret_val = 1+ret_val;
+    return ret_val;
 }
 int
 main()
-
 {
-    Foo udt_method_attribute_aFooi10
+    Stack* s = construct_Stack(10);
+    int c = add_to_self(s);
+    print_int(c);
 }

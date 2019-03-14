@@ -499,7 +499,7 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
                       "Unexpected grouping inside binary expression. "
                       "Groupings cannot be nested."));
 
-        return "boolean";
+        return "bool";
     }
     case ast::Expression::PrimaryExpression:
     {
@@ -545,6 +545,19 @@ isLegalGrouping(ast::BinaryExpression* node)
     }
 }
 
+bool
+isVoid(ast::Primary* node)
+{
+    if (node->getPrimaryType() == ast::Primary::IdentifierLiteral)
+    {
+        ast::Identifier* id = dynamic_cast<ast::Identifier*>(node);
+        if (id->getValue() == "void")
+            return true;
+    }
+
+    return false;
+}
+
 void
 compareFunctions(std::vector<std::string> inputs,
                  std::vector<ast::Primary*> args, std::string name,
@@ -553,7 +566,16 @@ compareFunctions(std::vector<std::string> inputs,
                  std::string curUDT)
 {
     int numArgs = args.size();
+    if (numArgs == 1 && isVoid(args.at(0)))
+    {
+        numArgs = 0;
+    }
+
     int numInps = inputs.size();
+    if (numInps == 1 && inputs.at(0) == "void")
+    {
+        numInps = 0;
+    }
 
     if (numArgs < numInps)
     {

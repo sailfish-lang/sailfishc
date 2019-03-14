@@ -482,10 +482,6 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     tempTable = symbolTable;
     symbolTable = st_m;
 
-    // capture the decorated symbol table and reset the class field back
-    st_m = symbolTable;
-    symbolTable = tempTable;
-
     // ADD BOTH BEFORE VISITING METHODS
     std::string adjustedName = "U" + udt_name;
     tryAddToSymbolTable(udt_name, adjustedName, symbolTable, lineNumber);
@@ -504,11 +500,19 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
         visit(func);
     }
 
-    // std::string adjustedName = "U" + udt_name;
+    // capture the decorated symbol table and reset the class field back
+    st_m = symbolTable;
+    symbolTable = tempTable;
 
-    // tryAddToSymbolTable(udt_name, adjustedName, symbolTable, lineNumber);
+    bool couldUpdate = udtTable->updateUDTMethods(udt_name, st_m);
 
-    // bool isUnique = udtTable->addUDT(udt_name, st_a, st_m);
+    // udt table entries MUST be unique unlike symbol table (for now)
+    if (!couldUpdate)
+    {
+        symbolTableErrorHandler->handle(
+            new Error(node->getLineNum(),
+                      "Attempted to update an unrecognized/undefined udt."));
+    }
 }
 
 // ------- END ------- //
@@ -829,23 +833,24 @@ TypeChecker::visit(ast::MethodAccess* node)
             return;
         }
 
-        std::string variableUDTname =
-            symbolTable->getSymbolType(variableUDTname);
+        std::string udtname = symbolTable->getSymbolType(variableUDTname);
+        udtname = udtname.substr(1, udtname.length());
 
         // ensure variable's udt exists
-        if (!udtTable->hasUDT(
-                variableUDTname.substr(1, variableUDTname.length())))
+        if (!udtTable->hasUDT(udtname))
         {
             semanticErrorHandler->handle(new Error(
-                node->getLineNum(), "Method: " + methodName +
-                                        " called on nonexistent udt type: " +
-                                        variableUDTname + "."));
+                node->getLineNum(),
+                "Method: " + methodName +
+                    " called on nonexistent udt type: " + udtname + "."));
 
             return;
         }
+
+        variableUDTname = udtname;
     }
 
-    std::string udtType = variableUDTname.substr(1, variableUDTname.length());
+    std::string udtType = variableUDTname;
 
     // ensure metho exists for udt
     if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(methodName))

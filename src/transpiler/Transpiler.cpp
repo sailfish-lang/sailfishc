@@ -63,7 +63,7 @@ Transpiler::transpile()
 void
 Transpiler::visit(ast::InitialExecutionBody* node)
 {
-    fileBuffer += "int\nmain()\n";
+    fileBuffer += "int\nmain()";
     visit(node->getBody());
 }
 
@@ -95,7 +95,57 @@ Transpiler::visit(ast::FunctionDefinition* node)
         }
     }
 
-    fileBuffer += ")\n";
+    fileBuffer += ")";
+
+    visit(node->getBody());
+
+    fileBuffer += "";
+}
+
+/**
+ * Function Definition (special):
+ *      Output
+ *      Name(UDT*, param,..., param)
+ *      { body }
+ */
+void
+Transpiler::visit(ast::FunctionDefinition* node, std::string udtTypeName)
+{
+    visit(node->getOutput());
+
+    fileBuffer += "\n";
+
+    visit(node->getName());
+
+    fileBuffer += "(" + udtTypeName + "* _own_";
+
+    // if only one non udt name given param and the param is not void add a
+    // comma
+    if (1 < node->getInputList().size() ||
+        (node->getInputList().size() == 1 &&
+         node->getInputList().at(0)->getInput()->getType()->getType() !=
+             "void"))
+    {
+        fileBuffer += ", ";
+    }
+
+    for (int i = 0; i < node->getInputList().size(); i++)
+    {
+        /*
+            no comma following the last argument and no comma if we get a void
+            type and also no repeating the initial comma we placed above, so
+            start with i at 1. Do not need a check for void here since void
+            should not be possible as anything but the first and only param
+        */
+        if (i != 0 && i < node->getInputList().size())
+        {
+            fileBuffer += ", ";
+        }
+
+        visit(node->getInputList().at(i));
+    }
+
+    fileBuffer += ")";
 
     visit(node->getBody());
 
@@ -177,11 +227,15 @@ Transpiler::visit(ast::StringLiteral* node)
 void
 Transpiler::visit(ast::Variable* node)
 {
-    visit(node->getType());
+    if (node->getType()->getType() != "void")
+    {
 
-    fileBuffer += " ";
+        visit(node->getType());
 
-    visit(node->getName());
+        fileBuffer += " ";
+
+        visit(node->getName());
+    }
 }
 
 /**
@@ -194,8 +248,8 @@ Transpiler::visit(ast::Typename* node)
 }
 
 /**
- * Return: just add a return in front of the variable and tack on a semi-colon
- * at the end
+ * Return: just add a return in front of the variable and tack on a
+ * semi-colon at the end
  */
 void
 Transpiler::visit(ast::ReturnStatement* node)
@@ -356,8 +410,8 @@ Transpiler::visit(ast::GroupingExpression* node)
 }
 
 /**
- * Primitive Decleration: add an equals sign in between and a semi-colon at the
- * end
+ * Primitive Decleration: add an equals sign in between and a semi-colon at
+ * the end
  */
 void
 Transpiler::visit(ast::PrimitiveDefition* node)
@@ -378,4 +432,138 @@ Transpiler::visit(ast::ExpressionOnlyStatement* node)
 {
     visit(node->getLeftExpr());
     fileBuffer += ";";
+}
+
+/**
+ * UserDefinedTypeDefinition:
+ */
+void
+Transpiler::visit(ast::UserDefinedTypeDefinition* node)
+{
+    // ---------        generate the structure        -------- //
+    fileBuffer += "typedef struct _";
+    visit(node->getName());
+    fileBuffer += "_ {\n";
+
+    for (auto const& attribute : node->getAttributes())
+    {
+        fileBuffer += "    ";
+        visit(attribute);
+        fileBuffer += ";\n";
+    }
+
+    fileBuffer += "} ";
+    visit(node->getName());
+    fileBuffer += ";\n\n";
+
+    // ---------        define a sort of constructor       -------- //
+    visit(node->getName());
+    fileBuffer += "*\nconstruct_";
+    visit(node->getName());
+    fileBuffer += "(";
+
+    int i = 0;
+    for (auto const& attribute : node->getAttributes())
+    {
+        visit(attribute);
+        fileBuffer += "_";
+        if (i != node->getAttributes().size() - 1)
+            fileBuffer += ",";
+    }
+    fileBuffer += ")\n{\n    ";
+    visit(node->getName());
+    fileBuffer += "* a = (";
+    visit(node->getName());
+    fileBuffer += "*)malloc(sizeof(";
+    visit(node->getName());
+    fileBuffer += "));\n";
+    for (auto const& attribute : node->getAttributes())
+    {
+        fileBuffer += "    a->";
+        visit(attribute->getName());
+        fileBuffer += " = ";
+        visit(attribute->getName());
+        fileBuffer += "_;";
+    }
+    fileBuffer += "\n    return a;\n}\n\n";
+
+    // ---------        generate the methods        -------- //
+    for (auto const& method : node->getMethods())
+    {
+        visit(method, node->getName()->getValue());
+    }
+}
+
+/**
+ * AttributeAccess:
+ */
+void
+Transpiler::visit(ast::AttributeAccess* node)
+{
+    std::string udtName = node->getUDT()->getValue();
+    fileBuffer += "_" + udtName + "_->";
+    visit(node->getAttribute());
+}
+
+/**
+ * MethodAccess:
+ */
+void
+Transpiler::visit(ast::MethodAccess* node)
+{
+    visit(node->getFunctionCall()->getName());
+
+    fileBuffer += "(";
+
+    visit(node->getUDT());
+
+    // fileBuffer += ",";
+
+    for (int i = 0; i < node->getFunctionCall()->getArguments().size(); i++)
+    {
+        // no comma following the last argument
+        if (i != node->getFunctionCall()->getArguments().size() - 1)
+        {
+            fileBuffer += ", ";
+        }
+        visit(node->getFunctionCall()->getArguments().at(i));
+    }
+
+    fileBuffer += ")";
+}
+
+/**
+ * UserDefinedType:
+ */
+void
+Transpiler::visit(ast::UserDefinedType* node)
+{
+    fileBuffer += " = construct_";
+
+    visit(node->getName());
+
+    fileBuffer += "(";
+
+    int i = 0;
+    for (auto const& attribute : node->getAttributes())
+    {
+        visit(attribute->getValue());
+        if (i != node->getAttributes().size() - 1)
+            fileBuffer += ",";
+    }
+    fileBuffer += ");";
+}
+
+/**
+ * NewUDTDefinition:
+ */
+void
+Transpiler::visit(ast::NewUDTDefinition* node)
+{
+    visit(node->getVariable()->getType());
+
+    fileBuffer += "* ";
+
+    visit(node->getVariable()->getName());
+    visit(node->getExpression());
 }
