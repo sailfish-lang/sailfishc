@@ -43,18 +43,18 @@ void
 Transpiler::transpile()
 {
     // capture and open file
-    std::ofstream myfile;
-    myfile.clear();
-    myfile.open(filename);
+    std::ofstream output;
+    output.clear();
+    output.open(filename);
 
     // traverse the tree
     visit(root);
 
-    // write out header
-    myfile << fileBuffer;
+    // write out file
+    output << fileBuffer;
 
     // close the file
-    myfile.close();
+    output.close();
 }
 
 /**
@@ -217,7 +217,7 @@ Transpiler::visit(ast::StringLiteral* node)
 }
 
 /**
- * Variable: put a space between name and type
+ * Variable: put a space between name and type and ignore voids
  */
 void
 Transpiler::visit(ast::Variable* node)
@@ -243,8 +243,7 @@ Transpiler::visit(ast::Typename* node)
 }
 
 /**
- * Return: just add a return in front of the variable and tack on a
- * semi-colon at the end
+ * Return: just add a return in front of the variable
  */
 void
 Transpiler::visit(ast::ReturnStatement* node)
@@ -317,7 +316,7 @@ Transpiler::visit(ast::Block* node)
 }
 
 /**
- * If statement: provide curleys and structure
+ * If statement: provide structure, mostly just adding if/else keywords
  */
 void
 Transpiler::visit(ast::IfStatement* node)
@@ -331,34 +330,6 @@ Transpiler::visit(ast::IfStatement* node)
     fileBuffer += "else ";
 
     visit(node->getElseStatements());
-}
-
-void
-Transpiler::visit(ast::BinaryExpression* node)
-{
-    switch (node->getBinaryExpressionType())
-    {
-    case ast::BinaryExpression::BinaryCompOrArith:
-    {
-        ast::BinaryCompOrArith* subnode =
-            dynamic_cast<ast::BinaryCompOrArith*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::Assignment:
-    {
-        ast::Assignment* subnode = dynamic_cast<ast::Assignment*>(node);
-        visit(subnode);
-        break;
-    }
-    case ast::BinaryExpression::ExpressionOnlyStatement:
-    {
-        ast::ExpressionOnlyStatement* subnode =
-            dynamic_cast<ast::ExpressionOnlyStatement*>(node);
-        visit(subnode);
-        break;
-    }
-    }
 }
 
 /**
@@ -430,7 +401,17 @@ Transpiler::visit(ast::ExpressionOnlyStatement* node)
 }
 
 /**
- * UserDefinedTypeDefinition:
+ * UserDefinedTypeDefinition: this is a more complex mapping. Essentially we
+ * create a few things. First, we create a structure, alias'd to take the name
+ * of the given udt. Then, since this is not a ood language and frankly sailfish
+ * is basically ood, we define a constructor method. This allows for
+ * encapsulated allocation of emmeory and instantiation of attributes.
+ * Attributes must be given in the correct order, something that is ensured by
+ * the type checker. Then, a function for each internal method is created, such
+ * that the udt type is the first param passed in.
+ *
+ * We use the name a____struct___generated, assuming no one will use this in
+ * code.
  */
 void
 Transpiler::visit(ast::UserDefinedTypeDefinition* node)
@@ -452,6 +433,14 @@ Transpiler::visit(ast::UserDefinedTypeDefinition* node)
     fileBuffer += ";\n\n";
 
     // ---------        define a sort of constructor       -------- //
+    /**
+     * Looks like this:
+     *      TYPENAME*
+     *      construct_TYPENAME(attributes...) {
+     *          // malloc a new TYPENAME
+     *          // initialize attributes
+     *      }
+     */
     visit(node->getName());
     fileBuffer += "*\nconstruct_";
     visit(node->getName());
@@ -469,30 +458,29 @@ Transpiler::visit(ast::UserDefinedTypeDefinition* node)
     }
     fileBuffer += ")\n{\n    ";
     visit(node->getName());
-    fileBuffer += "* a = (";
+    fileBuffer += "* a____struct___generated = (";
     visit(node->getName());
     fileBuffer += "*)malloc(sizeof(";
     visit(node->getName());
     fileBuffer += "));\n";
     for (auto const& attribute : node->getAttributes())
     {
-        fileBuffer += "    a->";
+        fileBuffer += "    a____struct___generated->";
         visit(attribute->getName());
         fileBuffer += " = ";
         visit(attribute->getName());
         fileBuffer += "_;";
     }
-    fileBuffer += "\n    return a;\n}\n\n";
+    fileBuffer += "\n    return a____struct___generated;\n}\n\n";
 
     // ---------        generate the methods        -------- //
     for (auto const& method : node->getMethods())
-    {
         visit(method, node->getName()->getValue());
-    }
 }
 
 /**
- * AttributeAccess:
+ * AttributeAccess: since attributes are accessed via pointer, we add the
+ * pointer and our own code gen underscores
  */
 void
 Transpiler::visit(ast::AttributeAccess* node)
@@ -503,7 +491,7 @@ Transpiler::visit(ast::AttributeAccess* node)
 }
 
 /**
- * MethodAccess:
+ * MethodAccess: similar to function call
  */
 void
 Transpiler::visit(ast::MethodAccess* node)
@@ -528,7 +516,8 @@ Transpiler::visit(ast::MethodAccess* node)
 }
 
 /**
- * UserDefinedType:
+ * UserDefinedType: for instantiation of a udt, we utlize the constructor method
+ * from the code gen of the method above
  */
 void
 Transpiler::visit(ast::UserDefinedType* node)
@@ -552,7 +541,7 @@ Transpiler::visit(ast::UserDefinedType* node)
 }
 
 /**
- * NewUDTDefinition:
+ * NewUDTDefinition: add a pointer since udts are pointers to structs
  */
 void
 Transpiler::visit(ast::NewUDTDefinition* node)

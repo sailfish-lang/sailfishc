@@ -76,9 +76,6 @@ class Transpiler : public Visitor
     // if statement
     void visit(ast::IfStatement*);
 
-    // binary expression
-    void visit(ast::BinaryExpression*);
-
     // binaries
     void visit(ast::BinaryCompOrArith*);
     void visit(ast::Assignment*);

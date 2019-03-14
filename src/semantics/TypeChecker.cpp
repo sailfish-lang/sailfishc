@@ -26,11 +26,9 @@ bool
 TypeChecker::typeExists(std::string type, std::string name, int lineNumber)
 {
     if (!isPrimitive(type) && !udtTable->hasUDT(type))
-    {
         semanticErrorHandler->handle(new Error(
             lineNumber, "Declared type: " + type + " for variable named: " +
                             name + " is not a legal or known type."));
-    }
 }
 
 // encapsulate addition to symbol table and error handling for it
@@ -42,11 +40,9 @@ TypeChecker::tryAddToSymbolTable(std::string name, std::string type,
 
     // symbol table entry must be unique for current scope
     if (!isUnique)
-    {
         symbolTableErrorHandler->handle(new Error(
             lineNumber,
             "Invalid redecleration of variable with name: " + name + "."));
-    }
 }
 
 // given a function's full type from the symbol table, extract the parameter
@@ -66,16 +62,11 @@ getFunctionParamTypes(std::string fulltype)
             buffer = "";
         }
         else
-        {
-
             buffer += c;
-        }
     }
 
     if (buffer != "")
-    {
         params.push_back(buffer);
-    }
 
     return params;
 }
@@ -89,9 +80,7 @@ getFunctionReturnType(std::string fulltype)
     {
         char c = fulltype.at(i);
         if (c == '_' || c == ')')
-        {
             break;
-        }
 
         buffer += c;
     }
@@ -148,12 +137,7 @@ TypeChecker::expressionHelper(ast::Expression* node)
         break;
     }
     case ast::Expression::GroupingExpression:
-    {
-        ast::GroupingExpression* subnode =
-            dynamic_cast<ast::GroupingExpression*>(node);
-
         return "bool";
-    }
     case ast::Expression::PrimaryExpression:
     {
         ast::PrimaryExpression* subnode =
@@ -162,13 +146,7 @@ TypeChecker::expressionHelper(ast::Expression* node)
         return primaryHelper(subnode->getPrimary());
     }
     case ast::Expression::UnaryExpression:
-    {
-        ast::UnaryExpression* subnode =
-            dynamic_cast<ast::UnaryExpression*>(node);
-
-        // must be a boolean so fine to return boolean here
         return "bool";
-    }
     }
 }
 
@@ -363,26 +341,20 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
 {
     int numArgs = args.size();
     if (numArgs == 1 && isVoid(args.at(0)))
-    {
         numArgs = 0;
-    }
 
     int numInps = inputs.size();
     if (numInps == 1 && inputs.at(0) == "void")
-    {
         numInps = 0;
-    }
 
     if (numArgs < numInps)
-    {
         semanticErrorHandler->handle(new Error(
             0, "Not enough args supplied to function: " + name + "."));
-    }
+
     else if (numArgs > numInps)
-    {
         semanticErrorHandler->handle(
             new Error(0, "Too many args supplied to function: " + name + "."));
-    }
+
     else
     {
         for (int i = 0; i < numArgs; i++)
@@ -394,11 +366,10 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
             if (!isPrimitive(actual))
             {
                 if (!symbolTable->hasVariable(actual))
-                {
                     semanticErrorHandler->handle(new Error(
                         0, "Undefined argument: " + actual +
                                " supplied for function: " + name + "."));
-                }
+
                 else
                 {
                     std::string fullActual = symbolTable->getSymbolType(actual);
@@ -424,12 +395,10 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
             }
 
             if (actual != inputs[i])
-            {
                 semanticErrorHandler->handle(new Error(
                     0, "Supplied argument type of: " + actual +
                            " does not match expected type of: " + inputs[i] +
                            "."));
-            }
         }
     }
 }
@@ -545,12 +514,10 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
 
     // ensure the type is a primitive
     if (!isPrimitive(type))
-    {
         semanticErrorHandler->handle(new Error(
             node->getVariable()->getType()->getLineNum(),
             "Defined primitives's type of: " + type +
                 " for primitive: " + name + " is not a recognized primitive."));
-    }
 
     // visit expression
     visit(node->getBinaryExpression());
@@ -559,14 +526,12 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
 
     // ensure assignment is the expected type
     if (exprType != type)
-    {
         semanticErrorHandler->handle(new Error(
             node->getVariable()->getType()->getLineNum(),
             "Declared type: " + type +
                 " of primitive for variable named: " + name +
                 " does not match assigned expression type of: " + exprType +
                 "."));
-    }
 }
 
 void
@@ -626,9 +591,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
     adjustedName += ")";
 
     if (isGood)
-    {
         tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
-    }
 
     // enter a scope for this function, starting with the parameters
     symbolTable->enterScope();
@@ -643,9 +606,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 
         std::string adjustedName = "U" + type;
         if (isPrimitive(type))
-        {
             std::string adjustedName = "P" + type;
-        }
 
         symbolTable->addSymbol(name, adjustedName);
     }
@@ -680,21 +641,17 @@ TypeChecker::visit(ast::FunctionDefinition* node)
             std::string actualReturnType = getRightExpressionType(returnedExpr);
 
             if (actualReturnType != out_type)
-            {
                 semanticErrorHandler->handle(new Error(
                     node->getLineNum(),
                     "Actual return type of: " + actualReturnType +
                         " does not match expected return type of: " + out_type +
                         "."));
-            }
         }
     }
 
     if (!hasReturn && out_type != "void")
-    {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(), "Function does not have a return statement."));
-    }
 
     // exit scope once we exit the body
     symbolTable->exitScope();
@@ -734,18 +691,14 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
         // ensure the type exists, i.e. is a primitive or udt and not a void,
         // makes no sense here
         if ((!isPrimitive(type) && !udtTable->hasUDT(type)) || (type == "void"))
-        {
             semanticErrorHandler->handle(new Error(
                 node->getLineNum(),
                 "Udt attribute type of:  " + type + " for attribute: " + name +
                     " and for udt: " + udt_name + " does not exist."));
-        }
 
         std::string adjustedName = "U" + type;
         if (isPrimitive(type))
-        {
             std::string adjustedName = "P" + type;
-        }
 
         tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
     }
@@ -769,16 +722,12 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
 
     // udt table entries MUST be unique unlike symbol table (for now)
     if (!isUnique)
-    {
         symbolTableErrorHandler->handle(new Error(
             node->getLineNum(),
             "Invalid redecleration of udt with name: " + udt_name + "."));
-    }
 
     for (auto const& func : methods)
-    {
         visit(func);
-    }
 
     // capture the decorated symbol table and reset the class field back
     st_m = symbolTable;
@@ -788,11 +737,9 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
 
     // udt table entries MUST be unique unlike symbol table (for now)
     if (!couldUpdate)
-    {
         symbolTableErrorHandler->handle(
             new Error(node->getLineNum(),
                       "Attempted to update an unrecognized/undefined udt."));
-    }
 }
 
 // ------- END ------- //
@@ -830,10 +777,8 @@ TypeChecker::visit(ast::GroupingExpression* node)
     visit(binExpr);
 
     if (!isLegalGrouping(binExpr))
-    {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(), "Expected grouping to result in a boolean."));
-    }
 }
 
 void
@@ -844,12 +789,10 @@ TypeChecker::visit(ast::Negation* node)
     // ensure that all negations are boolean
     std::string type = getRightExpressionType(node->getBinaryExpression());
     if (type != "bool")
-    {
         semanticErrorHandler->handle(new Error(
             node->getLineNum(),
             "Expected boolean type following negation. Instead received: " +
                 type + "."));
-    }
 }
 
 void
@@ -880,71 +823,57 @@ TypeChecker::visit(ast::BinaryExpression* node)
         if (subnode->onlyAcceptsInt())
         {
             if (lType != "int")
-            {
                 semanticErrorHandler->handle(
                     new Error(0, "Expected int type on left "
                                  "side of operation. Instead received: " +
                                      lType + "."));
-            }
             else if (rType != "int")
-            {
                 semanticErrorHandler->handle(
                     new Error(0, "Expected int type on left "
                                  "side of operation. Instead received: " +
                                      rType + "."));
-            }
         }
         else if (subnode->onlyAcceptsBool())
         {
             if (lType != "bool")
-            {
                 semanticErrorHandler->handle(
                     new Error(0, "Expected boolean type on left side of "
                                  "operation. Instead received: " +
                                      lType + "."));
-            }
 
             else if (rType != "bool")
-            {
                 semanticErrorHandler->handle(
                     new Error(0, "Expected boolean type on right side of "
                                  "operation. Instead received: " +
                                      rType + "."));
-            }
         }
         else if (subnode->onlyAcceptsFltOrInt())
         {
             if (lType != rType)
-            {
                 semanticErrorHandler->handle(
                     new Error(0, "Expected the same types on each side of "
                                  "operation. Instead received: " +
                                      lType + " and " + rType + "."));
-            }
+
             else if (lType != "int" && lType != "flt")
-            {
                 semanticErrorHandler->handle(new Error(
                     0, "Expected either float or integer type on left "
                        "side of operation. Instead received: " +
                            lType + "."));
-            }
+
             else if (rType != "int" && rType != "flt")
-            {
                 semanticErrorHandler->handle(new Error(
                     0, "Expected either float or integer type on left "
                        "side of operation. Instead received: " +
                            rType + "."));
-            }
         }
         else
         {
             if (lType != rType)
-            {
                 semanticErrorHandler->handle(
                     new Error(0, "Expected the same types on each side of "
                                  "operation. Instead received: " +
                                      lType + " and " + rType + "."));
-            }
         }
         break;
     }
@@ -968,31 +897,24 @@ TypeChecker::visit(ast::BinaryExpression* node)
             case ast::Primary::AttributeAccessLiteral:
             {
                 ast::Identifier* z = dynamic_cast<ast::Identifier*>(subnode);
-
                 break;
             }
             default:
-            {
                 semanticErrorHandler->handle(new Error(
                     0, "Illegal left hand expression in assignment."));
-            }
             }
             break;
         }
         default:
-        {
             semanticErrorHandler->handle(
                 new Error(0, "Illegal left hand expression in assignment."));
         }
-        }
 
         if (lType != rType)
-        {
             semanticErrorHandler->handle(
                 new Error(0, "Expected the same types on each side of "
                              "operation. Instead received: " +
                                  lType + " and " + rType + "."));
-        }
         break;
     }
     }
@@ -1006,9 +928,8 @@ TypeChecker::visit(ast::AttributeAccess* node)
 
     // hacks: REMOVE ASAP
     if (variableName == "own")
-    {
         variableName = curUDT;
-    }
+
     else
     {
         // ensure variable exists
@@ -1058,9 +979,8 @@ TypeChecker::visit(ast::MethodAccess* node)
 
     // hacks: REMOVE ASAP
     if (variableUDTname == "own")
-    {
         variableUDTname = curUDT;
-    }
+
     else
     {
         // ensure variable's udt exists
@@ -1116,9 +1036,7 @@ TypeChecker::visit(ast::MethodAccess* node)
     compareFunctions(inputs, args, methodName);
 
     for (auto const& arg : args)
-    {
         visit(arg);
-    }
 }
 
 void
@@ -1145,7 +1063,5 @@ TypeChecker::visit(ast::FunctionCall* node)
     compareFunctions(inputs, args, name);
 
     for (auto const& arg : args)
-    {
         visit(arg);
-    }
 }
