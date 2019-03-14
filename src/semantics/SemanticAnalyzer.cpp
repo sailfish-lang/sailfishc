@@ -22,17 +22,13 @@ SemanticAnalyzer::analyze()
     InitialExecution* ie = new InitialExecution();
     if (!ie->hasInitExecBody(root))
     {
-        semanticErrorHandler->handle(new Error(
-            0, "No initial execution body found, or more than one exists."));
+        std::string errormsg =
+            "Unable to compile. Reason: missing an initial execution body.\n";
+        throw errormsg;
     }
 
     // execute on built up errors
     tc->end();
-
-    if (semanticErrorHandler->getErrors().size() > 0)
-    {
-        throw "Unable to compile.";
-    }
 }
 
 std::vector<Error*>

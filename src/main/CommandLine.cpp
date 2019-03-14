@@ -71,8 +71,6 @@ handleCommandLine(int argc, char* const* argv)
         }
         else
         {
-            // default is to just try to compile, assuming received text is a
-            // filename
             fullCompilation(argv[1]);
         }
 

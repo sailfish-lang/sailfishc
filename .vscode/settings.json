@@ -45,6 +45,9 @@
         "map": "cpp",
         "cstdarg": "cpp",
         "string": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "unordered_set": "cpp"
     }
 }

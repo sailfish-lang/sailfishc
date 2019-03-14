@@ -18,6 +18,3 @@ fun fizzbuzz
     else {}
 }
 
-start {
-    fizzbuzz(100)
-}
