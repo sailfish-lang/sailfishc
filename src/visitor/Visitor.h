@@ -22,6 +22,7 @@ class Visitor
     virtual void visit(ast::Output*);
     virtual void visit(ast::UserDefinedTypeDefinition*);
     virtual void visit(ast::UserDefinedType*);
+    virtual void visit(ast::UDTitem*);
     virtual void visit(ast::InitialExecutionBody*);
     virtual void visit(ast::Variable*);
     virtual void visit(ast::Block*);

@@ -25,6 +25,7 @@ class SymbolTable
     {
         scopeLevel = 0;
         globalScopeTable.clear();
+        localCache.push_back("|");
     }
     // destructor
     ~SymbolTable()
@@ -55,5 +56,16 @@ class SymbolTable
     isGlobalScope()
     {
         return scopeLevel == 0;
+    }
+
+    // for testing
+    void
+    dump()
+    {
+        for (auto kv : globalScopeTable)
+        {
+            std::cout << "KEY: " << kv.first
+                      << "\nVALUE: " << kv.second.top()->getType() << "\n";
+        }
     }
 };

@@ -420,7 +420,7 @@ Parser::parseUserDefinedTypeDefinition()
 }
 
 /**
- * UserDefinedType := identifier '{' [DictionaryItem (',' DictionaryItem)*] '}'
+ * UserDefinedType := identifier '{' [UDTitem (',' UDTitem)*] '}'
  */
 ast::UserDefinedType*
 Parser::parseUserDefinedType()
@@ -441,11 +441,11 @@ Parser::parseUserDefinedType()
     // consume '{'
     getNextUsefulToken();
 
-    std::vector<ast::DictionaryItem*> attributes;
+    std::vector<ast::UDTitem*> attributes;
 
     while (currentToken->getKind() != Kind::RCURLEY_TOKEN)
     {
-        attributes.push_back(parseDictionaryItem());
+        attributes.push_back(parseUDTitem());
 
         if (currentToken->isEOF())
         {
@@ -459,6 +459,33 @@ Parser::parseUserDefinedType()
 
     return new ast::UserDefinedType(name, attributes,
                                     currentToken->getLineNum());
+}
+
+/**
+ * UDTitem: Identifier : Primary
+ */
+ast::UDTitem*
+Parser::parseUDTitem()
+{
+    ast::Identifier* key = new ast::Identifier(currentToken->getValue(),
+                                               currentToken->getLineNum());
+
+    // consume identifier
+    getNextUsefulToken();
+
+    // check for ':'
+    if (currentToken->getKind() != Kind::COLON_TOKEN)
+    {
+        errorHandler->handle(new Error(
+            currentToken->getLineNum(),
+            "Expected a colon. Received: " + currentToken->getValue() + "."));
+    }
+    // consume ':'
+    getNextUsefulToken();
+
+    ast::Primary* value = parsePrimary();
+
+    return new ast::UDTitem(key, value, currentToken->getLineNum());
 }
 
 /**
@@ -1164,7 +1191,6 @@ Parser::parseListItem()
 ast::Variable*
 Parser::parseVariable()
 {
-
     // TODO: fix this hack for void input
     if (std::string("void").compare(currentToken->getValue()) == 0)
     {

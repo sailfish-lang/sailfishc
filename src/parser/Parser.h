@@ -40,6 +40,7 @@ class Parser
     ast::GeneralDefinition* parseGeneralDefinition();
 
     ast::UserDefinedType* parseUserDefinedType();
+    ast::UDTitem* parseUDTitem();
 
     ast::DictionaryDefinition* parseDictionaryDefinition();
     ast::ListDefinition* parseListDefinition();

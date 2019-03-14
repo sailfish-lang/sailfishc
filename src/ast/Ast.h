@@ -48,6 +48,7 @@
 #include "Statement.h"
 #include "StringLiteral.h"
 #include "Typename.h"
+#include "UDTitem.h"
 #include "UnaryExpression.h"
 #include "UserDefinedType.h"
 #include "UserDefinedTypeDefinition.h"

@@ -3,11 +3,11 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "DictionaryItem.h"
 #include "Expression.h"
 #include "Identifier.h"
 #include "New.h"
 #include "Node.h"
+#include "UDTitem.h"
 #include <vector>
 
 namespace ast
@@ -16,11 +16,11 @@ class UserDefinedType : public New, public Node
 {
   private:
     Identifier* name;
-    std::vector<DictionaryItem*> attributes;
+    std::vector<UDTitem*> attributes;
 
   public:
     // constructor
-    UserDefinedType(Identifier* i, std::vector<DictionaryItem*> a, int lineNum)
+    UserDefinedType(Identifier* i, std::vector<UDTitem*> a, int lineNum)
         : Node(lineNum)
     {
         name = i;
@@ -43,7 +43,7 @@ class UserDefinedType : public New, public Node
     {
         return name;
     }
-    std::vector<DictionaryItem*>
+    std::vector<UDTitem*>
     getAttributes()
     {
         return attributes;

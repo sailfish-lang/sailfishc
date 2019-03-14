@@ -131,6 +131,7 @@ Transpiler::visit(ast::FunctionDefinition* node, std::string udtTypeName)
 
     for (int i = 0; i < node->getInputList().size(); i++)
     {
+        visit(node->getInputList().at(i));
         /*
             no comma following the last argument and no comma if we get a void
             type and also no repeating the initial comma we placed above, so
@@ -141,8 +142,6 @@ Transpiler::visit(ast::FunctionDefinition* node, std::string udtTypeName)
         {
             fileBuffer += ", ";
         }
-
-        visit(node->getInputList().at(i));
     }
 
     fileBuffer += ")";
@@ -469,6 +468,8 @@ Transpiler::visit(ast::UserDefinedTypeDefinition* node)
         fileBuffer += "_";
         if (i != node->getAttributes().size() - 1)
             fileBuffer += ",";
+
+        ++i;
     }
     fileBuffer += ")\n{\n    ";
     visit(node->getName());
@@ -550,6 +551,8 @@ Transpiler::visit(ast::UserDefinedType* node)
         visit(attribute->getValue());
         if (i != node->getAttributes().size() - 1)
             fileBuffer += ",";
+
+        ++i;
     }
     fileBuffer += ");";
 }

@@ -121,6 +121,7 @@ Visitor::visit(ast::GeneralDefinition* node)
 void
 Visitor::visit(ast::ListDefinition* node)
 {
+    visit(node->getType());
     visit(node->getName());
     visit(node->getExpression());
 }
@@ -435,6 +436,12 @@ Visitor::visit(ast::UserDefinedType* node)
     }
 }
 void
+Visitor::visit(ast::UDTitem* node)
+{
+    visit(node->getKey());
+    visit(node->getValue());
+}
+void
 Visitor::visit(ast::PrimaryExpression* node)
 {
     visit(node->getPrimary());
@@ -524,6 +531,7 @@ Visitor::visit(ast::DictionaryItem* node)
 void
 Visitor::visit(ast::ListLiteral* node)
 {
+    visit(node->getName());
     for (auto const& listItem : node->getItems())
     {
         visit(listItem);

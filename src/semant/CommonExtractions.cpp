@@ -474,13 +474,10 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
 
             std::string fullTypeName = "udt_" + name;
 
-            for (ast::DictionaryItem* const& item : udt->getAttributes())
+            for (ast::UDTitem* const& item : udt->getAttributes())
             {
                 fullTypeName +=
-                    "_" +
-                    primaryHelper(item->getKey(), symbolTable,
-                                  semanticErrorHandler, udtTable, curUDT) +
-                    "_" +
+                    "_" + item->getKey()->getValue() + "_" +
                     primaryHelper(item->getValue(), symbolTable,
                                   semanticErrorHandler, udtTable, curUDT);
             }
@@ -493,11 +490,6 @@ expressionHelper(ast::Expression* node, SymbolTable* symbolTable,
     {
         ast::GroupingExpression* subnode =
             dynamic_cast<ast::GroupingExpression*>(node);
-
-        semanticErrorHandler->handle(
-            new Error(subnode->getLineNum(),
-                      "Unexpected grouping inside binary expression. "
-                      "Groupings cannot be nested."));
 
         return "bool";
     }
