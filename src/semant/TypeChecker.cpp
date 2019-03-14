@@ -619,39 +619,6 @@ TypeChecker::visit(ast::BinaryExpression* node)
 }
 
 void
-TypeChecker::visit(ast::ExportDefinition* node)
-{
-    // ensure scope is global since functions cannot be in blocks
-    if (!symbolTable->isGlobalScope())
-    {
-        symbolTableErrorHandler->handle(new Error(
-            node->getLineNum(),
-            "Export definitions can only be declared at the global level, "
-            "i.e. cannot be nested!"));
-    }
-
-    ast::Exportable* exprt = node->getExport();
-    ast::Exportable::ExportableType type = exprt->getExportableType();
-    switch (type)
-    {
-    case ast::Exportable::GeneralDecleration:
-    {
-        ast::GeneralDecleration* subnode =
-            dynamic_cast<ast::GeneralDecleration*>(exprt);
-        visit(subnode);
-        break;
-    }
-    case ast::Exportable::FunctionDefinition:
-    {
-        ast::FunctionDefinition* subnode =
-            dynamic_cast<ast::FunctionDefinition*>(exprt);
-        visit(subnode);
-        break;
-    }
-    }
-}
-
-void
 TypeChecker::visit(ast::AttributeAccess* node)
 {
     std::string attributeName = node->getAttribute()->getValue();

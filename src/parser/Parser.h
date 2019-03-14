@@ -26,13 +26,10 @@ class Parser
     ast::Source* parseSource();
     ast::SourcePart* parseSourcePart();
 
-    ast::ExportDefinition* parseExportDefinition();
     ast::FunctionDefinition* parseFunctionDefintion();
     ast::GeneralDecleration* parseGeneralDecleration();
     ast::UserDefinedTypeDefinition* parseUserDefinedTypeDefinition();
     ast::InitialExecutionBody* parseInitialExecutionBody();
-
-    ast::Exportable* parseExportable();
 
     ast::Input* parseInput();
     ast::Output* parseOutput();

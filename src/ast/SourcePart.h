@@ -11,7 +11,6 @@ class SourcePart
   public:
     enum SourcePartType
     {
-        ExportDefinition,
         GeneralDecleration,
         FunctionDefinitionPart,
         UserDefinedTypeDefinition,

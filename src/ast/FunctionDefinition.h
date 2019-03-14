@@ -4,7 +4,6 @@
  */
 #pragma once
 #include "Block.h"
-#include "Exportable.h"
 #include "Identifier.h"
 #include "Input.h"
 #include "Node.h"
@@ -14,7 +13,7 @@
 
 namespace ast
 {
-class FunctionDefinition : public SourcePart, public Exportable, public Node
+class FunctionDefinition : public SourcePart, public Node
 {
   private:
     Identifier* name;
@@ -43,12 +42,6 @@ class FunctionDefinition : public SourcePart, public Exportable, public Node
     getSourcePartType()
     {
         return SourcePartType::FunctionDefinitionPart;
-    }
-    // implementation for Exportable
-    /* virtual */ ExportableType
-    getExportableType()
-    {
-        return ExportableType::FunctionDefinition;
     }
     // get methods
     Identifier*

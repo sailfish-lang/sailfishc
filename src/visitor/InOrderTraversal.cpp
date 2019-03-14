@@ -25,32 +25,6 @@ InOrderTraversal::getInOrderTraversal(ast::Start* node)
 }
 
 void
-InOrderTraversal::visit(ast::ExportDefinition* node)
-{
-    ast::Exportable* exprt = node->getExport();
-    ast::Exportable::ExportableType type = exprt->getExportableType();
-    switch (type)
-    {
-    case ast::Exportable::GeneralDecleration:
-    {
-        ast::GeneralDecleration* subnode =
-            dynamic_cast<ast::GeneralDecleration*>(exprt);
-        visit(subnode);
-        break;
-    }
-    case ast::Exportable::FunctionDefinition:
-    {
-        ast::FunctionDefinition* subnode =
-            dynamic_cast<ast::FunctionDefinition*>(exprt);
-        visit(subnode);
-        break;
-    }
-    }
-
-    push("ExportDefintion");
-}
-
-void
 InOrderTraversal::visit(ast::NewUDTDefinition* node)
 {
     visit(node->getVariable());

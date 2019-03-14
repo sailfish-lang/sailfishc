@@ -18,13 +18,6 @@ Visitor::visit(ast::Source* node)
         ast::SourcePart::SourcePartType type = srcPart->getSourcePartType();
         switch (type)
         {
-        case ast::SourcePart::ExportDefinition:
-        {
-            ast::ExportDefinition* subnode =
-                dynamic_cast<ast::ExportDefinition*>(srcPart);
-            visit(subnode);
-            break;
-        }
         case ast::SourcePart::GeneralDecleration:
         {
             ast::GeneralDecleration* subnode =
@@ -56,29 +49,7 @@ Visitor::visit(ast::Source* node)
         }
     }
 }
-void
-Visitor::visit(ast::ExportDefinition* node)
-{
-    ast::Exportable* exprt = node->getExport();
-    ast::Exportable::ExportableType type = exprt->getExportableType();
-    switch (type)
-    {
-    case ast::Exportable::GeneralDecleration:
-    {
-        ast::GeneralDecleration* subnode =
-            dynamic_cast<ast::GeneralDecleration*>(exprt);
-        visit(subnode);
-        break;
-    }
-    case ast::Exportable::FunctionDefinition:
-    {
-        ast::FunctionDefinition* subnode =
-            dynamic_cast<ast::FunctionDefinition*>(exprt);
-        visit(subnode);
-        break;
-    }
-    }
-}
+
 void
 Visitor::visit(ast::GeneralDecleration* node)
 {

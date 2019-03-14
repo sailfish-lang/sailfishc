@@ -10,7 +10,6 @@ class Visitor
   public:
     virtual void visit(ast::Start*);
     virtual void visit(ast::Source*);
-    virtual void visit(ast::ExportDefinition*);
     virtual void visit(ast::GeneralDecleration*);
     virtual void visit(ast::GeneralDefinition*);
     virtual void visit(ast::NewUDTDefinition*);

@@ -3,7 +3,6 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Exportable.h"
 #include "GeneralDefinition.h"
 #include "Node.h"
 #include "SourcePart.h"
@@ -11,10 +10,7 @@
 
 namespace ast
 {
-class GeneralDecleration : public SourcePart,
-                           public Exportable,
-                           public Statement,
-                           public Node
+class GeneralDecleration : public SourcePart, public Statement, public Node
 {
   private:
     GeneralDefinition* definition;
@@ -35,12 +31,6 @@ class GeneralDecleration : public SourcePart,
     getSourcePartType()
     {
         return SourcePartType::GeneralDecleration;
-    }
-    // implementation for Exportable
-    /* virtual */ ExportableType
-    getExportableType()
-    {
-        return ExportableType::GeneralDecleration;
     }
     // implement Statement
     /* virtual */ StatementType

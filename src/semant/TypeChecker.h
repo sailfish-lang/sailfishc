@@ -82,9 +82,6 @@ class TypeChecker : public Visitor
     // unary
     void visit(ast::Negation*);
 
-    // only global scopes
-    void visit(ast::ExportDefinition*);
-
     // udt attribute and method access
     void visit(ast::AttributeAccess*);
     void visit(ast::MethodAccess*);

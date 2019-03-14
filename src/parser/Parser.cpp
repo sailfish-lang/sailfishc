@@ -76,8 +76,7 @@ Parser::parseSource()
 }
 
 /**
- * SourcePart := ExportDefinition |
- *               GeneralDecleration |
+ * SourcePart := GeneralDecleration |
  *               FuctionDefinition |
  *               UserDefinedTypeDefinition |
  *               InitialExecutionBody
@@ -94,11 +93,7 @@ Parser::parseSourcePart()
         // increment token since this one's time of importance is over
         getNextUsefulToken();
 
-        if (kwd == "exp")
-        {
-            return (ast::SourcePart*)parseExportDefinition();
-        }
-        else if (kwd == "fun")
+        if (kwd == "fun")
         {
             return (ast::SourcePart*)parseFunctionDefintion();
         }
@@ -114,7 +109,7 @@ Parser::parseSourcePart()
         {
             errorHandler->handle(new Error(
                 currentToken->getLineNum(),
-                "Expected an export statement (exp), a function (fun), a "
+                "Expected  a function (fun), a "
                 "decleration (dec), or a UDT (Cat). Those are the only "
                 "valid source parts at global source level. Received: " +
                     currentToken->getValue() + "."));
@@ -127,50 +122,10 @@ Parser::parseSourcePart()
     default:
         errorHandler->handle(
             new Error(currentToken->getLineNum(),
-                      "Expected an export statement (exp), a function (fun), a "
+                      "Expected a function (fun), a "
                       "decleration (dec), or a UDT (Cat). Those are the only "
                       "valid source parts at global source level. Received: " +
                           currentToken->getValue() + "."));
-    }
-}
-
-/**
- * ExportDefinition := 'exp' Exportable
- */
-ast::ExportDefinition*
-Parser::parseExportDefinition()
-{
-    return new ast::ExportDefinition(parseExportable(),
-                                     currentToken->getLineNum());
-}
-
-/**
- * Exportable := FunctionDefinition | GeneralDecleration
- */
-ast::Exportable*
-Parser::parseExportable()
-{
-    std::string kwd = currentToken->getValue();
-    if (kwd == "fun")
-    {
-        // consume 'fun'
-        getNextUsefulToken();
-
-        return (ast::Exportable*)parseFunctionDefintion();
-    }
-    else if (kwd == "dec")
-    {
-        // consume 'dec'
-        getNextUsefulToken();
-
-        return (ast::Exportable*)parseGeneralDecleration();
-    }
-    else
-    {
-        errorHandler->handle(new Error(
-            currentToken->getLineNum(),
-            "Expected a function (fun) or a decleration (dec). Received: " +
-                currentToken->getValue() + "."));
     }
 }
 

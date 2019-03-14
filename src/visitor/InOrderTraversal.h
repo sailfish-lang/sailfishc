@@ -22,7 +22,6 @@ class InOrderTraversal : public Visitor
     ~InOrderTraversal(){};
 
     // overloaded, overriden methods
-    void visit(ast::ExportDefinition*);
     void visit(ast::NewUDTDefinition*);
     void visit(ast::PrimitiveDefition*);
     void visit(ast::FunctionDefinition*);
