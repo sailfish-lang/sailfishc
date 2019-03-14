@@ -8,7 +8,6 @@
 #include "../parser/Parser.h"
 #include "../semantics/SemanticAnalyzer.h"
 #include "../transpiler/Transpiler.h"
-#include "../visitor/InOrderTraversal.h"
 #include <iostream>
 #include <string>
 

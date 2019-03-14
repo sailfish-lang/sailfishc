@@ -29,7 +29,7 @@ fullCompilation(std::string filename)
 {
     try
     {
-        std::cout << "Compiling " << filename << ".\n\n";
+        std::cout << "Compiling " << filename << ".\n";
 
         Parser* p = new Parser();
         ast::Start* root = p->parse(filename);
@@ -42,7 +42,7 @@ fullCompilation(std::string filename)
         Transpiler* t = new Transpiler(root, cFilename);
         t->transpile();
 
-        std::cout << "Success. Compiled to: out.c";
+        std::cout << "Success. Compiled to: out.c\n";
     }
     catch (const std::string msg)
     {
