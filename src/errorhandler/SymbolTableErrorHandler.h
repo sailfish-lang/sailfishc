@@ -19,5 +19,4 @@ class SymbolTableErrorHandler
     // destructor
     ~SymbolTableErrorHandler(){};
     void handle(Error*);
-    void end();
 };

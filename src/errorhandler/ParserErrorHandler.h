@@ -19,5 +19,4 @@ class ParserErrorHandler
     // destructor
     ~ParserErrorHandler(){};
     void handle(Error*);
-    void end();
 };

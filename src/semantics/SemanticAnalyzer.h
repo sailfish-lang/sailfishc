@@ -32,6 +32,10 @@ class SemanticAnalyzer
     ~SemanticAnalyzer()
     {
         delete root;
+        delete symbolTableErrorHandler;
+        delete semanticErrorHandler;
+        delete symbolTable;
+        delete udtTable;
     };
 
     void analyze();

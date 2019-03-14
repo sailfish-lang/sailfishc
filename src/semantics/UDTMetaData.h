@@ -20,24 +20,10 @@ class UDTMetaData
         methods = m;
     }
     // destructor
-    ~UDTMetaData()
-    {
-    }
+    ~UDTMetaData(){};
     // get methods
-    SymbolTable*
-    getAttributeSymbolTable()
-    {
-        return attributes;
-    }
-    SymbolTable*
-    getMethodSymbolTable()
-    {
-        return methods;
-    }
+    SymbolTable* getAttributeSymbolTable();
+    SymbolTable* getMethodSymbolTable();
     // set methods
-    SymbolTable*
-    setMethodSymbolTable(SymbolTable* m)
-    {
-        methods = m;
-    }
+    SymbolTable* setMethodSymbolTable(SymbolTable* m);
 };

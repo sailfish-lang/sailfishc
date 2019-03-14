@@ -17,11 +17,3 @@ SymbolTableErrorHandler::handle(Error* err)
     std::string msg = err->getPrettyMessage();
     throw msg;
 }
-
-void
-SymbolTableErrorHandler::end()
-{
-    if (foundError)
-        std::cout
-            << "Symbol Table creation stopped and found one or more errors.\n";
-}

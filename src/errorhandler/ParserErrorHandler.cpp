@@ -14,10 +14,3 @@ ParserErrorHandler::handle(Error* err)
     // throw an error since we stop at first error here
     throw err->getPrettyMessage();
 }
-
-void
-ParserErrorHandler::end()
-{
-    if (foundError)
-        std::cout << "Parsed and found one or more errors.\n";
-}

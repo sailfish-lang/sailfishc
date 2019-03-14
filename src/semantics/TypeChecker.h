@@ -9,7 +9,6 @@
 #include "../errorhandler/SemanticErrorHandler.h"
 #include "../errorhandler/SymbolTableErrorHandler.h"
 #include "../visitor/Visitor.h"
-#include "CommonExtractions.h"
 #include "SymbolTable.h"
 #include "UDTTable.h"
 #include <tuple>
@@ -24,6 +23,13 @@ class TypeChecker : public Visitor
 
     //  hacks: REMOVE ASAP
     std::string curUDT;
+
+    // helpers that need to know the internals of type checker
+    std::string primaryHelper(ast::Primary*);
+    std::string expressionHelper(ast::Expression*);
+    void compareFunctions(std::vector<std::string>, std::vector<ast::Primary*>,
+                          std::string);
+    std::string getRightExpressionType(ast::BinaryExpression* node);
 
   public:
     using Visitor::visit;
@@ -49,7 +55,6 @@ class TypeChecker : public Visitor
     void
     end()
     {
-        symbolTableErrorHandler->end();
         semanticErrorHandler->end();
     }
 

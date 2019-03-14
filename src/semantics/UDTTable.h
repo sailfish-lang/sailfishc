@@ -20,9 +20,7 @@ class UDTTable
         udtTable.clear();
     }
     // destructor
-    ~UDTTable()
-    {
-    }
+    ~UDTTable(){};
 
     // check if a UDT is in the UDT table
     bool hasUDT(std::string);

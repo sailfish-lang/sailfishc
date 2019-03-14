@@ -49,6 +49,398 @@ TypeChecker::tryAddToSymbolTable(std::string name, std::string type,
     }
 }
 
+// given a function's full type from the symbol table, extract the parameter
+// types
+std::vector<std::string>
+getFunctionParamTypes(std::string fulltype)
+{
+    std::vector<std::string> params;
+
+    std::string buffer = "";
+    for (int i = fulltype.find("{") + 2; i < fulltype.find("}"); i++)
+    {
+        char c = fulltype.at(i);
+        if (c == '_' || c == '}')
+        {
+            params.push_back(buffer);
+            buffer = "";
+        }
+        else
+        {
+
+            buffer += c;
+        }
+    }
+
+    if (buffer != "")
+    {
+        params.push_back(buffer);
+    }
+
+    return params;
+}
+
+// given a function's full type from the symbol table, extract the return type
+std::string
+getFunctionReturnType(std::string fulltype)
+{
+    std::string buffer = "";
+    for (int i = fulltype.find("(") + 2; i < fulltype.length(); i++)
+    {
+        char c = fulltype.at(i);
+        if (c == '_' || c == ')')
+        {
+            break;
+        }
+
+        buffer += c;
+    }
+
+    return buffer;
+}
+
+// given the full type from the symbol table, determine the return type
+std::string
+truncateType(std::string fulltype)
+{
+    switch (fulltype.at(0))
+    {
+    case 'U':
+    case 'P':
+        return fulltype.substr(1, fulltype.length());
+    case 'F':
+        return getFunctionReturnType(fulltype);
+    default:
+        return "unknown";
+    }
+}
+
+// given a primary, determine its type
+std::string
+TypeChecker::expressionHelper(ast::Expression* node)
+{
+    switch (node->getExpressionType())
+    {
+    case ast::Expression::NewExpression:
+    {
+        ast::NewExpression* subnode = dynamic_cast<ast::NewExpression*>(node);
+        ast::New* newnode = subnode->getNewVal();
+
+        switch (newnode->getNewType())
+        {
+        case ast::New::UserDefinedType:
+
+            ast::UserDefinedType* udt =
+                dynamic_cast<ast::UserDefinedType*>(newnode);
+
+            std::string name = udt->getName()->getValue();
+
+            std::string fullTypeName = "udt_" + name;
+
+            for (ast::UDTitem* const& item : udt->getAttributes())
+            {
+                fullTypeName += "_" + item->getKey()->getValue() + "_" +
+                                primaryHelper(item->getValue());
+            }
+
+            return fullTypeName;
+        }
+        break;
+    }
+    case ast::Expression::GroupingExpression:
+    {
+        ast::GroupingExpression* subnode =
+            dynamic_cast<ast::GroupingExpression*>(node);
+
+        return "bool";
+    }
+    case ast::Expression::PrimaryExpression:
+    {
+        ast::PrimaryExpression* subnode =
+            dynamic_cast<ast::PrimaryExpression*>(node);
+
+        return primaryHelper(subnode->getPrimary());
+    }
+    case ast::Expression::UnaryExpression:
+    {
+        ast::UnaryExpression* subnode =
+            dynamic_cast<ast::UnaryExpression*>(node);
+
+        // must be a boolean so fine to return boolean here
+        return "bool";
+    }
+    }
+}
+
+// given a primary, determine the type
+std::string
+TypeChecker::primaryHelper(ast::Primary* primary)
+{
+    ast::Primary::PrimaryType type = primary->getPrimaryType();
+
+    switch (type)
+    {
+    case ast::Primary::IdentifierLiteral:
+    {
+        ast::Identifier* subnode = dynamic_cast<ast::Identifier*>(primary);
+        std::string variableName = subnode->getValue();
+
+        if (!isPrimitive(variableName))
+        {
+            // ensure variable exists
+            if (!symbolTable->hasVariable(variableName))
+            {
+                semanticErrorHandler->handle(
+                    new Error(subnode->getLineNum(),
+                              "Variable: " + variableName + " is undefined."));
+
+                return "unknown";
+            }
+
+            std::string fullAttributeType =
+                symbolTable->getSymbolType(variableName);
+
+            return truncateType(fullAttributeType);
+        }
+
+        return variableName;
+    }
+    case ast::Primary::StringLiteral:
+        return "str";
+    case ast::Primary::BooleanLiteral:
+        return "bool";
+    case ast::Primary::IntegerLiteral:
+        return "int";
+    case ast::Primary::FloatLiteral:
+        return "flt";
+    case ast::Primary::AttributeAccessLiteral:
+    {
+        ast::AttributeAccess* subsubnode =
+            dynamic_cast<ast::AttributeAccess*>(primary);
+
+        std::string attributeName = subsubnode->getAttribute()->getValue();
+        std::string variableName = subsubnode->getUDT()->getValue();
+
+        // hacks: REMOVE ASAP
+        if (variableName == "own")
+        {
+            variableName = curUDT;
+        }
+        else
+        {
+            // ensure variable exists - double checked so no need for another
+            // error message
+            if (!symbolTable->hasVariable(variableName))
+            {
+                return "unknown";
+            }
+
+            std::string udtTypeFull = symbolTable->getSymbolType(variableName);
+            variableName = udtTypeFull.substr(1, udtTypeFull.length());
+        }
+
+        // ensure udt exists - double checked so no need for another
+        // error message
+        if (!udtTable->hasUDT(variableName))
+        {
+            return "unknown";
+        }
+
+        // ensure attribute exists for udt - double checked so only return error
+        // once
+        if (!udtTable->getAttributeSymbolTable(variableName)
+                 ->hasVariable(attributeName))
+        {
+            return "unknown";
+        }
+
+        std::string fullAttributeType =
+            udtTable->getAttributeSymbolTable(variableName)
+                ->getSymbolType(attributeName);
+
+        return truncateType(fullAttributeType);
+    }
+    case ast::Primary::MethodAccessLiteral:
+    {
+        ast::MethodAccess* node = dynamic_cast<ast::MethodAccess*>(primary);
+        std::string methodName = node->getName()->getValue();
+        std::string variableUDTname = node->getUDT()->getValue();
+
+        // hacks: REMOVE ASAP
+        if (variableUDTname == "own")
+        {
+            variableUDTname = curUDT;
+        }
+        else
+        {
+            // ensure variable's udt exists - double checked so no need for
+            // another error message
+            if (!symbolTable->hasVariable(variableUDTname))
+            {
+                return "unknown";
+            }
+
+            std::string udtname = symbolTable->getSymbolType(variableUDTname);
+
+            // ensure variable's udt exists - double checked so no need for
+            // another error message
+            if (!udtTable->hasUDT(udtname.substr(1, udtname.length())))
+            {
+                return "unknown";
+            }
+
+            variableUDTname = udtname.substr(1, udtname.length());
+        }
+
+        // ensure metho exists for udt - double checked so no need for another
+        // error message
+        if (!udtTable->getMethodSymbolTable(variableUDTname)
+                 ->hasVariable(methodName))
+        {
+            return "unknown";
+        }
+
+        return truncateType(udtTable->getMethodSymbolTable(variableUDTname)
+                                ->getSymbolType(methodName));
+    }
+    case ast::Primary::FunctionCallLiteral:
+    {
+        ast::FunctionCall* subsubnode =
+            dynamic_cast<ast::FunctionCall*>(primary);
+
+        std::string functionName = subsubnode->getName()->getValue();
+
+        // ensure function exists
+        if (!symbolTable->hasVariable(functionName))
+        {
+            return "unknown";
+        }
+
+        // get function type from symbol table
+        std::string fullType = symbolTable->getSymbolType(functionName);
+
+        return truncateType(fullType);
+    }
+    }
+}
+
+// given a grouping, determine if it is ultimately a boolean expression
+bool
+isLegalGrouping(ast::BinaryExpression* node)
+{
+    switch (node->getBinaryExpressionType())
+    {
+    case ast::BinaryExpression::Assignment:
+    case ast::BinaryExpression::ExpressionOnlyStatement:
+        return false;
+
+    case ast::BinaryExpression::BinaryCompOrArith:
+        ast::BinaryCompOrArith* subnode =
+            dynamic_cast<ast::BinaryCompOrArith*>(node);
+        return subnode->isComparison();
+    }
+}
+
+// given a primary, determine if its type is void
+bool
+isVoid(ast::Primary* node)
+{
+    if (node->getPrimaryType() == ast::Primary::IdentifierLiteral)
+    {
+        ast::Identifier* id = dynamic_cast<ast::Identifier*>(node);
+        if (id->getValue() == "void")
+            return true;
+    }
+
+    return false;
+}
+
+// takes the input lists of two functions, often the expected types (args) and
+// the actual types (inputs) and determines if everything is kosher
+void
+TypeChecker::compareFunctions(std::vector<std::string> inputs,
+                              std::vector<ast::Primary*> args, std::string name)
+{
+    int numArgs = args.size();
+    if (numArgs == 1 && isVoid(args.at(0)))
+    {
+        numArgs = 0;
+    }
+
+    int numInps = inputs.size();
+    if (numInps == 1 && inputs.at(0) == "void")
+    {
+        numInps = 0;
+    }
+
+    if (numArgs < numInps)
+    {
+        semanticErrorHandler->handle(new Error(
+            0, "Not enough args supplied to function: " + name + "."));
+    }
+    else if (numArgs > numInps)
+    {
+        semanticErrorHandler->handle(
+            new Error(0, "Too many args supplied to function: " + name + "."));
+    }
+    else
+    {
+        for (int i = 0; i < numArgs; i++)
+        {
+            ast::Primary* arg = args.at(i);
+            std::string actual = primaryHelper(arg);
+
+            // if not primitive, see if it is a variable in the symbol table
+            if (!isPrimitive(actual))
+            {
+                if (!symbolTable->hasVariable(actual))
+                {
+                    semanticErrorHandler->handle(new Error(
+                        0, "Undefined argument: " + actual +
+                               " supplied for function: " + name + "."));
+                }
+                else
+                {
+                    std::string fullActual = symbolTable->getSymbolType(actual);
+                    char identChar = fullActual.at(0);
+                    switch (identChar)
+                    {
+                    case 'U':
+                    case 'P':
+                        actual = fullActual.substr(1, fullActual.length());
+                        break;
+                    case 'F':
+                        semanticErrorHandler->handle(new Error(
+                            0,
+                            "Illegal argument: " + actual +
+                                " supplied for function: " + name +
+                                ". Sorry, functions are not first order :("));
+
+                        // to continue semantic analysis
+                        actual = inputs[i];
+                        break;
+                    }
+                }
+            }
+
+            if (actual != inputs[i])
+            {
+                semanticErrorHandler->handle(new Error(
+                    0, "Supplied argument type of: " + actual +
+                           " does not match expected type of: " + inputs[i] +
+                           "."));
+            }
+        }
+    }
+}
+
+// given a right expression, determin its type
+std::string
+TypeChecker::getRightExpressionType(ast::BinaryExpression* node)
+{
+    return expressionHelper(node->getLeftExpr());
+}
+
 // ------- Additions to the symbol table ------- //
 void
 TypeChecker::check(ast::Start* root)
@@ -80,9 +472,7 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     // visit expression
     visit(node->getExpression());
 
-    std::string exprType =
-        expressionHelper(node->getExpression(), symbolTable,
-                         semanticErrorHandler, udtTable, curUDT);
+    std::string exprType = expressionHelper(node->getExpression());
 
     std::string temp;
     std::string prev;
@@ -165,9 +555,7 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
     // visit expression
     visit(node->getBinaryExpression());
 
-    std::string exprType =
-        getRightExpressionType(node->getBinaryExpression(), symbolTable,
-                               semanticErrorHandler, udtTable, curUDT);
+    std::string exprType = getRightExpressionType(node->getBinaryExpression());
 
     // ensure assignment is the expected type
     if (exprType != type)
@@ -289,9 +677,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
             ast::BinaryExpression* returnedExpr =
                 subnode->getBinaryExpression();
 
-            std::string actualReturnType =
-                getRightExpressionType(returnedExpr, symbolTable,
-                                       semanticErrorHandler, udtTable, curUDT);
+            std::string actualReturnType = getRightExpressionType(returnedExpr);
 
             if (actualReturnType != out_type)
             {
@@ -456,9 +842,7 @@ TypeChecker::visit(ast::Negation* node)
     visit(node->getBinaryExpression());
 
     // ensure that all negations are boolean
-    std::string type =
-        getRightExpressionType(node->getBinaryExpression(), symbolTable,
-                               semanticErrorHandler, udtTable, curUDT);
+    std::string type = getRightExpressionType(node->getBinaryExpression());
     if (type != "bool")
     {
         semanticErrorHandler->handle(new Error(
@@ -482,13 +866,9 @@ TypeChecker::visit(ast::BinaryExpression* node)
     visit(node->getLeftExpr());
     visit(node->getRightExpr());
 
-    std::string lType =
-        expressionHelper(node->getLeftExpr(), symbolTable, semanticErrorHandler,
-                         udtTable, curUDT);
+    std::string lType = expressionHelper(node->getLeftExpr());
 
-    std::string rType =
-        getRightExpressionType(node->getRightExpr(), symbolTable,
-                               semanticErrorHandler, udtTable, curUDT);
+    std::string rType = getRightExpressionType(node->getRightExpr());
 
     switch (node->getBinaryExpressionType())
     {
@@ -733,8 +1113,7 @@ TypeChecker::visit(ast::MethodAccess* node)
     // ensure that each of the arguments is supplied and of the proper type
     std::vector<ast::Primary*> args = node->getFunctionCall()->getArguments();
 
-    compareFunctions(inputs, args, methodName, symbolTable,
-                     semanticErrorHandler, udtTable, curUDT);
+    compareFunctions(inputs, args, methodName);
 
     for (auto const& arg : args)
     {
@@ -763,8 +1142,7 @@ TypeChecker::visit(ast::FunctionCall* node)
     // ensure that each of the arguments is supplied and of the proper type
     std::vector<ast::Primary*> args = node->getArguments();
 
-    compareFunctions(inputs, args, name, symbolTable, semanticErrorHandler,
-                     udtTable, curUDT);
+    compareFunctions(inputs, args, name);
 
     for (auto const& arg : args)
     {

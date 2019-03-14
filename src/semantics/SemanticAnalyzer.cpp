@@ -7,7 +7,7 @@
 void
 SemanticAnalyzer::analyze()
 {
-    // add built-in print method
+    // add standard library methods
     symbolTable->addSymbol("display_str", "Fdisplay{_str}(_void)");
     symbolTable->addSymbol("display_int", "Fdisplay{_int}(_void)");
     symbolTable->addSymbol("display_flt", "Fdisplay{_flt}(_void)");

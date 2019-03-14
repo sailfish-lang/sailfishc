@@ -19,18 +19,8 @@ class SymbolMetaData
         scopeLevel = s;
     }
     // destructor
-    ~SymbolMetaData()
-    {
-    }
+    ~SymbolMetaData(){};
     // get methods
-    std::string
-    getType()
-    {
-        return type;
-    }
-    int
-    getScopeLevel()
-    {
-        return scopeLevel;
-    }
+    std::string getType();
+    int getScopeLevel();
 };

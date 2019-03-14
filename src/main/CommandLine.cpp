@@ -102,7 +102,6 @@ handleCommandLine(int argc, char* const* argv)
 
                 Parser* p = new Parser();
                 ast::Start* root = p->parse(filename);
-                p->checkErrors();
             }
             catch (const std::string msg)
             {

@@ -80,9 +80,4 @@ class Parser
     };
     // actual parse function -- given filename returns the root of the ast
     ast::Start* parse(const std::string);
-    void
-    checkErrors()
-    {
-        errorHandler->end();
-    }
 };

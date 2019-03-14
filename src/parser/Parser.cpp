@@ -187,10 +187,6 @@ Parser::parseFunctionDefintion()
     // consume '->'
     getNextUsefulToken();
 
-    // error if one of the outputs is void and there are multiple outputs
-    // hasVoid = false;
-    // std::vector<ast::Output*> outputs;
-
     ast::Output* output = parseOutput();
 
     if (currentToken->getKind() != Kind::LCURLEY_TOKEN)
@@ -246,20 +242,10 @@ Parser::parseGeneralDecleration()
 ast::GeneralDefinition*
 Parser::parseGeneralDefinition()
 {
-    std::string val = currentToken->getValue();
-
-    // primitives
-    if (val == "bool" || val == "str" || val == "int" || val == "flt" ||
-        val == "void")
-    {
+    if (isPrimitive(currentToken->getValue()))
         return (ast::GeneralDefinition*)parsePrimitiveDefinition();
-    }
-
-    // user defined types
     else
-    {
         return (ast::GeneralDefinition*)parseNewUDTDefinition();
-    }
 }
 
 /**
@@ -515,9 +501,7 @@ Parser::parseExpression()
 ast::NewExpression*
 Parser::parseNewExpression()
 {
-    ast::New* newVal = parseNew();
-
-    return new ast::NewExpression(newVal, currentToken->getLineNum());
+    return new ast::NewExpression(parseNew(), currentToken->getLineNum());
 }
 
 /**
@@ -529,7 +513,6 @@ Parser::parseNew()
     // consume 'new'
     getNextUsefulToken();
 
-    Kind kind = currentToken->getKind();
     return (ast::New*)parseUserDefinedType();
 }
 
@@ -586,7 +569,7 @@ Parser::parseMethodAccess(ast::Identifier* udtName)
     ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
                                                 currentToken->getLineNum());
 
-    // DONT consume identifier
+    // DONT consume identifier, used by internal type as well
     getNextUsefulToken();
 
     // consume '('
@@ -867,11 +850,11 @@ Parser::parsePrimary()
     }
     else
     {
-        errorHandler->handle(new Error(
-            currentToken->getLineNum(),
-            "Expected a literal of type bool, int, flt, str, list, dictionary, "
-            "or a UDT. Instead received: " +
-                tk + "."));
+        errorHandler->handle(
+            new Error(currentToken->getLineNum(),
+                      "Expected a literal of type bool, int, flt, str, "
+                      "or a UDT. Instead received: " +
+                          tk + "."));
     }
 }
 

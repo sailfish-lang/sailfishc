@@ -9,8 +9,10 @@
 #include "../src/lexar/Lexar.h"
 #include "../src/parser/Parser.h"
 #include "../src/semantics/SemanticAnalyzer.h"
+#include "../src/semantics/SymbolMetaData.h"
 #include "../src/semantics/SymbolTable.h"
 #include "../src/semantics/TypeChecker.h"
+#include "../src/semantics/UDTTable.h"
 #include "visitors/InOrderTraversal.h"
 #include <gtest/gtest.h>
 

@@ -12,11 +12,12 @@ ADD_LIBRARY(SailfishcLibs
     ../src/semantics/SemanticAnalyzer.cpp 
     ../src/semantics/TypeChecker.cpp 
     ../src/semantics/UDTTable.cpp 
+    ../src/semantics/UDTMetaData.cpp 
+    ../src/semantics/SymbolMetaData.cpp 
     ../src/errorhandler/SemanticErrorHandler.cpp 
     ../src/errorhandler/SymbolTableErrorHandler.cpp 
     ../src/errorhandler/ParserErrorHandler.cpp
     ../src/common/ReservedWords.cpp
-    ../src/semantics/CommonExtractions.cpp
     ../src/visitor/InitialExecution.cpp
 )
 
