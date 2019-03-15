@@ -42,4 +42,16 @@ class SemanticAnalyzer
 
     // strictly a helper for writing tests that returns all the semantic errors
     std::vector<Error*> testAnalyze();
+
+    // get methods
+    UDTTable*
+    getUDTTable()
+    {
+        return udtTable;
+    }
+    SymbolTable*
+    getSymbolTable()
+    {
+        return symbolTable;
+    }
 };

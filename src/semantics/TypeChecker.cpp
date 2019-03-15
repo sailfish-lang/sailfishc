@@ -382,7 +382,11 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
             // if not primitive, see if it is a variable in the symbol table
             if (!isPrimitive(actual))
             {
-                if (!symbolTable->hasVariable(actual))
+                if (udtTable->hasUDT(actual))
+                {
+                    // ok
+                }
+                else if (!symbolTable->hasVariable(actual))
                     semanticErrorHandler->handle(new Error(
                         0, "Undefined argument: " + actual +
                                " supplied for function: " + name + "."));
@@ -399,10 +403,10 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
                         break;
                     case 'F':
                         semanticErrorHandler->handle(new Error(
-                            0,
-                            "Illegal argument: " + actual +
-                                " supplied for function: " + name +
-                                ". Sorry, functions are not first order :("));
+                            0, "Illegal argument: " + actual +
+                                   " supplied for function: " + name +
+                                   ". Sorry, functions are not first order "
+                                   ":("));
 
                         // to continue semantic analysis
                         actual = inputs[i];
@@ -492,9 +496,9 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
         SymbolTable* st = udtTable->getAttributeSymbolTable(udtTypeName);
 
         /**
-         * To ensure that all the udt variables are in the proper ordering, we
-         * compare this count below to the scope value, which, as noted in the
-         * respective code, is the ordering for that attribute value.
+         * To ensure that all the udt variables are in the proper ordering,
+         * we compare this count below to the scope value, which, as noted
+         * in the respective code, is the ordering for that attribute value.
          */
         int count = 0;
         while (temp != prev)
@@ -530,9 +534,9 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
                 std::string expectedType =
                     truncateType(st->getSymbolType(varName));
 
-                if (actualType != expectedType)
-                    // given var type does not match expected type determined by
-                    // udt definition
+                if (actualType != "void" && actualType != expectedType)
+                    // given var type does not match expected type
+                    // determined by udt definition
                     semanticErrorHandler->handle(new Error(
                         node->getLineNum(),
                         "Received intiializer variable of type: " + actualType +
@@ -748,10 +752,15 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     // create a symbol table for the attributes
     SymbolTable* st_a = new SymbolTable();
 
+    // create a symbol table for the methods
+    SymbolTable* st_m = new SymbolTable();
+
     // temporarilly set the symbolTable field to the attribute one so that I
     // can properly create this
     SymbolTable* tempTable = symbolTable;
     symbolTable = st_a;
+
+    bool isUnique = udtTable->addUDT(udt_name, st_a, st_m);
 
     for (auto const& var : attributes)
     {
@@ -781,9 +790,6 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     st_a = symbolTable;
     symbolTable = tempTable;
 
-    // create a symbol table for the methods
-    SymbolTable* st_m = new SymbolTable();
-
     // temporarilly set the symbolTable field to the attribute one so that I
     // can properly create this
     tempTable = symbolTable;
@@ -792,7 +798,7 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     // ADD BOTH BEFORE VISITING METHODS
     std::string adjustedName = "U" + udt_name;
     tryAddToSymbolTable(udt_name, adjustedName, symbolTable, lineNumber);
-    bool isUnique = udtTable->addUDT(udt_name, st_a, st_m);
+    bool couldUpdate = udtTable->updateUDT(udt_name, st_a, st_m);
 
     // udt table entries MUST be unique unlike symbol table (for now)
     if (!isUnique)
@@ -807,7 +813,7 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     st_m = symbolTable;
     symbolTable = tempTable;
 
-    bool couldUpdate = udtTable->updateUDTMethods(udt_name, st_m);
+    couldUpdate = udtTable->updateUDT(udt_name, st_a, st_m);
 
     // udt table entries MUST be unique unlike symbol table (for now)
     if (!couldUpdate)
@@ -943,11 +949,17 @@ TypeChecker::visit(ast::BinaryExpression* node)
         }
         else
         {
-            if (lType != rType)
+            if (lType == "void" && udtTable->hasUDT(rType) ||
+                rType == "void" && udtTable->hasUDT(lType) || lType == rType)
+            {
+            }
+            else
+            {
                 semanticErrorHandler->handle(
                     new Error(0, "Expected the same types on each side of "
                                  "operation. Instead received: " +
                                      lType + " and " + rType + "."));
+            }
         }
         break;
     }

@@ -32,9 +32,10 @@ class SymbolTable
         // add standard library methods
         // ensures known even at internal symbol tables such as for udt
         // attributes and methods
-        addSymbol("display_str", "Fdisplay{_str}(_void)");
-        addSymbol("display_int", "Fdisplay{_int}(_void)");
-        addSymbol("display_flt", "Fdisplay{_flt}(_void)");
+        addSymbol("display_str", "Fdisplay_str{$str}($void)");
+        addSymbol("display_int", "Fdisplay_int{$int}($void)");
+        addSymbol("display_flt", "Fdisplay_flt{$flt}($void)");
+        addSymbol("display_bool", "Fdisplay_bool{$bool}($void)");
     }
     // destructor
     ~SymbolTable()

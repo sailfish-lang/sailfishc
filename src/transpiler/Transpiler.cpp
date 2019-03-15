@@ -16,6 +16,9 @@ builtinFunctionTranslator(std::string name)
     if (name == "display_flt")
         return "print_flt(";
 
+    if (name == "display_bool")
+        return "print_bool(";
+
     else
         return name + "(";
 }
@@ -115,7 +118,7 @@ Transpiler::visit(ast::FunctionDefinition* node, std::string udtTypeName)
 
     visit(node->getName());
 
-    fileBuffer += "(" + udtTypeName + "* _own_";
+    fileBuffer += "(" + udtTypeName + "* own";
 
     // if only one non udt name given param and the param is not void add a
     // comma
@@ -181,7 +184,7 @@ Transpiler::visit(ast::FunctionCall* node)
 void
 Transpiler::visit(ast::Identifier* node)
 {
-    fileBuffer += node->getValue();
+    fileBuffer += node->getValue() == "void" ? "NULL" : node->getValue();
 }
 
 /**
@@ -240,6 +243,10 @@ void
 Transpiler::visit(ast::Typename* node)
 {
     fileBuffer += builtinTypesTranslator(node->getType());
+    if (udtTable->hasUDT(node->getType()))
+    {
+        fileBuffer += "*";
+    }
 }
 
 /**
@@ -424,7 +431,20 @@ Transpiler::visit(ast::UserDefinedTypeDefinition* node)
     for (auto const& attribute : node->getAttributes())
     {
         fileBuffer += "    ";
-        visit(attribute);
+
+        // for this edge case, we will manually extract
+        if (udtTable->hasUDT(attribute->getType()->getType()))
+        {
+            fileBuffer += "struct _";
+            fileBuffer += attribute->getType()->getType();
+            fileBuffer += "_* ";
+            fileBuffer += attribute->getName()->getValue();
+        }
+        else
+        {
+            visit(attribute);
+        }
+
         fileBuffer += ";\n";
     }
 
@@ -450,7 +470,7 @@ Transpiler::visit(ast::UserDefinedTypeDefinition* node)
     for (auto const& attribute : node->getAttributes())
     {
         visit(attribute);
-        fileBuffer += "_";
+        // fileBuffer += "_";
         if (i != node->getAttributes().size() - 1)
             fileBuffer += ",";
 
@@ -469,7 +489,7 @@ Transpiler::visit(ast::UserDefinedTypeDefinition* node)
         visit(attribute->getName());
         fileBuffer += " = ";
         visit(attribute->getName());
-        fileBuffer += "_;";
+        fileBuffer += ";";
     }
     fileBuffer += "\n    return a____struct___generated;\n}\n\n";
 
@@ -486,7 +506,7 @@ void
 Transpiler::visit(ast::AttributeAccess* node)
 {
     std::string udtName = node->getUDT()->getValue();
-    fileBuffer += "_" + udtName + "_->";
+    fileBuffer += udtName + "->";
     visit(node->getAttribute());
 }
 
@@ -498,11 +518,11 @@ Transpiler::visit(ast::MethodAccess* node)
 {
     visit(node->getFunctionCall()->getName());
 
-    fileBuffer += "(_";
+    fileBuffer += "(";
 
     visit(node->getUDT());
 
-    fileBuffer += "_";
+    // fileBuffer += "_";
 
     int numArgs = node->getFunctionCall()->getArguments().size();
 
@@ -557,11 +577,11 @@ Transpiler::visit(ast::NewUDTDefinition* node)
 {
     visit(node->getVariable()->getType());
 
-    fileBuffer += "* _";
+    // fileBuffer += " _";
 
     visit(node->getVariable()->getName());
 
-    fileBuffer += "_";
+    // fileBuffer += "_";
 
     visit(node->getExpression());
 }

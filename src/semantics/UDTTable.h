@@ -34,6 +34,6 @@ class UDTTable
     // returns true if added or false if already exists
     bool addUDT(std::string, SymbolTable*, SymbolTable*);
 
-    // allow us to update the method table after udt key aleady added
-    bool updateUDTMethods(std::string name, SymbolTable* methods);
+    // allow us to update the table after udt key aleady added
+    bool updateUDT(std::string, SymbolTable*, SymbolTable*);
 };

@@ -26,7 +26,7 @@ Cfn Counter {
     <- void
     -> void
     {
-        if | own.count > 0 | { 
+        if | own.count > | 0 + 1 | | { 
             own...decrement()
             own...countdown()
         }

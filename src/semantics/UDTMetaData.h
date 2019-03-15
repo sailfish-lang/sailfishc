@@ -25,5 +25,6 @@ class UDTMetaData
     SymbolTable* getAttributeSymbolTable();
     SymbolTable* getMethodSymbolTable();
     // set methods
-    SymbolTable* setMethodSymbolTable(SymbolTable* m);
+    SymbolTable* setAttributeSymbolTable(SymbolTable*);
+    SymbolTable* setMethodSymbolTable(SymbolTable*);
 };

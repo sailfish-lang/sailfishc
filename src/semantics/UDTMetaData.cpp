@@ -17,6 +17,12 @@ UDTMetaData::getMethodSymbolTable()
 }
 
 SymbolTable*
+UDTMetaData::setAttributeSymbolTable(SymbolTable* a)
+{
+    attributes = a;
+}
+
+SymbolTable*
 UDTMetaData::setMethodSymbolTable(SymbolTable* m)
 {
     methods = m;

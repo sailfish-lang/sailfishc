@@ -39,7 +39,8 @@ fullCompilation(std::string filename)
 
         std::string cFilename = "out.c";
 
-        Transpiler* t = new Transpiler(root, cFilename);
+        Transpiler* t = new Transpiler(root, cFilename, s->getUDTTable(),
+                                       s->getSymbolTable());
         t->transpile();
 
         std::cout << "Success. Compiled to: out.c\n";

@@ -4,50 +4,144 @@
  */
 #include "stdlib/stdlib.h"
 
-typedef struct _Counter_ {
-    int count;
-    char* finish_msg;
-} Counter;
+typedef struct _Node_ {
+    struct _Node_* next;
+    int data;
+} Node;
 
-Counter*
-construct_Counter(int count_,char* finish_msg_)
+Node*
+construct_Node(Node* next,int data)
 {
-    Counter* a____struct___generated = (Counter*)malloc(sizeof(Counter));
-    a____struct___generated->count = count_;    a____struct___generated->finish_msg = finish_msg_;
+    Node* a____struct___generated = (Node*)malloc(sizeof(Node));
+    a____struct___generated->next = next;    a____struct___generated->data = data;
     return a____struct___generated;
 }
 
-void
-decrement(Counter* _own_)
+int
+has_next(Node* own)
 {
-    _own_->count = _own_->count-1;
-    print_int(_own_->count);
-    print_str("\n");
+    int ret = (own->next!=NULL);
+    return ret;
 }
 void
-increment(Counter* _own_)
+set_next(Node* own, Node* node)
 {
-    _own_->count = _own_->count+1;
-    print_int(_own_->count);
-    print_str("\n");
+    own->next = node;
+}
+Node*
+next(Node* own)
+{
+    return own->next;
+}
+int
+data(Node* own)
+{
+    return own->data;
+}
+typedef struct _Stack_ {
+    struct _Node_* head;
+    int size;
+} Stack;
+
+Stack*
+construct_Stack(Node* head,int size)
+{
+    Stack* a____struct___generated = (Stack*)malloc(sizeof(Stack));
+    a____struct___generated->head = head;    a____struct___generated->size = size;
+    return a____struct___generated;
+}
+
+int
+is_empty(Stack* own)
+{
+    return (own->size==0);
+}
+int
+size(Stack* own)
+{
+    return own->size;
+}
+int
+peek(Stack* own)
+{
+    Node*temp = construct_Node(NULL,0);
+    temp = own->head;
+    return temp->data;
 }
 void
-countdown(Counter* _own_)
+push(Stack* own, Node* node)
 {
-    if(_own_->count>0)
+    if(is_empty==0)
 {
-    decrement(_own_);
-    countdown(_own_);
+    own->head = node;
 }
 else 
 {
-    print_str(_own_->finish_msg);
+    set_next(node, own->head);
+    own->head = node;
 }
 
+    own->size = own->size+1;
+}
+void
+pop(Stack* own)
+{
+    if(is_empty==1)
+{
+
+}
+else 
+{
+    Node*temp = construct_Node(NULL,0);
+    temp = own->head;
+    own->head = next(temp);
+    own->size = own->size-1;
+}
+
+}
+void
+print_(Stack* own, Node* node)
+{
+    if(node!=NULL)
+{
+    print_int(data(node));
+    print_str(" ");
+    print_(own, next(node));
+}
+else 
+{
+
+}
+
+}
+void
+print(Stack* own)
+{
+    print_str("Stack contents: ");
+    print_(own, own->head);
+    print_str("\n");
 }
 int
 main()
 {
-    Counter* _c_ = construct_Counter(10,"Blast off!\n");
-    countdown(_c_);
+    Node*a = construct_Node(NULL,1);
+    Node*b = construct_Node(NULL,2);
+    Node*c = construct_Node(NULL,3);
+    Stack*s = construct_Stack(NULL,0);
+    push(s, a);
+    push(s, b);
+    push(s, c);
+    print(s);
+    print_str("Size: ");
+    print_int(size(s));
+    print_str("\tTop:");
+    print_int(peek(s));
+    print_str("\n");
+    pop(s);
+    pop(s);
+    print_str("Size: ");
+    print_int(size(s));
+    print_str("\tTop:");
+    print_int(peek(s));
+    print_str("\n");
 }

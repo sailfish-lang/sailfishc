@@ -6,6 +6,15 @@
 #include <stdio.h>
 
 void
+print_bool(int i)
+{
+    if (i == 1)
+        printf("%s", "true\n");
+    else
+        printf("%s", "false\n");
+}
+
+void
 print_flt(float f)
 {
     printf("%f", f);

@@ -4,6 +4,7 @@
  */
 #pragma once
 #include "../ast/Ast.h"
+#include "../semantics/UDTTable.h"
 #include "../visitor/Visitor.h"
 #include <fstream>
 #include <iostream>
@@ -20,15 +21,19 @@ class Transpiler : public Visitor
     ast::Start* root;
     std::string filename;
     std::string fileBuffer;
+    UDTTable* udtTable;
+    SymbolTable* symbolTable;
 
   public:
     using Visitor::visit;
 
     // constructor
-    Transpiler(ast::Start* r, std::string f)
+    Transpiler(ast::Start* r, std::string f, UDTTable* u, SymbolTable* s)
     {
         root = r;
         filename = f;
+        udtTable = u;
+        symbolTable = s;
 
         // set the file header here
         fileBuffer = OUTPUT_HEADER;
