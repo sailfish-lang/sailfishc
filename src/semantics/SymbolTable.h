@@ -18,6 +18,9 @@ class SymbolTable
         globalScopeTable;
     std::vector<std::string> localCache;
 
+    // internal helper methods
+    void addStdlib(std::string, std::string);
+
   public:
     // constructor
     SymbolTable()
@@ -25,6 +28,13 @@ class SymbolTable
         scopeLevel = 0;
         globalScopeTable.clear();
         localCache.push_back("|");
+
+        // add standard library methods
+        // ensures known even at internal symbol tables such as for udt
+        // attributes and methods
+        addSymbol("display_str", "Fdisplay{_str}(_void)");
+        addSymbol("display_int", "Fdisplay{_int}(_void)");
+        addSymbol("display_flt", "Fdisplay{_flt}(_void)");
     }
     // destructor
     ~SymbolTable()

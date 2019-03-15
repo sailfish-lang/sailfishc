@@ -4,45 +4,49 @@
  */
 #include "stdlib/stdlib.h"
 
+typedef struct _Counter_ {
+    int count;
+} Counter;
+
+Counter*
+construct_Counter(int count_)
+{
+    Counter* a____struct___generated = (Counter*)malloc(sizeof(Counter));
+    a____struct___generated->count = count_;
+    return a____struct___generated;
+}
+
 void
-fizzbuzzhelper(int i)
+decrement(Counter* _own_)
 {
-    if(0==i%15)
-{
-    print_str("FizzBuzz\n");
-}
-else if(0==i%3)
-{
-    print_str("Fizz\n");
-}
-else if(0==i%5)
-{
-    print_str("Buzz\n");
-}
-else 
-{
-    print_int(i);
+    _own_->count = _own_->count-1;
+    print_int(_own_->count);
     print_str("\n");
 }
-
+void
+increment(Counter* _own_)
+{
+    _own_->count = _own_->count+1;
+    print_int(_own_->count);
+    print_str("\n");
 }
 void
-fizzbuzz(int i)
+countdown(Counter* _own_)
 {
-    fizzbuzzhelper(i);
-    i = i-1;
-    if(i>0)
+    if(_own_->count>0)
 {
-    fizzbuzz(i);
+    decrement(_own_);
+    countdown(_own_);
 }
 else 
 {
-
+    print_str("Blast off!\n");
 }
 
 }
 int
 main()
 {
-    fizzbuzz(100);
+    Counter* _c_ = construct_Counter(10);
+    countdown(_c_);
 }

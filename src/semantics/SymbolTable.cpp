@@ -117,3 +117,14 @@ SymbolTable::addSymbol(std::string varName, std::string type)
         return true;
     }
 }
+
+// helper function for adding standard lib variables
+void
+SymbolTable::addStdlib(std::string varName, std::string type)
+{
+    std::stack<SymbolMetaData*> ss;
+    SymbolMetaData* smd = new SymbolMetaData(type, scopeLevel);
+    ss.push(smd);
+    globalScopeTable.insert({varName, ss});
+    localCache = addToLocalCache(varName, localCache);
+}

@@ -498,14 +498,23 @@ Transpiler::visit(ast::MethodAccess* node)
 {
     visit(node->getFunctionCall()->getName());
 
-    fileBuffer += "(";
+    fileBuffer += "(_";
 
     visit(node->getUDT());
 
-    for (int i = 0; i < node->getFunctionCall()->getArguments().size(); i++)
+    fileBuffer += "_";
+
+    int numArgs = node->getFunctionCall()->getArguments().size();
+
+    if (numArgs != 0)
+    {
+        fileBuffer += ", ";
+    }
+
+    for (int i = 0; i < numArgs; i++)
     {
         // no comma following the last argument
-        if (i != node->getFunctionCall()->getArguments().size() - 1)
+        if (i != numArgs - 1)
         {
             fileBuffer += ", ";
         }
@@ -548,8 +557,11 @@ Transpiler::visit(ast::NewUDTDefinition* node)
 {
     visit(node->getVariable()->getType());
 
-    fileBuffer += "* ";
+    fileBuffer += "* _";
 
     visit(node->getVariable()->getName());
+
+    fileBuffer += "_";
+
     visit(node->getExpression());
 }
