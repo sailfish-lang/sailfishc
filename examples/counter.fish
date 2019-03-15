@@ -38,7 +38,7 @@ Cfn Counter {
 }
 
 start {
-    dec Counter c = new Counter { count : 10, finish_msg: "Blast off!\n", count : 10 }
+    dec Counter c = new Counter { count : 10, finish_msg: "Blast off!\n" }
 
     c...countdown()
 }

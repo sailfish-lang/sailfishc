@@ -48,6 +48,6 @@ else
 int
 main()
 {
-    Counter* _c_ = construct_Counter(10,"Blast off!\n",10);
+    Counter* _c_ = construct_Counter(10,"Blast off!\n");
     countdown(_c_);
 }

@@ -27,6 +27,9 @@ SemanticErrorHandler::end()
         {
             std::cout << error->getPrettyMessage();
         }
+
+        std::string errormsg = "Unable to compile.\n";
+        throw errormsg;
     }
 }
 
