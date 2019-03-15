@@ -45,6 +45,23 @@ TypeChecker::tryAddToSymbolTable(std::string name, std::string type,
             "Invalid redecleration of variable with name: " + name + "."));
 }
 
+// encapsulate addition to symbol table and error handling for it for
+// attributes, of whom all scope is one and thus we use scope here to mean
+// ordering
+bool
+TypeChecker::tryAddToSymbolTableIterative(std::string name, std::string type,
+                                          SymbolTable* symbolTable,
+                                          int lineNumber)
+{
+    bool isUnique = symbolTable->addSymbolIterative(name, type);
+
+    // symbol table entry must be unique for current scope
+    if (!isUnique)
+        symbolTableErrorHandler->handle(new Error(
+            lineNumber,
+            "Invalid redecleration of variable with name: " + name + "."));
+}
+
 // given a function's full type from the symbol table, extract the parameter
 // types
 std::vector<std::string>
@@ -56,7 +73,7 @@ getFunctionParamTypes(std::string fulltype)
     for (int i = fulltype.find("{") + 2; i < fulltype.find("}"); i++)
     {
         char c = fulltype.at(i);
-        if (c == '_' || c == '}')
+        if (c == '$' || c == '}')
         {
             params.push_back(buffer);
             buffer = "";
@@ -79,7 +96,7 @@ getFunctionReturnType(std::string fulltype)
     for (int i = fulltype.find("(") + 2; i < fulltype.length(); i++)
     {
         char c = fulltype.at(i);
-        if (c == '_' || c == ')')
+        if (c == '$' || c == ')')
             break;
 
         buffer += c;
@@ -124,11 +141,11 @@ TypeChecker::expressionHelper(ast::Expression* node)
 
             std::string name = udt->getName()->getValue();
 
-            std::string fullTypeName = "udt_" + name;
+            std::string fullTypeName = "udt$" + name;
 
             for (ast::UDTitem* const& item : udt->getAttributes())
             {
-                fullTypeName += "_" + item->getKey()->getValue() + "_" +
+                fullTypeName += "$" + item->getKey()->getValue() + "$" +
                                 primaryHelper(item->getValue());
             }
 
@@ -446,11 +463,11 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     std::string temp;
     std::string prev;
 
-    std::string baseType = exprType.substr(0, exprType.find("_"));
-    temp = exprType.substr(exprType.find("_") + 1, exprType.length());
+    std::string baseType = exprType.substr(0, exprType.find("$"));
+    temp = exprType.substr(exprType.find("$") + 1, exprType.length());
 
-    std::string udtTypeName = temp.substr(0, temp.find("_"));
-    temp = temp.substr(temp.find("_") + 1, temp.length());
+    std::string udtTypeName = temp.substr(0, temp.find("$"));
+    temp = temp.substr(temp.find("$") + 1, temp.length());
     prev = udtTypeName;
 
     // make sure the type of the assignment is a udt
@@ -472,27 +489,83 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     // ensure all attributes exist
     else
     {
-        // SymbolTable* st = udtTable->getAttributeSymbolTable(udtTypeName);
+        SymbolTable* st = udtTable->getAttributeSymbolTable(udtTypeName);
 
-        // while (temp.length() != prev.length())
-        // {
-        //     std::string varName = temp.substr(0, temp.find("_"));
-        //     temp = temp.substr(temp.find("_") + 1, temp.length());
+        /**
+         * To ensure that all the udt variables are in the proper ordering, we
+         * compare this count below to the scope value, which, as noted in the
+         * respective code, is the ordering for that attribute value.
+         */
+        int count = 0;
+        while (temp != prev)
+        {
 
-        //     std::string varType = temp.substr(0, temp.find("_"));
-        //     temp = temp.substr(temp.find("_") + 1, temp.length());
-        //     prev = varType;
+            if (count + 1 > st->getCurrentScope())
+            {
+                semanticErrorHandler->handle(
+                    new Error(node->getLineNum(),
+                              "Too many arguments in udt initialization."));
+                break;
+            }
 
-        //     // ensure attribute type matches attribute name
-        //     if (varName != varType)
-        //     {
-        //         semanticErrorHandler->handle(new Error(
-        //             node->getLineNum(),
-        //             "Attribute: " + varType + " for declared udt of type: " +
-        //                 varName + " does not match expected type: " + "."));
-        //         break;
-        //     }
-        // }
+            std::string varName = temp.substr(0, temp.find("$"));
+            temp = temp.substr(temp.find("$") + 1, temp.length());
+
+            std::string actualType = temp.substr(0, temp.find("$"));
+            temp = temp.substr(temp.find("$") + 1, temp.length());
+
+            prev = actualType;
+
+            if (!st->hasVariable(varName))
+            {
+                // var does not exist in method symbol table
+                semanticErrorHandler->handle(new Error(
+                    node->getLineNum(),
+                    "Received unknown attribute name of: " + varName +
+                        " in constructor of udt of type: " + udtTypeName +
+                        "."));
+            }
+            else
+            {
+                std::string expectedType =
+                    truncateType(st->getSymbolType(varName));
+
+                if (actualType != expectedType)
+                    // given var type does not match expected type determined by
+                    // udt definition
+                    semanticErrorHandler->handle(new Error(
+                        node->getLineNum(),
+                        "Received intiializer variable of type: " + actualType +
+                            " in constructor of udt of type: " + udtTypeName +
+                            " when a variable for type: " + expectedType +
+                            " was expected for attribute named: " + varName +
+                            "."));
+
+                else
+                {
+                    int ordering = st->getSymbolScope(varName);
+
+                    if (ordering != count)
+                    {
+                        semanticErrorHandler->handle(new Error(
+                            node->getLineNum(),
+                            "In udt inititialization, attributes must be "
+                            "defined in the same ordering as the udt "
+                            "definition. Received: " +
+                                varName +
+                                " at index: " + std::to_string(count) +
+                                " and expected it at: " +
+                                std::to_string(ordering) + "."));
+                    }
+                }
+            }
+            ++count;
+        }
+
+        if (count < st->getCurrentScope())
+            semanticErrorHandler->handle(
+                new Error(node->getLineNum(),
+                          "Too few arguments in udt initialization."));
     }
 
     // exit the symbol table for udt
@@ -575,7 +648,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
         inputsToAdd.push_back(
             std::tuple<std::string, std::string>(inp_name, inp_type));
 
-        adjustedName += "_" + inp_type;
+        adjustedName += "$" + inp_type;
     }
 
     adjustedName += "}(";
@@ -587,7 +660,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 
     typeExists(out_type, out_type, lineNumber);
 
-    adjustedName += "_" + out_type;
+    adjustedName += "$" + out_type;
     adjustedName += ")";
 
     if (isGood)
@@ -675,8 +748,8 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     // create a symbol table for the attributes
     SymbolTable* st_a = new SymbolTable();
 
-    // temporarilly set the symbolTable field to the attribute one so that I can
-    // properly create this
+    // temporarilly set the symbolTable field to the attribute one so that I
+    // can properly create this
     SymbolTable* tempTable = symbolTable;
     symbolTable = st_a;
 
@@ -688,8 +761,8 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
 
         nameIsLegal(name, lineNumber);
 
-        // ensure the type exists, i.e. is a primitive or udt and not a void,
-        // makes no sense here
+        // ensure the type exists, i.e. is a primitive or udt and not a
+        // void, makes no sense here
         if ((!isPrimitive(type) && !udtTable->hasUDT(type)) || (type == "void"))
             semanticErrorHandler->handle(new Error(
                 node->getLineNum(),
@@ -700,7 +773,8 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
         if (isPrimitive(type))
             std::string adjustedName = "P" + type;
 
-        tryAddToSymbolTable(name, adjustedName, symbolTable, lineNumber);
+        tryAddToSymbolTableIterative(name, adjustedName, symbolTable,
+                                     lineNumber);
     }
 
     // capture the decorated symbol table and reset the class field back
@@ -710,8 +784,8 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
     // create a symbol table for the methods
     SymbolTable* st_m = new SymbolTable();
 
-    // temporarilly set the symbolTable field to the attribute one so that I can
-    // properly create this
+    // temporarilly set the symbolTable field to the attribute one so that I
+    // can properly create this
     tempTable = symbolTable;
     symbolTable = st_m;
 
@@ -878,8 +952,8 @@ TypeChecker::visit(ast::BinaryExpression* node)
         break;
     }
 
-    // both sides same types with some restrictions on left hand and right hand
-    // side
+    // both sides same types with some restrictions on left hand and right
+    // hand side
     case ast::BinaryExpression::Assignment:
     {
         ast::Expression* left = node->getLeftExpr();

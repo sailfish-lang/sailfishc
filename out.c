@@ -6,13 +6,14 @@
 
 typedef struct _Counter_ {
     int count;
+    char* finish_msg;
 } Counter;
 
 Counter*
-construct_Counter(int count_)
+construct_Counter(int count_,char* finish_msg_)
 {
     Counter* a____struct___generated = (Counter*)malloc(sizeof(Counter));
-    a____struct___generated->count = count_;
+    a____struct___generated->count = count_;    a____struct___generated->finish_msg = finish_msg_;
     return a____struct___generated;
 }
 
@@ -40,13 +41,13 @@ countdown(Counter* _own_)
 }
 else 
 {
-    print_str("Blast off!\n");
+    print_str(_own_->finish_msg);
 }
 
 }
 int
 main()
 {
-    Counter* _c_ = construct_Counter(10);
+    Counter* _c_ = construct_Counter(10,"Blast off!\n",10);
     countdown(_c_);
 }

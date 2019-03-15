@@ -1,5 +1,6 @@
 Cat Counter {
     int count
+    str finish_msg
 }
 
 Cfn Counter {
@@ -31,13 +32,13 @@ Cfn Counter {
         }
 
         else {
-            display_str("Blast off!\n")
+            display_str( own.finish_msg )
         }
     }
 }
 
 start {
-    dec Counter c = new Counter { count : 10 }
+    dec Counter c = new Counter { count : 10, finish_msg: "Blast off!\n", count : 10 }
 
     c...countdown()
 }

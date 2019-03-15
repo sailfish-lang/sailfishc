@@ -30,6 +30,11 @@ class TypeChecker : public Visitor
     void compareFunctions(std::vector<std::string>, std::vector<ast::Primary*>,
                           std::string);
     std::string getRightExpressionType(ast::BinaryExpression* node);
+    bool nameIsLegal(std::string, int);
+    bool typeExists(std::string, std::string, int);
+    bool tryAddToSymbolTable(std::string, std::string, SymbolTable*, int);
+    bool tryAddToSymbolTableIterative(std::string, std::string, SymbolTable*,
+                                      int);
 
   public:
     using Visitor::visit;
@@ -96,9 +101,4 @@ class TypeChecker : public Visitor
 
     // grouping
     void visit(ast::GroupingExpression*);
-
-    // common helper methods
-    bool nameIsLegal(std::string, int);
-    bool typeExists(std::string, std::string, int);
-    bool tryAddToSymbolTable(std::string, std::string, SymbolTable*, int);
 };

@@ -60,10 +60,19 @@ class SymbolTable
     // either push to the variables scope if exists or add variable
     bool addSymbol(std::string, std::string);
 
+    // same as above, but used for attributes where we use scope level to mean
+    // ordering
+    bool addSymbolIterative(std::string, std::string);
+
     // helper methods
     bool
     isGlobalScope()
     {
         return scopeLevel == 0;
+    }
+    int
+    getCurrentScope()
+    {
+        return scopeLevel;
     }
 };

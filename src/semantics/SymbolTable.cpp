@@ -118,6 +118,28 @@ SymbolTable::addSymbol(std::string varName, std::string type)
     }
 }
 
+bool
+SymbolTable::addSymbolIterative(std::string varName, std::string type)
+{
+    if (!hasVariable(varName))
+    {
+        std::stack<SymbolMetaData*> ss;
+        SymbolMetaData* smd = new SymbolMetaData(type, scopeLevel);
+        ss.push(smd);
+        globalScopeTable.insert({varName, ss});
+        localCache = addToLocalCache(varName, localCache);
+
+        ++scopeLevel;
+
+        return true;
+    }
+
+    // ensure not adding a variable if already exists, since all scope is
+    // essentially first leveel and scope is just used for ordering
+    else
+        return false;
+}
+
 // helper function for adding standard lib variables
 void
 SymbolTable::addStdlib(std::string varName, std::string type)
