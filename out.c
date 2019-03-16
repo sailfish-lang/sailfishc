@@ -64,29 +64,31 @@ size(Stack* own)
 int
 peek(Stack* own)
 {
+    int i = 0;
+    if(is_empty(own)==1)
+{
+
+}
+else 
+{
     Node*temp = construct_Node(NULL,0);
     temp = own->head;
-    return temp->data;
+    i = data(temp);
+}
+
+    return i;
 }
 void
 push(Stack* own, Node* node)
 {
-    if(is_empty==0)
-{
-    own->head = node;
-}
-else 
-{
     set_next(node, own->head);
     own->head = node;
-}
-
     own->size = own->size+1;
 }
 void
 pop(Stack* own)
 {
-    if(is_empty==1)
+    if(is_empty(own)==1)
 {
 
 }
@@ -124,9 +126,11 @@ print(Stack* own)
 int
 main()
 {
-    Node*a = construct_Node(NULL,1);
-    Node*b = construct_Node(NULL,2);
-    Node*c = construct_Node(NULL,3);
+    Node*a = construct_Node(NULL,10);
+    Node*b = construct_Node(NULL,20);
+    Node*c = construct_Node(NULL,30);
+    Node*d = construct_Node(NULL,40);
+    Node*e = construct_Node(NULL,50);
     Stack*s = construct_Stack(NULL,0);
     push(s, a);
     push(s, b);
@@ -134,14 +138,22 @@ main()
     print(s);
     print_str("Size: ");
     print_int(size(s));
-    print_str("\tTop:");
+    print_str("\tTop: ");
     print_int(peek(s));
     print_str("\n");
+    pop(s);
+    pop(s);
+    pop(s);
     pop(s);
     pop(s);
     print_str("Size: ");
     print_int(size(s));
-    print_str("\tTop:");
+    print_str("\tTop: ");
     print_int(peek(s));
     print_str("\n");
+    push(s, d);
+    push(s, e);
+    push(s, c);
+    push(s, b);
+    print(s);
 }

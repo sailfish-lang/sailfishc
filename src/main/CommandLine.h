@@ -9,6 +9,7 @@
 #include "../semantics/SemanticAnalyzer.h"
 #include "../transpiler/Transpiler.h"
 #include <iostream>
+#include <stdlib.h>
 #include <string>
 
 int handleCommandLine(int, char* const* argv);

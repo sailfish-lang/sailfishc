@@ -31,7 +31,7 @@ Cfn Node {
     <- void
     -> int
     {
-	return own.data
+        return own.data
     }
 }
 
@@ -52,17 +52,25 @@ Cfn Stack {
     <- void
     -> int
     {
-	return own.size
+        return own.size
     }
 
     fun peek
     <- void
     -> int
     {
-    	// super hacky way of accessing methods on attributes
-	dec Node temp = new Node { next: void, data: 0 }
-	temp = own.head
-	return temp.data
+        // since return is at end, must declare a return value here
+        dec int i = 0
+        if | own...is_empty() == true | {
+            // do nothing
+        } else {
+            // super hacky way of accessing methods on attributes
+            dec Node temp = new Node { next: void, data: 0 }
+            temp = own.head
+            i = temp...data()            
+        }
+
+        return i
     }
 
 
@@ -70,27 +78,23 @@ Cfn Stack {
     <- Node node
     -> void
     {
-	if | is_empty == false | { own.head = node }
-	else {
-		node...set_next(own.head)
-		own.head = node
-	}
-
-	own.size = own.size + 1
+        node...set_next(own.head)
+        own.head = node
+        own.size = own.size + 1
     }
 
     fun pop
     <- void
     -> void
     {
-	if | is_empty == true | { }
-	else {
-		dec Node temp = new Node { next: void, data: 0 }
-		temp = own.head
-		own.head = temp...next()
-		
-		own.size = own.size - 1 
-	}
+        if | own...is_empty() == true | { }
+        else {
+            dec Node temp = new Node { next: void, data: 0 }
+            temp = own.head
+            own.head = temp...next()
+            
+            own.size = own.size - 1 
+        }
     }
 
     fun print_
@@ -98,12 +102,12 @@ Cfn Stack {
     -> void
     {
     	if | node!= void| {
-    	     display_int(node...data())
-	     display_str(" ")
-	     own...print_(node...next())
-	} 
+    	    display_int(node...data())
+	        display_str(" ")
+	        own...print_(node...next())
+	    } 
 	
-	else {}
+	    else {}
     }
     
     fun print
@@ -111,16 +115,18 @@ Cfn Stack {
     -> void
     {
     	display_str("Stack contents: ")
-	own...print_(own.head)	
-	display_str("\n")
+        own...print_(own.head)	
+        display_str("\n")
     }
 }
 
 
 start {
-    dec Node a = new Node { next: void, data: 1 }
-    dec Node b = new Node { next: void, data: 2 }
-    dec Node c = new Node { next: void, data: 3 }
+    dec Node a = new Node { next: void, data: 10 }
+    dec Node b = new Node { next: void, data: 20 }
+    dec Node c = new Node { next: void, data: 30 }
+    dec Node d = new Node { next: void, data: 40 }
+    dec Node e = new Node { next: void, data: 50 }
 
     dec Stack s = new Stack { head: void, size: 0 }
 
@@ -138,10 +144,20 @@ start {
 
     s...pop()
     s...pop()
+    s...pop()
+    s...pop()
+    s...pop()
 
     display_str("Size: ")
     display_int(s...size())
     display_str("\tTop: ")
     display_int(s...peek())
     display_str("\n")
+
+    s...push(d)
+    s...push(e)
+    s...push(c)
+    s...push(b)
+
+     s...print()
 }

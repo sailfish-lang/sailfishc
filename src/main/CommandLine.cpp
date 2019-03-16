@@ -14,14 +14,42 @@ helpMessage()
                  "\n\tsailfishc --help\n"
                  "\n\tsailfishc --version\n"
                  "\n\tsailfishc --lex_only [filename]\n"
-                 "\n\tsailfishc --parse_only [filename]\n\n"
-                 "\n\tsailfishc --semantic_analysis_only [filename]\n\n";
+                 "\n\tsailfishc --parse_only [filename]\n"
+                 "\n\tsailfishc --semantic_analysis_only [filename]\n"
+                 "\n\tsailfishc --compile_c [filename]\n"
+                 "\n\tsailfishc --compile_and_execute [filename]\n\n";
 }
 
 void
 versionInfo()
 {
     std::cout << "sailfishc 0.0.1\n";
+}
+
+bool
+compileC()
+{
+    // check to see if we can use system
+    if (!system(NULL))
+    {
+        std::cout << "System command processor doesn't exist. Please compile "
+                     "sailfishc generated C code yourself.\n";
+        return false;
+    }
+
+    std::cout << "EXECUTING: gcc out.c\n";
+    system("gcc out.c");
+
+    std::cout << "gcc compiled out.c to: a.out\n";
+
+    return true;
+}
+
+void
+executeBinary()
+{
+    std::cout << "EXECUTING: ./a.out.\n";
+    system("./a.out");
 }
 
 void
@@ -43,7 +71,7 @@ fullCompilation(std::string filename)
                                        s->getSymbolTable());
         t->transpile();
 
-        std::cout << "Success. Compiled to: out.c\n";
+        std::cout << "Success. sailfishc compiled " + filename + " to: out.c\n";
     }
     catch (const std::string msg)
     {
@@ -127,12 +155,36 @@ handleCommandLine(int argc, char* const* argv)
                 std::cerr << msg;
             }
         }
+        else if (std::string("--compile_c").compare(argv[1]) == 0)
+        {
+            // compile sailfish
+            fullCompilation(argv[2]);
+
+            // compile c
+            compileC();
+        }
+        else if (std::string("--compile_and_execute").compare(argv[1]) == 0)
+        {
+            // compile sailfish
+            fullCompilation(argv[2]);
+
+            // compile c
+            if (compileC())
+                // execute gcc generated binary
+                executeBinary();
+        }
+        else
+        {
+            std::cout
+                << "Unrecognized flag. "
+                   "Try again or type sailfishc to see command options!\n";
+        }
 
         return 0;
 
     default:
         std::cout << "Unexpected number of arguments. "
-                     "Try again or type sailfishc to see command opetions!\n";
+                     "Try again or type sailfishc to see command options!\n";
         return 0;
     }
 }
