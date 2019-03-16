@@ -123,7 +123,7 @@ truncateType(std::string fulltype)
 
 // given a primary, determine its type
 std::string
-TypeChecker::expressionHelper(ast::Expression* node)
+TypeChecker::getType(ast::Expression* node)
 {
     switch (node->getExpressionType())
     {
@@ -146,7 +146,7 @@ TypeChecker::expressionHelper(ast::Expression* node)
             for (ast::UDTitem* const& item : udt->getAttributes())
             {
                 fullTypeName += "$" + item->getKey()->getValue() + "$" +
-                                primaryHelper(item->getValue());
+                                getType(item->getValue());
             }
 
             return fullTypeName;
@@ -160,7 +160,7 @@ TypeChecker::expressionHelper(ast::Expression* node)
         ast::PrimaryExpression* subnode =
             dynamic_cast<ast::PrimaryExpression*>(node);
 
-        return primaryHelper(subnode->getPrimary());
+        return getType(subnode->getPrimary());
     }
     case ast::Expression::UnaryExpression:
         return "bool";
@@ -169,7 +169,7 @@ TypeChecker::expressionHelper(ast::Expression* node)
 
 // given a primary, determine the type
 std::string
-TypeChecker::primaryHelper(ast::Primary* primary)
+TypeChecker::getType(ast::Primary* primary)
 {
     ast::Primary::PrimaryType type = primary->getPrimaryType();
 
@@ -378,7 +378,7 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
         for (int i = 0; i < numArgs; i++)
         {
             ast::Primary* arg = args.at(i);
-            std::string actual = primaryHelper(arg);
+            std::string actual = getType(arg);
 
             // if not primitive, see if it is a variable in the symbol table
             if (!isPrimitive(actual))
@@ -428,9 +428,9 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
 
 // given a right expression, determin its type
 std::string
-TypeChecker::getRightExpressionType(ast::BinaryExpression* node)
+TypeChecker::getType(ast::BinaryExpression* node)
 {
-    return expressionHelper(node->getLeftExpr());
+    return getType(node->getLeftExpr());
 }
 
 // ------- Additions to the symbol table ------- //
@@ -464,7 +464,7 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     // visit expression
     visit(node->getExpression());
 
-    std::string exprType = expressionHelper(node->getExpression());
+    std::string exprType = getType(node->getExpression());
 
     std::string temp;
     std::string prev;
@@ -602,7 +602,7 @@ TypeChecker::visit(ast::PrimitiveDefition* node)
     // visit expression
     visit(node->getBinaryExpression());
 
-    std::string exprType = getRightExpressionType(node->getBinaryExpression());
+    std::string exprType = getType(node->getBinaryExpression());
 
     // ensure assignment is the expected type
     if (exprType != type)
@@ -718,7 +718,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
             ast::BinaryExpression* returnedExpr =
                 subnode->getBinaryExpression();
 
-            std::string actualReturnType = getRightExpressionType(returnedExpr);
+            std::string actualReturnType = getType(returnedExpr);
 
             if (actualReturnType != out_type)
                 semanticErrorHandler->handle(new Error(
@@ -870,7 +870,7 @@ TypeChecker::visit(ast::Negation* node)
     visit(node->getBinaryExpression());
 
     // ensure that all negations are boolean
-    std::string type = getRightExpressionType(node->getBinaryExpression());
+    std::string type = getType(node->getBinaryExpression());
     if (type != "bool")
         semanticErrorHandler->handle(new Error(
             node->getLineNum(),
@@ -892,9 +892,9 @@ TypeChecker::visit(ast::BinaryExpression* node)
     visit(node->getLeftExpr());
     visit(node->getRightExpr());
 
-    std::string lType = expressionHelper(node->getLeftExpr());
+    std::string lType = getType(node->getLeftExpr());
 
-    std::string rType = getRightExpressionType(node->getRightExpr());
+    std::string rType = getType(node->getRightExpr());
 
     switch (node->getBinaryExpressionType())
     {

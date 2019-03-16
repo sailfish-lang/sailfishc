@@ -24,17 +24,19 @@ class TypeChecker : public Visitor
     //  hacks: REMOVE ASAP
     std::string curUDT;
 
-    // helpers that need to know the internals of type checker
-    std::string primaryHelper(ast::Primary*);
-    std::string expressionHelper(ast::Expression*);
-    void compareFunctions(std::vector<std::string>, std::vector<ast::Primary*>,
-                          std::string, int);
-    std::string getRightExpressionType(ast::BinaryExpression* node);
+    // helpers for extracting the type of a node
+    std::string getType(ast::Primary*);
+    std::string getType(ast::Expression*);
+    std::string getType(ast::BinaryExpression* node);
+
+    // helper methods for easy type checking and error message handling
     bool nameIsLegal(std::string, int);
     bool typeExists(std::string, std::string, int);
     bool tryAddToSymbolTable(std::string, std::string, SymbolTable*, int);
     bool tryAddToSymbolTableIterative(std::string, std::string, SymbolTable*,
                                       int);
+    void compareFunctions(std::vector<std::string>, std::vector<ast::Primary*>,
+                          std::string, int);
 
   public:
     using Visitor::visit;
