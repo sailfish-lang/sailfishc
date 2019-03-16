@@ -354,7 +354,8 @@ isVoid(ast::Primary* node)
 // the actual types (inputs) and determines if everything is kosher
 void
 TypeChecker::compareFunctions(std::vector<std::string> inputs,
-                              std::vector<ast::Primary*> args, std::string name)
+                              std::vector<ast::Primary*> args, std::string name,
+                              int lineNumber)
 {
     int numArgs = args.size();
     if (numArgs == 1 && isVoid(args.at(0)))
@@ -366,11 +367,11 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
 
     if (numArgs < numInps)
         semanticErrorHandler->handle(new Error(
-            0, "Not enough args supplied to function: " + name + "."));
+            lineNumber, "Not enough args supplied to function: " + name + "."));
 
     else if (numArgs > numInps)
-        semanticErrorHandler->handle(
-            new Error(0, "Too many args supplied to function: " + name + "."));
+        semanticErrorHandler->handle(new Error(
+            lineNumber, "Too many args supplied to function: " + name + "."));
 
     else
     {
@@ -387,9 +388,10 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
                     // ok
                 }
                 else if (!symbolTable->hasVariable(actual))
-                    semanticErrorHandler->handle(new Error(
-                        0, "Undefined argument: " + actual +
-                               " supplied for function: " + name + "."));
+                    semanticErrorHandler->handle(
+                        new Error(lineNumber,
+                                  "Undefined argument: " + actual +
+                                      " supplied for function: " + name + "."));
 
                 else
                 {
@@ -417,9 +419,9 @@ TypeChecker::compareFunctions(std::vector<std::string> inputs,
 
             if (actual != inputs[i])
                 semanticErrorHandler->handle(new Error(
-                    0, "Supplied argument type of: " + actual +
-                           " does not match expected type of: " + inputs[i] +
-                           "."));
+                    lineNumber, "Supplied argument type of: " + actual +
+                                    " does not match expected type of: " +
+                                    inputs[i] + "."));
         }
     }
 }
@@ -478,16 +480,17 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
     if (baseType != "udt")
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getExpression()->getLineNum(),
             "Expected udt type. Instead received: " + baseType + "."));
     }
 
     // make sure the type name of the assigned udt matches
     else if (udtTypeName != type)
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Expected udt of type: " + type +
-                                    " and received: " + udtTypeName + "."));
+        semanticErrorHandler->handle(
+            new Error(node->getExpression()->getLineNum(),
+                      "Expected udt of type: " + type +
+                          " and received: " + udtTypeName + "."));
     }
 
     // ensure all attributes exist
@@ -507,7 +510,7 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
             if (count + 1 > st->getCurrentScope())
             {
                 semanticErrorHandler->handle(
-                    new Error(node->getLineNum(),
+                    new Error(node->getExpression()->getLineNum(),
                               "Too many arguments in udt initialization."));
                 break;
             }
@@ -524,7 +527,7 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
             {
                 // var does not exist in method symbol table
                 semanticErrorHandler->handle(new Error(
-                    node->getLineNum(),
+                    node->getExpression()->getLineNum(),
                     "Received unknown attribute name of: " + varName +
                         " in constructor of udt of type: " + udtTypeName +
                         "."));
@@ -538,7 +541,7 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
                     // given var type does not match expected type
                     // determined by udt definition
                     semanticErrorHandler->handle(new Error(
-                        node->getLineNum(),
+                        node->getExpression()->getLineNum(),
                         "Received intiializer variable of type: " + actualType +
                             " in constructor of udt of type: " + udtTypeName +
                             " when a variable for type: " + expectedType +
@@ -552,7 +555,7 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
                     if (ordering != count)
                     {
                         semanticErrorHandler->handle(new Error(
-                            node->getLineNum(),
+                            node->getExpression()->getLineNum(),
                             "In udt inititialization, attributes must be "
                             "defined in the same ordering as the udt "
                             "definition. Received: " +
@@ -568,7 +571,7 @@ TypeChecker::visit(ast::NewUDTDefinition* node)
 
         if (count < st->getCurrentScope())
             semanticErrorHandler->handle(
-                new Error(node->getLineNum(),
+                new Error(node->getExpression()->getLineNum(),
                           "Too few arguments in udt initialization."));
     }
 
@@ -643,7 +646,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
              udtTable->hasUDT(inp_name)))
         {
             semanticErrorHandler->handle(
-                new Error(node->getLineNum(),
+                new Error(var->getLineNum(),
                           "Declared function input named: " + inp_name +
                               " illegally shares its name with a "
                               "type or a keyword/reserved word."));
@@ -701,7 +704,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
             if (out_type == "void")
             {
                 semanticErrorHandler->handle(
-                    new Error(node->getLineNum(),
+                    new Error(var->getLineNum(),
                               "Unexpected return in function returning void."));
                 break;
             }
@@ -719,7 +722,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 
             if (actualReturnType != out_type)
                 semanticErrorHandler->handle(new Error(
-                    node->getLineNum(),
+                    subnode->getLineNum(),
                     "Actual return type of: " + actualReturnType +
                         " does not match expected return type of: " + out_type +
                         "."));
@@ -728,7 +731,7 @@ TypeChecker::visit(ast::FunctionDefinition* node)
 
     if (!hasReturn && out_type != "void")
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Function does not have a return statement."));
+            body->getLineNum(), "Function does not have a return statement."));
 
     // exit scope once we exit the body
     symbolTable->exitScope();
@@ -774,7 +777,7 @@ TypeChecker::visit(ast::UserDefinedTypeDefinition* node)
         // void, makes no sense here
         if ((!isPrimitive(type) && !udtTable->hasUDT(type)) || (type == "void"))
             semanticErrorHandler->handle(new Error(
-                node->getLineNum(),
+                var->getLineNum(),
                 "Udt attribute type of:  " + type + " for attribute: " + name +
                     " and for udt: " + udt_name + " does not exist."));
 
@@ -904,48 +907,55 @@ TypeChecker::visit(ast::BinaryExpression* node)
         {
             if (lType != "int")
                 semanticErrorHandler->handle(
-                    new Error(0, "Expected int type on left "
-                                 "side of operation. Instead received: " +
-                                     lType + "."));
+                    new Error(subnode->getLineNum(),
+                              "Expected int type on left "
+                              "side of operation. Instead received: " +
+                                  lType + "."));
             else if (rType != "int")
                 semanticErrorHandler->handle(
-                    new Error(0, "Expected int type on left "
-                                 "side of operation. Instead received: " +
-                                     rType + "."));
+                    new Error(subnode->getLineNum(),
+                              "Expected int type on left "
+                              "side of operation. Instead received: " +
+                                  rType + "."));
         }
         else if (subnode->onlyAcceptsBool())
         {
             if (lType != "bool")
                 semanticErrorHandler->handle(
-                    new Error(0, "Expected boolean type on left side of "
-                                 "operation. Instead received: " +
-                                     lType + "."));
+                    new Error(subnode->getLineNum(),
+                              "Expected boolean type on left side of "
+                              "operation. Instead received: " +
+                                  lType + "."));
 
             else if (rType != "bool")
                 semanticErrorHandler->handle(
-                    new Error(0, "Expected boolean type on right side of "
-                                 "operation. Instead received: " +
-                                     rType + "."));
+                    new Error(subnode->getLineNum(),
+                              "Expected boolean type on right side of "
+                              "operation. Instead received: " +
+                                  rType + "."));
         }
         else if (subnode->onlyAcceptsFltOrInt())
         {
             if (lType != rType)
                 semanticErrorHandler->handle(
-                    new Error(0, "Expected the same types on each side of "
-                                 "operation. Instead received: " +
-                                     lType + " and " + rType + "."));
+                    new Error(subnode->getLineNum(),
+                              "Expected the same types on each side of "
+                              "operation. Instead received: " +
+                                  lType + " and " + rType + "."));
 
             else if (lType != "int" && lType != "flt")
-                semanticErrorHandler->handle(new Error(
-                    0, "Expected either float or integer type on left "
-                       "side of operation. Instead received: " +
-                           lType + "."));
+                semanticErrorHandler->handle(
+                    new Error(subnode->getLineNum(),
+                              "Expected either float or integer type on left "
+                              "side of operation. Instead received: " +
+                                  lType + "."));
 
             else if (rType != "int" && rType != "flt")
-                semanticErrorHandler->handle(new Error(
-                    0, "Expected either float or integer type on left "
-                       "side of operation. Instead received: " +
-                           rType + "."));
+                semanticErrorHandler->handle(
+                    new Error(subnode->getLineNum(),
+                              "Expected either float or integer type on left "
+                              "side of operation. Instead received: " +
+                                  rType + "."));
         }
         else
         {
@@ -956,9 +966,10 @@ TypeChecker::visit(ast::BinaryExpression* node)
             else
             {
                 semanticErrorHandler->handle(
-                    new Error(0, "Expected the same types on each side of "
-                                 "operation. Instead received: " +
-                                     lType + " and " + rType + "."));
+                    new Error(subnode->getLineNum(),
+                              "Expected the same types on each side of "
+                              "operation. Instead received: " +
+                                  lType + " and " + rType + "."));
             }
         }
         break;
@@ -986,8 +997,9 @@ TypeChecker::visit(ast::BinaryExpression* node)
                 break;
             }
             default:
-                semanticErrorHandler->handle(new Error(
-                    0, "Illegal left hand expression in assignment."));
+                semanticErrorHandler->handle(
+                    new Error(subnode->getLineNum(),
+                              "Illegal left hand expression in assignment."));
             }
             break;
         }
@@ -1022,7 +1034,7 @@ TypeChecker::visit(ast::AttributeAccess* node)
         if (!symbolTable->hasVariable(variableName))
         {
             semanticErrorHandler->handle(new Error(
-                node->getLineNum(),
+                node->getUDT()->getLineNum(),
                 "Attribute: " + attributeName +
                     " called on undeclared variable: " + variableName + "."));
 
@@ -1037,7 +1049,7 @@ TypeChecker::visit(ast::AttributeAccess* node)
     if (!udtTable->hasUDT(variableName))
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getUDT()->getLineNum(),
             "Attribute: " + attributeName +
                 " called on nonexistent udt type: " + variableName + "."));
 
@@ -1049,7 +1061,7 @@ TypeChecker::visit(ast::AttributeAccess* node)
              ->hasVariable(attributeName))
     {
         semanticErrorHandler->handle(new Error(
-            node->getLineNum(),
+            node->getAttribute()->getLineNum(),
             "Attribute: " + attributeName +
                 " does not exists for udt type: " + variableName + "."));
 
@@ -1073,9 +1085,9 @@ TypeChecker::visit(ast::MethodAccess* node)
         if (!symbolTable->hasVariable(variableUDTname))
         {
             semanticErrorHandler->handle(new Error(
-                node->getLineNum(), "Method: " + methodName +
-                                        " called on nonexistent udt type: " +
-                                        variableUDTname + "."));
+                node->getUDT()->getLineNum(),
+                "Method: " + methodName + " called on nonexistent udt type: " +
+                    variableUDTname + "."));
 
             return;
         }
@@ -1087,7 +1099,7 @@ TypeChecker::visit(ast::MethodAccess* node)
         if (!udtTable->hasUDT(udtname))
         {
             semanticErrorHandler->handle(new Error(
-                node->getLineNum(),
+                node->getUDT()->getLineNum(),
                 "Method: " + methodName +
                     " called on nonexistent udt type: " + udtname + "."));
 
@@ -1103,7 +1115,7 @@ TypeChecker::visit(ast::MethodAccess* node)
     if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(methodName))
     {
         semanticErrorHandler->handle(
-            new Error(node->getLineNum(),
+            new Error(node->getName()->getLineNum(),
                       "Method: " + methodName +
                           " does not exist for udt type: " + udtType + "."));
         // abort
@@ -1119,7 +1131,8 @@ TypeChecker::visit(ast::MethodAccess* node)
     // ensure that each of the arguments is supplied and of the proper type
     std::vector<ast::Primary*> args = node->getFunctionCall()->getArguments();
 
-    compareFunctions(inputs, args, methodName);
+    compareFunctions(inputs, args, methodName,
+                     node->getFunctionCall()->getLineNum());
 
     for (auto const& arg : args)
         visit(arg);
@@ -1132,8 +1145,9 @@ TypeChecker::visit(ast::FunctionCall* node)
 
     if (!symbolTable->hasVariable(name))
     {
-        semanticErrorHandler->handle(new Error(
-            node->getLineNum(), "Function: " + name + " is not defined."));
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Function: " + name + " is not defined."));
         return;
     }
 
@@ -1146,7 +1160,7 @@ TypeChecker::visit(ast::FunctionCall* node)
     // ensure that each of the arguments is supplied and of the proper type
     std::vector<ast::Primary*> args = node->getArguments();
 
-    compareFunctions(inputs, args, name);
+    compareFunctions(inputs, args, name, node->getLineNum());
 
     for (auto const& arg : args)
         visit(arg);

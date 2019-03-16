@@ -28,7 +28,7 @@ class TypeChecker : public Visitor
     std::string primaryHelper(ast::Primary*);
     std::string expressionHelper(ast::Expression*);
     void compareFunctions(std::vector<std::string>, std::vector<ast::Primary*>,
-                          std::string);
+                          std::string, int);
     std::string getRightExpressionType(ast::BinaryExpression* node);
     bool nameIsLegal(std::string, int);
     bool typeExists(std::string, std::string, int);
