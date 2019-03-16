@@ -13,8 +13,8 @@ class SourcePart
     {
         GeneralDecleration,
         FunctionDefinitionPart,
-        UserDefinedTypeDefinition,
         InitialExecutionBody,
+        UserDefinedTypeDefinition,
     };
     // must defined a default value for the virtual function
     // https://stackoverflow.com/questions/307352/g-undefined-reference-to-typeinfo

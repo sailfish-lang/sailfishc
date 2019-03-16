@@ -53,7 +53,7 @@ executeBinary()
 }
 
 bool
-fullCompilation(std::string filename)
+fullCompilation(const std::string filename)
 {
     try
     {

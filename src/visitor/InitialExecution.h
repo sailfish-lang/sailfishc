@@ -23,9 +23,24 @@ class InitialExecution : public Visitor
     ~InitialExecution(){};
 
     // overloaded, overriden methods
-    void visit(ast::InitialExecutionBody*);
+    void
+    visit(ast::InitialExecutionBody* node)
+    {
+        initExecCount++;
+    }
 
     // return true or false depending on if one (and only one) initial execution
     // body is found
-    bool hasInitExecBody(ast::Start*);
+    bool
+    hasInitExecBody(ast::Start* node)
+    {
+        // initialize the count
+        initExecCount = 0;
+
+        // traverse the ast
+        visit(node);
+
+        // return true only if exactly one initial execution body
+        return initExecCount == 1;
+    }
 };

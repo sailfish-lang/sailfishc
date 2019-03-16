@@ -56,6 +56,10 @@ class TypeChecker : public Visitor
     // destructor
     ~TypeChecker()
     {
+        delete symbolTableErrorHandler;
+        delete semanticErrorHandler;
+        delete symbolTable;
+        delete udtTable;
     }
 
     // TODO: move this somewhere more reasonable

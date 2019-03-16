@@ -156,12 +156,12 @@ Transpiler::visit(ast::FunctionDefinition* node, std::string udtTypeName)
 void
 Transpiler::visit(ast::FunctionCall* node)
 {
-    ast::Identifier* name = node->getName();
-    std::vector<ast::Primary*> args = node->getArguments();
+    auto name = node->getName();
+    auto args = node->getArguments();
 
     // catch built in functions here and add the open/left paren
     // for now assume display prints exactly one variable
-    std::string translatedName = builtinFunctionTranslator(name->getValue());
+    auto translatedName = builtinFunctionTranslator(name->getValue());
     fileBuffer += translatedName;
 
     for (int i = 0; i < args.size(); i++)
@@ -267,7 +267,7 @@ void
 Transpiler::visit(ast::Block* node)
 {
     fileBuffer += "\n{\n";
-    std::vector<ast::Statement*> statements = node->getStatements();
+    auto statements = node->getStatements();
     for (int i = 0; i < statements.size(); i++)
     {
         ast::Statement* statement = statements.at(i);
@@ -280,44 +280,38 @@ Transpiler::visit(ast::Block* node)
         {
         case ast::Statement::IfStatement:
         {
-            ast::IfStatement* subnode =
-                dynamic_cast<ast::IfStatement*>(statement);
+            auto subnode = dynamic_cast<ast::IfStatement*>(statement);
             visit(subnode);
             break;
         }
         case ast::Statement::ReturnStatement:
         {
-            ast::ReturnStatement* subnode =
-                dynamic_cast<ast::ReturnStatement*>(statement);
+            auto subnode = dynamic_cast<ast::ReturnStatement*>(statement);
             visit(subnode);
             break;
         }
         case ast::Statement::BlockStatement:
         {
-            ast::Block* subnode = dynamic_cast<ast::Block*>(statement);
+            auto subnode = dynamic_cast<ast::Block*>(statement);
             visit(subnode);
             break;
         }
         case ast::Statement::GeneralDecleration:
         {
-            ast::GeneralDecleration* subnode =
-                dynamic_cast<ast::GeneralDecleration*>(statement);
+            auto subnode = dynamic_cast<ast::GeneralDecleration*>(statement);
             visit(subnode);
             break;
         }
         case ast::Statement::BinaryExpressionStatement:
         {
-            ast::BinaryExpression* subnode =
-                dynamic_cast<ast::BinaryExpression*>(statement);
+            auto subnode = dynamic_cast<ast::BinaryExpression*>(statement);
             visit(subnode);
             break;
         }
         }
 
         if (i != statements.size() - 1)
-        {
             fileBuffer += "\n";
-        }
     }
     fileBuffer += "\n}\n";
 }
@@ -441,9 +435,7 @@ Transpiler::visit(ast::UserDefinedTypeDefinition* node)
             fileBuffer += attribute->getName()->getValue();
         }
         else
-        {
             visit(attribute);
-        }
 
         fileBuffer += ";\n";
     }
@@ -505,7 +497,7 @@ Transpiler::visit(ast::UserDefinedTypeDefinition* node)
 void
 Transpiler::visit(ast::AttributeAccess* node)
 {
-    std::string udtName = node->getUDT()->getValue();
+    auto udtName = node->getUDT()->getValue();
     fileBuffer += udtName + "->";
     visit(node->getAttribute());
 }
@@ -603,21 +595,4 @@ Transpiler::visit(ast::UserDefinedType* node)
         ++i;
     }
     fileBuffer += ");";
-}
-
-/**
- * NewUDTDefinition: add a pointer since udts are pointers to structs
- */
-void
-Transpiler::visit(ast::NewUDTDefinition* node)
-{
-    visit(node->getVariable()->getType());
-
-    // fileBuffer += " _";
-
-    visit(node->getVariable()->getName());
-
-    // fileBuffer += "_";
-
-    visit(node->getExpression());
 }

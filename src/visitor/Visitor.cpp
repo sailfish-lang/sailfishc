@@ -15,34 +15,31 @@ Visitor::visit(ast::Source* node)
 {
     for (auto const& srcPart : node->getSourceParts())
     {
-        ast::SourcePart::SourcePartType type = srcPart->getSourcePartType();
+        auto type = srcPart->getSourcePartType();
         switch (type)
         {
         case ast::SourcePart::GeneralDecleration:
         {
-            ast::GeneralDecleration* subnode =
-                dynamic_cast<ast::GeneralDecleration*>(srcPart);
+            auto subnode = dynamic_cast<ast::GeneralDecleration*>(srcPart);
             visit(subnode);
             break;
         }
         case ast::SourcePart::FunctionDefinitionPart:
         {
-            ast::FunctionDefinition* subnode =
-                dynamic_cast<ast::FunctionDefinition*>(srcPart);
+            auto subnode = dynamic_cast<ast::FunctionDefinition*>(srcPart);
             visit(subnode);
             break;
         }
         case ast::SourcePart::UserDefinedTypeDefinition:
         {
-            ast::UserDefinedTypeDefinition* subnode =
+            auto subnode =
                 dynamic_cast<ast::UserDefinedTypeDefinition*>(srcPart);
             visit(subnode);
             break;
         }
         case ast::SourcePart::InitialExecutionBody:
         {
-            ast::InitialExecutionBody* subnode =
-                dynamic_cast<ast::InitialExecutionBody*>(srcPart);
+            auto subnode = dynamic_cast<ast::InitialExecutionBody*>(srcPart);
             visit(subnode);
             break;
         }
@@ -62,15 +59,13 @@ Visitor::visit(ast::GeneralDefinition* node)
     {
     case ast::GeneralDefinition::NewUDTDefinition:
     {
-        ast::NewUDTDefinition* subnode =
-            dynamic_cast<ast::NewUDTDefinition*>(node);
+        auto subnode = dynamic_cast<ast::NewUDTDefinition*>(node);
         visit(subnode);
         break;
     }
     case ast::GeneralDefinition::PrimitiveDefition:
     {
-        ast::PrimitiveDefition* subnode =
-            dynamic_cast<ast::PrimitiveDefition*>(node);
+        auto subnode = dynamic_cast<ast::PrimitiveDefition*>(node);
         visit(subnode);
         break;
     }
@@ -95,22 +90,20 @@ Visitor::visit(ast::BinaryExpression* node)
     {
     case ast::BinaryExpression::BinaryCompOrArith:
     {
-        ast::BinaryCompOrArith* subnode =
-            dynamic_cast<ast::BinaryCompOrArith*>(node);
+        auto subnode = dynamic_cast<ast::BinaryCompOrArith*>(node);
         visit(subnode);
         break;
     }
 
     case ast::BinaryExpression::Assignment:
     {
-        ast::Assignment* subnode = dynamic_cast<ast::Assignment*>(node);
+        auto subnode = dynamic_cast<ast::Assignment*>(node);
         visit(subnode);
         break;
     }
     case ast::BinaryExpression::ExpressionOnlyStatement:
     {
-        ast::ExpressionOnlyStatement* subnode =
-            dynamic_cast<ast::ExpressionOnlyStatement*>(node);
+        auto subnode = dynamic_cast<ast::ExpressionOnlyStatement*>(node);
         visit(subnode);
         break;
     }
@@ -128,7 +121,7 @@ Visitor::visit(ast::UnaryExpression* node)
     {
     case ast::UnaryExpression::Negation:
     {
-        ast::Negation* subnode = dynamic_cast<ast::Negation*>(node);
+        auto subnode = dynamic_cast<ast::Negation*>(node);
         visit(subnode);
         break;
     }
@@ -141,28 +134,25 @@ Visitor::visit(ast::Expression* node)
     {
     case ast::Expression::NewExpression:
     {
-        ast::NewExpression* subnode = dynamic_cast<ast::NewExpression*>(node);
+        auto subnode = dynamic_cast<ast::NewExpression*>(node);
         visit(subnode);
         break;
     }
     case ast::Expression::GroupingExpression:
     {
-        ast::GroupingExpression* subnode =
-            dynamic_cast<ast::GroupingExpression*>(node);
+        auto subnode = dynamic_cast<ast::GroupingExpression*>(node);
         visit(subnode);
         break;
     }
     case ast::Expression::PrimaryExpression:
     {
-        ast::PrimaryExpression* subnode =
-            dynamic_cast<ast::PrimaryExpression*>(node);
+        auto subnode = dynamic_cast<ast::PrimaryExpression*>(node);
         visit(subnode);
         break;
     }
     case ast::Expression::UnaryExpression:
     {
-        ast::UnaryExpression* subnode =
-            dynamic_cast<ast::UnaryExpression*>(node);
+        auto subnode = dynamic_cast<ast::UnaryExpression*>(node);
         visit(subnode);
         break;
     }
@@ -175,34 +165,31 @@ Visitor::visit(ast::Statement* node)
     {
     case ast::Statement::BlockStatement:
     {
-        ast::Block* subnode = dynamic_cast<ast::Block*>(node);
+        auto subnode = dynamic_cast<ast::Block*>(node);
         visit(subnode);
         break;
     }
     case ast::Statement::BinaryExpressionStatement:
     {
-        ast::BinaryExpression* subnode =
-            dynamic_cast<ast::BinaryExpression*>(node);
+        auto subnode = dynamic_cast<ast::BinaryExpression*>(node);
         visit(subnode);
         break;
     }
     case ast::Statement::IfStatement:
     {
-        ast::IfStatement* subnode = dynamic_cast<ast::IfStatement*>(node);
+        auto subnode = dynamic_cast<ast::IfStatement*>(node);
         visit(subnode);
         break;
     }
     case ast::Statement::ReturnStatement:
     {
-        ast::ReturnStatement* subnode =
-            dynamic_cast<ast::ReturnStatement*>(node);
+        auto subnode = dynamic_cast<ast::ReturnStatement*>(node);
         visit(subnode);
         break;
     }
     case ast::Statement::GeneralDecleration:
     {
-        ast::GeneralDecleration* subnode =
-            dynamic_cast<ast::GeneralDecleration*>(node);
+        auto subnode = dynamic_cast<ast::GeneralDecleration*>(node);
         visit(subnode);
         break;
     }
@@ -214,12 +201,9 @@ Visitor::visit(ast::FunctionDefinition* node)
     visit(node->getName());
 
     for (auto const& input : node->getInputList())
-    {
         visit(input);
-    }
 
     visit(node->getOutput());
-
     visit(node->getBody());
 }
 void
@@ -236,14 +220,12 @@ void
 Visitor::visit(ast::UserDefinedTypeDefinition* node)
 {
     visit(node->getName());
+
     for (auto const& attribute : node->getAttributes())
-    {
         visit(attribute);
-    }
+
     for (auto const& method : node->getMethods())
-    {
         visit(method);
-    }
 }
 void
 Visitor::visit(ast::InitialExecutionBody* node)
@@ -261,41 +243,35 @@ Visitor::visit(ast::Block* node)
 {
     for (auto const& statement : node->getStatements())
     {
-        ast::Statement::StatementType type = statement->getStatementType();
-
-        switch (type)
+        switch (statement->getStatementType())
         {
         case ast::Statement::IfStatement:
         {
-            ast::IfStatement* subnode =
-                dynamic_cast<ast::IfStatement*>(statement);
+            auto subnode = dynamic_cast<ast::IfStatement*>(statement);
             visit(subnode);
             break;
         }
         case ast::Statement::ReturnStatement:
         {
-            ast::ReturnStatement* subnode =
-                dynamic_cast<ast::ReturnStatement*>(statement);
+            auto subnode = dynamic_cast<ast::ReturnStatement*>(statement);
             visit(subnode);
             break;
         }
         case ast::Statement::BlockStatement:
         {
-            ast::Block* subnode = dynamic_cast<ast::Block*>(statement);
+            auto subnode = dynamic_cast<ast::Block*>(statement);
             visit(subnode);
             break;
         }
         case ast::Statement::GeneralDecleration:
         {
-            ast::GeneralDecleration* subnode =
-                dynamic_cast<ast::GeneralDecleration*>(statement);
+            auto subnode = dynamic_cast<ast::GeneralDecleration*>(statement);
             visit(subnode);
             break;
         }
         case ast::Statement::BinaryExpressionStatement:
         {
-            ast::BinaryExpression* subnode =
-                dynamic_cast<ast::BinaryExpression*>(statement);
+            auto subnode = dynamic_cast<ast::BinaryExpression*>(statement);
             visit(subnode);
             break;
         }
@@ -318,15 +294,14 @@ Visitor::visit(ast::ReturnStatement* node)
 void
 Visitor::visit(ast::NewExpression* node)
 {
-    ast::New* newVal = node->getNewVal();
-    ast::New::NewType type = newVal->getNewType();
+    auto newVal = node->getNewVal();
+    auto type = newVal->getNewType();
 
     switch (type)
     {
     case ast::New::UserDefinedType:
     {
-        ast::UserDefinedType* subnode =
-            dynamic_cast<ast::UserDefinedType*>(newVal);
+        auto subnode = dynamic_cast<ast::UserDefinedType*>(newVal);
         visit(subnode);
         break;
     }
@@ -355,24 +330,20 @@ Visitor::visit(ast::MethodAccess* node)
 void
 Visitor::visit(ast::FunctionCall* node)
 {
-    ast::Identifier* name = node->getName();
-    std::vector<ast::Primary*> args = node->getArguments();
+    auto name = node->getName();
+    auto args = node->getArguments();
 
     visit(name);
 
     for (auto const& arg : args)
-    {
         visit(arg);
-    }
 }
 void
 Visitor::visit(ast::UserDefinedType* node)
 {
     visit(node->getName());
     for (auto const& attribute : node->getAttributes())
-    {
         visit(attribute);
-    }
 }
 void
 Visitor::visit(ast::UDTitem* node)
@@ -393,57 +364,55 @@ Visitor::visit(ast::Primary* node)
     {
     case ast::Primary::IdentifierLiteral:
     {
-        ast::Identifier* subnode = dynamic_cast<ast::Identifier*>(node);
+        auto subnode = dynamic_cast<ast::Identifier*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::StringLiteral:
     {
-        ast::StringLiteral* subnode = dynamic_cast<ast::StringLiteral*>(node);
+        auto subnode = dynamic_cast<ast::StringLiteral*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::BooleanLiteral:
     {
-        ast::BooleanLiteral* subnode = dynamic_cast<ast::BooleanLiteral*>(node);
+        auto subnode = dynamic_cast<ast::BooleanLiteral*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::IntegerLiteral:
     {
-        ast::IntegerLiteral* subnode = dynamic_cast<ast::IntegerLiteral*>(node);
+        auto subnode = dynamic_cast<ast::IntegerLiteral*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::FloatLiteral:
     {
-        ast::FloatLiteral* subnode = dynamic_cast<ast::FloatLiteral*>(node);
+        auto subnode = dynamic_cast<ast::FloatLiteral*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::AttributeAccessLiteral:
     {
-        ast::AttributeAccess* subnode =
-            dynamic_cast<ast::AttributeAccess*>(node);
+        auto subnode = dynamic_cast<ast::AttributeAccess*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::AttributeMethodAccessLiteral:
     {
-        ast::AttributeMethodAccess* subnode =
-            dynamic_cast<ast::AttributeMethodAccess*>(node);
+        auto subnode = dynamic_cast<ast::AttributeMethodAccess*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::MethodAccessLiteral:
     {
-        ast::MethodAccess* subnode = dynamic_cast<ast::MethodAccess*>(node);
+        auto subnode = dynamic_cast<ast::MethodAccess*>(node);
         visit(subnode);
         break;
     }
     case ast::Primary::FunctionCallLiteral:
     {
-        ast::FunctionCall* subnode = dynamic_cast<ast::FunctionCall*>(node);
+        auto subnode = dynamic_cast<ast::FunctionCall*>(node);
         visit(subnode);
         break;
     }

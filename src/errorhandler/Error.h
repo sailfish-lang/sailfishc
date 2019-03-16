@@ -9,24 +9,22 @@
 class Error
 {
   private:
-    int line;
+    int lineNumber;
     std::string msg;
     std::string errtype;
 
   public:
     // constructor
-    Error(int l, std::string m)
+    Error(const int l, const std::string m)
     {
-        line = l;
+        lineNumber = l;
         msg = m;
     }
     // destructor
-    ~Error()
-    {
-    }
+    ~Error(){};
     // set method for receiving type to utilize internally
     void
-    setErrorType(std::string e)
+    setErrorType(const std::string e)
     {
         errtype = e;
     }
@@ -35,7 +33,7 @@ class Error
     std::string
     getPrettyMessage()
     {
-        return "[" + errtype + " Error at line: " + std::to_string(line) +
+        return "[" + errtype + " Error at line: " + std::to_string(lineNumber) +
                "]: " + msg + "\n";
     }
     // get methods

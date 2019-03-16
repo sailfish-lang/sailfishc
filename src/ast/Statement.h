@@ -10,11 +10,11 @@ class Statement
   public:
     enum StatementType
     {
-        IfStatement,
-        ReturnStatement,
+        BinaryExpressionStatement,
         BlockStatement,
         GeneralDecleration,
-        BinaryExpressionStatement,
+        IfStatement,
+        ReturnStatement,
     };
     virtual StatementType getStatementType() = 0;
 };

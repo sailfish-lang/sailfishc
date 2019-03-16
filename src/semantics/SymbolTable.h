@@ -50,20 +50,20 @@ class SymbolTable
     void exitScope();
 
     // check if a symbol is in the symbol table
-    bool hasVariable(std::string);
+    bool hasVariable(const std::string);
 
     // retreive a symbol's type from the symbol table
-    std::string getSymbolType(std::string);
+    std::string getSymbolType(const std::string);
 
     // retreive a symbol's scope level from the symbol table
-    int getSymbolScope(std::string);
+    int getSymbolScope(const std::string);
 
     // either push to the variables scope if exists or add variable
-    bool addSymbol(std::string, std::string);
+    bool addSymbol(const std::string, const std::string);
 
     // same as above, but used for attributes where we use scope level to mean
     // ordering
-    bool addSymbolIterative(std::string, std::string);
+    bool addSymbolIterative(const std::string, const std::string);
 
     // helper methods
     bool

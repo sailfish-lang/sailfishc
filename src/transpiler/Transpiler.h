@@ -43,6 +43,8 @@ class Transpiler : public Visitor
     ~Transpiler()
     {
         delete root;
+        delete udtTable;
+        delete symbolTable;
     }
 
     void transpile();
@@ -101,7 +103,6 @@ class Transpiler : public Visitor
     void visit(ast::UserDefinedTypeDefinition*);
 
     // declared udt
-    void visit(ast::NewUDTDefinition*);
     void visit(ast::UserDefinedType* node);
 
     // member accessors for udts

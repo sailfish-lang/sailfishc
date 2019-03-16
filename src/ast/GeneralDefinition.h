@@ -11,8 +11,8 @@ class GeneralDefinition
   public:
     enum GeneralDefinitionType
     {
-        ListDefinition,
         DictionaryDefinition,
+        ListDefinition,
         NewUDTDefinition,
         PrimitiveDefition,
     };

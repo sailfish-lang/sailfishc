@@ -5,5 +5,5 @@
 #pragma once
 #include <string>
 
-bool isKeyword(std::string);
-bool isPrimitive(std::string);
+bool isKeyword(const std::string);
+bool isPrimitive(const std::string);

@@ -17,14 +17,13 @@ createTokenPutback(Kind k, char c, std::string buffer, Scanner* scanner,
                    int linenum, int colNum)
 {
     if (!isspace(c))
-    {
         buffer.pop_back();
-    }
+
     scanner->putBackChar(c);
     return new Token(k, buffer, linenum, colNum);
 }
 
-Lexar::Lexar(std::string filename)
+Lexar::Lexar(const std::string filename)
 {
     scanner = new Scanner(filename);
     currentLineNum = 0;
@@ -66,24 +65,20 @@ Lexar::getNextToken()
         else
         {
             if (state == State::STRING || !isspace(c))
-            {
                 buffer += c;
-            }
+
             switch (state)
             {
             case State::START:
                 if (isalpha(c))
-                {
                     state = State::IDENTIFIER;
-                }
+
                 else if (isdigit(c))
-                {
                     state = State::INTEGER;
-                }
+
                 else if (isspace(c))
-                {
                     state = State::START;
-                }
+
                 else
                 {
                     switch (c)

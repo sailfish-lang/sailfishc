@@ -38,10 +38,37 @@ class SemanticAnalyzer
         delete udtTable;
     };
 
-    void analyze();
+    void
+    analyze()
+    {
+        TypeChecker* tc = new TypeChecker(symbolTable, symbolTableErrorHandler,
+                                          semanticErrorHandler, udtTable);
+
+        // run type checker and symbol table creator
+        tc->check(root);
+
+        InitialExecution* ie = new InitialExecution();
+        if (!ie->hasInitExecBody(root))
+        {
+            std::string errormsg = "Unable to compile. Reason: missing an "
+                                   "initial execution body.\n";
+            throw errormsg;
+        }
+
+        // execute on built up errors
+        tc->end();
+    }
 
     // strictly a helper for writing tests that returns all the semantic errors
-    std::vector<Error*> testAnalyze();
+    std::vector<Error*>
+    testAnalyze()
+    {
+        TypeChecker* tc = new TypeChecker(symbolTable, symbolTableErrorHandler,
+                                          semanticErrorHandler, udtTable);
+
+        tc->check(root);
+        return tc->getSemanticErrors();
+    }
 
     // get methods
     UDTTable*

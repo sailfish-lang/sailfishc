@@ -43,7 +43,7 @@ class Lexar
 
   public:
     // constructor
-    Lexar(std::string filename);
+    Lexar(const std::string filename);
     // destructor
     ~Lexar()
     {

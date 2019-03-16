@@ -5,7 +5,7 @@
 #include "ReservedWords.h"
 
 bool
-isKeyword(std::string v)
+isKeyword(const std::string v)
 {
     if (v == "fun" || v == "Cat" || v == "Cfn" || v == "dec" || v == "exp" ||
         v == "if" || v == "else" || v == "return" || v == "import" ||
@@ -16,7 +16,7 @@ isKeyword(std::string v)
 }
 
 bool
-isPrimitive(std::string type)
+isPrimitive(const std::string type)
 {
     if (type == "int" || type == "flt" || type == "str" || type == "bool" ||
         type == "void")

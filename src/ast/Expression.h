@@ -13,8 +13,8 @@ class Expression
     {
         GroupingExpression,
         NewExpression,
-        UnaryExpression,
         PrimaryExpression,
+        UnaryExpression,
     };
     virtual ExpressionType getExpressionType() = 0;
 };

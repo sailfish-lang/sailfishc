@@ -11,15 +11,15 @@ class Primary
   public:
     enum PrimaryType
     {
-        IdentifierLiteral,
-        StringLiteral,
-        BooleanLiteral,
-        IntegerLiteral,
-        FloatLiteral,
         AttributeAccessLiteral,
         AttributeMethodAccessLiteral,
-        MethodAccessLiteral,
+        BooleanLiteral,
+        FloatLiteral,
         FunctionCallLiteral,
+        IdentifierLiteral,
+        IntegerLiteral,
+        MethodAccessLiteral,
+        StringLiteral,
     };
     virtual PrimaryType getPrimaryType() = 0;
 };

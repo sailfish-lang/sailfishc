@@ -3,22 +3,15 @@ cmake_minimum_required(VERSION 2.6)
 # Add sailfishc libs. TODO: write this more eloquently
 ADD_LIBRARY(SailfishcLibs 
     ../src/lexar/Lexar.cpp
-    ../src/lexar/Scanner.cpp
-    ../src/lexar/Token.cpp
     ../src/parser/Parser.cpp
     visitors/InOrderTraversal.cpp
     ../src/visitor/Visitor.cpp
     ../src/semantics/SymbolTable.cpp 
-    ../src/semantics/SemanticAnalyzer.cpp 
     ../src/semantics/TypeChecker.cpp 
-    ../src/semantics/UDTTable.cpp 
-    ../src/semantics/UDTMetaData.cpp 
-    ../src/semantics/SymbolMetaData.cpp 
     ../src/errorhandler/SemanticErrorHandler.cpp 
     ../src/errorhandler/SymbolTableErrorHandler.cpp 
     ../src/errorhandler/ParserErrorHandler.cpp
     ../src/common/ReservedWords.cpp
-    ../src/visitor/InitialExecution.cpp
 )
 
 # Locate GTest

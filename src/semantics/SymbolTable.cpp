@@ -66,13 +66,13 @@ SymbolTable::enterScope()
 }
 
 bool
-SymbolTable::hasVariable(std::string varName)
+SymbolTable::hasVariable(const std::string varName)
 {
     return globalScopeTable.find(varName) != globalScopeTable.end();
 }
 
 std::string
-SymbolTable::getSymbolType(std::string varName)
+SymbolTable::getSymbolType(const std::string varName)
 {
     if (hasVariable(varName))
     {
@@ -83,7 +83,7 @@ SymbolTable::getSymbolType(std::string varName)
 }
 
 int
-SymbolTable::getSymbolScope(std::string varName)
+SymbolTable::getSymbolScope(const std::string varName)
 {
     if (hasVariable(varName))
     {
@@ -94,7 +94,7 @@ SymbolTable::getSymbolScope(std::string varName)
 }
 
 bool
-SymbolTable::addSymbol(std::string varName, std::string type)
+SymbolTable::addSymbol(const std::string varName, const std::string type)
 {
     if (hasVariable(varName))
     {
@@ -119,7 +119,8 @@ SymbolTable::addSymbol(std::string varName, std::string type)
 }
 
 bool
-SymbolTable::addSymbolIterative(std::string varName, std::string type)
+SymbolTable::addSymbolIterative(const std::string varName,
+                                const std::string type)
 {
     if (!hasVariable(varName))
     {
@@ -142,7 +143,7 @@ SymbolTable::addSymbolIterative(std::string varName, std::string type)
 
 // helper function for adding standard lib variables
 void
-SymbolTable::addStdlib(std::string varName, std::string type)
+SymbolTable::addStdlib(const std::string varName, const std::string type)
 {
     std::stack<SymbolMetaData*> ss;
     SymbolMetaData* smd = new SymbolMetaData(type, scopeLevel);

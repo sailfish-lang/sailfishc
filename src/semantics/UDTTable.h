@@ -23,17 +23,55 @@ class UDTTable
     ~UDTTable(){};
 
     // check if a UDT is in the UDT table
-    bool hasUDT(std::string);
+    bool
+    hasUDT(const std::string name)
+    {
+        return udtTable.find(name) != udtTable.end();
+    }
 
     // retreive a UDT's attribute Symbol Table from the UDT table
-    SymbolTable* getAttributeSymbolTable(std::string);
+    SymbolTable*
+    getAttributeSymbolTable(const std::string name)
+    {
+        if (hasUDT(name))
+            return udtTable.at(name)->getAttributeSymbolTable();
+
+        return nullptr;
+    }
 
     // retreive a UDT's method Symbol Table from the UDT table
-    SymbolTable* getMethodSymbolTable(std::string);
+    SymbolTable*
+    getMethodSymbolTable(const std::string name)
+    {
+        if (hasUDT(name))
+            return udtTable.at(name)->getMethodSymbolTable();
+
+        return nullptr;
+    }
 
     // returns true if added or false if already exists
-    bool addUDT(std::string, SymbolTable*, SymbolTable*);
+    bool
+    addUDT(const std::string name, SymbolTable* attributes,
+           SymbolTable* methods)
+    {
+        if (hasUDT(name))
+            return false;
+
+        UDTMetaData* udtmd = new UDTMetaData(attributes, methods);
+        udtTable.insert({name, udtmd});
+        return true;
+    }
 
     // allow us to update the table after udt key aleady added
-    bool updateUDT(std::string, SymbolTable*, SymbolTable*);
+    bool
+    updateUDT(const std::string name, SymbolTable* attributes,
+              SymbolTable* methods)
+    {
+        if (!hasUDT(name))
+            return false;
+
+        udtTable.at(name)->setAttributeSymbolTable(attributes);
+        udtTable.at(name)->setMethodSymbolTable(methods);
+        return true;
+    }
 };

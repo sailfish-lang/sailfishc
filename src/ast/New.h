@@ -11,8 +11,8 @@ class New
   public:
     enum NewType
     {
-        ListLiteral,
         DictionaryLiteral,
+        ListLiteral,
         UserDefinedType,
     };
     virtual NewType getNewType() = 0;
