@@ -1155,8 +1155,6 @@ TypeChecker::visit(ast::AttributeMethodAccess* node)
     std::string methodName = node->getName()->getValue();
     std::string variableUDTname = getType(node->getAttribute());
 
-    std::cout << "HERE: " << variableUDTname << "\n";
-
     // hacks: REMOVE ASAP
     if (variableUDTname == "own")
         variableUDTname = curUDT;

@@ -92,9 +92,7 @@ pop(Stack* own)
 }
 else 
 {
-    Node*temp = construct_Node(NULL,0);
-    temp = own->head;
-    own->head = next(temp);
+    own->head = next(own->head);
     own->size = own->size-1;
 }
 
@@ -139,6 +137,9 @@ main()
     print_str("\tTop: ");
     print_int(peek(s));
     print_str("\n");
+    pop(s);
+    pop(s);
+    pop(s);
     pop(s);
     pop(s);
     print_str("Size: ");

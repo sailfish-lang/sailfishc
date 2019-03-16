@@ -9,7 +9,6 @@ Cfn Node {
     -> bool
     {
         dec bool ret = | own.next != void |
-
         return ret
     }
 
@@ -86,10 +85,7 @@ Cfn Stack {
     {
         if | own...is_empty() == true | { }
         else {
-            dec Node temp = new Node { next: void, data: 0 }
-            temp = own.head
-            own.head = temp...next()
-            
+            own.head = own.head...next()
             own.size = own.size - 1 
         }
     }
