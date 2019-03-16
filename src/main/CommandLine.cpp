@@ -23,7 +23,7 @@ helpMessage()
 void
 versionInfo()
 {
-    std::cout << "sailfishc 0.0.1\n";
+    std::cout << "sailfishc 0.1.0 (dorsalfin)\n";
 }
 
 bool
