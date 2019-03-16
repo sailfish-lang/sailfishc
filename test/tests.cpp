@@ -347,6 +347,14 @@ TEST(SemanticTest, TypeCheckerUDTDec)
         "not exist.",
         "Udt attribute type of:  udt for attribute: u and for udt: bool does "
         "not exist.",
+        "Too few arguments in udt initialization.",
+        "Received unknown attribute name of: a in constructor of udt of type: "
+        "Foo.",
+        "Too few arguments in udt initialization.",
+        "Received intiializer variable of type: flt in constructor of udt of "
+        "type: Foo when a variable for type: int was expected for attribute "
+        "named: i.",
+        "Too few arguments in udt initialization.",
     };
 
     Parser* p = new Parser();
@@ -452,6 +460,7 @@ TEST(SemanticTest, TypeCheckerMethodAccess)
 TEST(SemanticTest, TypeCheckerAttributeAccess)
 {
     static const std::string expected[] = {
+        "Too few arguments in udt initialization.",
         "Attribute: f does not exists for udt type: Foo.",
         "Expected the same types on each side of operation. Instead "
         "received: "
