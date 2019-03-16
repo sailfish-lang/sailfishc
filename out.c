@@ -71,9 +71,7 @@ peek(Stack* own)
 }
 else 
 {
-    Node*temp = construct_Node(NULL,0);
-    temp = own->head;
-    i = data(temp);
+    i = data(own->head);
 }
 
     return i;
@@ -141,9 +139,6 @@ main()
     print_str("\tTop: ");
     print_int(peek(s));
     print_str("\n");
-    pop(s);
-    pop(s);
-    pop(s);
     pop(s);
     pop(s);
     print_str("Size: ");

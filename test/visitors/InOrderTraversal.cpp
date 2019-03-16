@@ -171,6 +171,16 @@ InOrderTraversal::visit(ast::AttributeAccess* node)
 }
 
 void
+InOrderTraversal::visit(ast::AttributeMethodAccess* node)
+{
+    visit(node->getAttribute());
+    visit(node->getName());
+    visit(node->getFunctionCall());
+
+    push("AttributeMethodAccess");
+}
+
+void
 InOrderTraversal::visit(ast::MethodAccess* node)
 {
     visit(node->getName());

@@ -64,10 +64,7 @@ Cfn Stack {
         if | own...is_empty() == true | {
             // do nothing
         } else {
-            // super hacky way of accessing methods on attributes
-            dec Node temp = new Node { next: void, data: 0 }
-            temp = own.head
-            i = temp...data()            
+            i = own.head...data()            
         }
 
         return i

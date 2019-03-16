@@ -511,6 +511,42 @@ Transpiler::visit(ast::AttributeAccess* node)
 }
 
 /**
+ * AttributeMethodAccess: similar to attribute access and method access
+ */
+void
+Transpiler::visit(ast::AttributeMethodAccess* node)
+{
+    visit(node->getFunctionCall()->getName());
+
+    fileBuffer += "(";
+
+    // visit(node->getUDT());
+
+    // fileBuffer += ", ";
+
+    visit(node->getAttribute());
+
+    int numArgs = node->getFunctionCall()->getArguments().size();
+
+    if (numArgs != 0)
+    {
+        fileBuffer += ", ";
+    }
+
+    for (int i = 0; i < numArgs; i++)
+    {
+        // no comma following the last argument
+        if (i != numArgs - 1)
+        {
+            fileBuffer += ", ";
+        }
+        visit(node->getFunctionCall()->getArguments().at(i));
+    }
+
+    fileBuffer += ")";
+}
+
+/**
  * MethodAccess: similar to function call
  */
 void

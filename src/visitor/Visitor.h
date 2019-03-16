@@ -28,6 +28,7 @@ class Visitor
     virtual void visit(ast::Statement*);
     virtual void visit(ast::NewExpression*);
     virtual void visit(ast::AttributeAccess*);
+    virtual void visit(ast::AttributeMethodAccess* node);
     virtual void visit(ast::MethodAccess*);
     virtual void visit(ast::FunctionCall*);
     virtual void visit(ast::UnaryExpression*);

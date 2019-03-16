@@ -49,7 +49,9 @@ class Parser
 
     ast::GroupingExpression* parseGroupingExpression();
 
-    ast::AttributeAccess* parseAttributeAccess(ast::Identifier*);
+    ast::Primary* parseAttributeAccess(ast::Identifier*);
+    ast::AttributeMethodAccess*
+    parseAttributeMethodAccess(ast::AttributeAccess*);
     ast::MethodAccess* parseMethodAccess(ast::Identifier*);
 
     ast::UnaryExpression* parseUnaryExpression();

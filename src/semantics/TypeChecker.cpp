@@ -255,6 +255,84 @@ TypeChecker::getType(ast::Primary* primary)
 
         return truncateType(fullAttributeType);
     }
+    case ast::Primary::AttributeMethodAccessLiteral:
+    {
+        ast::AttributeMethodAccess* node =
+            dynamic_cast<ast::AttributeMethodAccess*>(primary);
+
+        // -------       first extract the attribute       ------- //
+        ast::AttributeAccess* subsubnode = node->getAttribute();
+
+        std::string attributeName = subsubnode->getAttribute()->getValue();
+        std::string variableName = subsubnode->getUDT()->getValue();
+
+        // hacks: REMOVE ASAP
+        if (variableName == "own")
+        {
+            variableName = curUDT;
+        }
+        else
+        {
+            // ensure variable exists - double checked so no need for another
+            // error message
+            if (!symbolTable->hasVariable(variableName))
+            {
+                return "unknown";
+            }
+
+            std::string udtTypeFull = symbolTable->getSymbolType(variableName);
+            variableName = udtTypeFull.substr(1, udtTypeFull.length());
+        }
+
+        // ensure udt exists - double checked so no need for another
+        // error message
+        if (!udtTable->hasUDT(variableName))
+        {
+            return "unknown";
+        }
+
+        // ensure attribute exists for udt - double checked so only return error
+        // once
+        if (!udtTable->getAttributeSymbolTable(variableName)
+                 ->hasVariable(attributeName))
+        {
+            return "unknown";
+        }
+
+        // std::string fullAttributeType =
+        //     udtTable->getAttributeSymbolTable(variableName)
+        //         ->getSymbolType(attributeName);
+
+        // -------       now extract the method       ------- //
+        std::string methodName = node->getName()->getValue();
+        std::string variableUDTname = getType(node->getAttribute());
+
+        // hacks: REMOVE ASAP
+        if (variableUDTname == "own")
+        {
+            variableUDTname = curUDT;
+        }
+        else
+        {
+            // ensure variable's udt exists - double checked so no need for
+            // another error message
+            if (!udtTable->hasUDT(variableUDTname))
+            {
+                return "unknown";
+            }
+        }
+
+        // ensure metho exists for udt - double checked so no need for another
+        // error message
+        if (!udtTable->getMethodSymbolTable(variableUDTname)
+                 ->hasVariable(methodName))
+        {
+            return "unknown";
+        }
+
+        return truncateType(udtTable->getMethodSymbolTable(variableUDTname)
+                                ->getSymbolType(methodName));
+    }
     case ast::Primary::MethodAccessLiteral:
     {
         ast::MethodAccess* node = dynamic_cast<ast::MethodAccess*>(primary);
@@ -1067,6 +1145,63 @@ TypeChecker::visit(ast::AttributeAccess* node)
 
         return;
     }
+}
+
+void
+TypeChecker::visit(ast::AttributeMethodAccess* node)
+{
+    visit(node->getAttribute());
+
+    std::string methodName = node->getName()->getValue();
+    std::string variableUDTname = getType(node->getAttribute());
+
+    std::cout << "HERE: " << variableUDTname << "\n";
+
+    // hacks: REMOVE ASAP
+    if (variableUDTname == "own")
+        variableUDTname = curUDT;
+
+    else
+    {
+        // ensure variable's udt exists
+        if (!udtTable->hasUDT(variableUDTname))
+        {
+            semanticErrorHandler->handle(new Error(
+                node->getUDT()->getLineNum(),
+                "Method: " + methodName + " called on nonexistent udt type: " +
+                    variableUDTname + "."));
+
+            return;
+        }
+    }
+
+    std::string udtType = variableUDTname;
+
+    // ensure metho exists for udt
+    if (!udtTable->getMethodSymbolTable(udtType)->hasVariable(methodName))
+    {
+        semanticErrorHandler->handle(
+            new Error(node->getName()->getLineNum(),
+                      "Method: " + methodName +
+                          " does not exist for udt type: " + udtType + "."));
+        // abort
+        return;
+    }
+
+    // visit function call
+    std::string fulltype =
+        udtTable->getMethodSymbolTable(udtType)->getSymbolType(methodName);
+
+    std::vector<std::string> inputs = getFunctionParamTypes(fulltype);
+
+    // ensure that each of the arguments is supplied and of the proper type
+    std::vector<ast::Primary*> args = node->getFunctionCall()->getArguments();
+
+    compareFunctions(inputs, args, methodName,
+                     node->getFunctionCall()->getLineNum());
+
+    for (auto const& arg : args)
+        visit(arg);
 }
 
 void

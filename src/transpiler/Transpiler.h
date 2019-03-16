@@ -106,5 +106,6 @@ class Transpiler : public Visitor
 
     // member accessors for udts
     void visit(ast::AttributeAccess*);
+    void visit(ast::AttributeMethodAccess*);
     void visit(ast::MethodAccess*);
 };

@@ -96,6 +96,7 @@ class TypeChecker : public Visitor
 
     // udt attribute and method access
     void visit(ast::AttributeAccess*);
+    void visit(ast::AttributeMethodAccess*);
     void visit(ast::MethodAccess*);
 
     // function call

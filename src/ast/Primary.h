@@ -17,6 +17,7 @@ class Primary
         IntegerLiteral,
         FloatLiteral,
         AttributeAccessLiteral,
+        AttributeMethodAccessLiteral,
         MethodAccessLiteral,
         FunctionCallLiteral,
     };

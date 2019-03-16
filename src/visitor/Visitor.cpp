@@ -339,6 +339,13 @@ Visitor::visit(ast::AttributeAccess* node)
     visit(node->getAttribute());
 }
 void
+Visitor::visit(ast::AttributeMethodAccess* node)
+{
+    visit(node->getAttribute());
+    visit(node->getName());
+    visit(node->getFunctionCall());
+}
+void
 Visitor::visit(ast::MethodAccess* node)
 {
 
@@ -418,6 +425,13 @@ Visitor::visit(ast::Primary* node)
     {
         ast::AttributeAccess* subnode =
             dynamic_cast<ast::AttributeAccess*>(node);
+        visit(subnode);
+        break;
+    }
+    case ast::Primary::AttributeMethodAccessLiteral:
+    {
+        ast::AttributeMethodAccess* subnode =
+            dynamic_cast<ast::AttributeMethodAccess*>(node);
         visit(subnode);
         break;
     }

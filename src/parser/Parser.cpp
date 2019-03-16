@@ -547,8 +547,9 @@ Parser::parseGroupingExpression()
 
 /**
  * AttributeAccess := Identifier '.' Identifier
+ * AttributeMethodAccess := AttributeAccess '...' FunctionCall
  */
-ast::AttributeAccess*
+ast::Primary*
 Parser::parseAttributeAccess(ast::Identifier* udtName)
 {
     ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
@@ -557,7 +558,57 @@ Parser::parseAttributeAccess(ast::Identifier* udtName)
     // consume identifier
     getNextUsefulToken();
 
-    return new ast::AttributeAccess(name, udtName, currentToken->getLineNum());
+    ast::AttributeAccess* aa =
+        new ast::AttributeAccess(name, udtName, currentToken->getLineNum());
+
+    // catch the AttributeMethodAccess
+    if (currentToken->getKind() == Kind::TRIPLE_DOT_TOKEN)
+    {
+        // consume '...'
+        getNextUsefulToken();
+
+        return (ast::Primary*)parseAttributeMethodAccess(aa);
+    }
+
+    return (ast::Primary*)aa;
+}
+
+/**
+ * MethodAccess := Identifier '...' Identifier FunctionCall
+ */
+ast::AttributeMethodAccess*
+Parser::parseAttributeMethodAccess(ast::AttributeAccess* aa)
+{
+    ast::Identifier* name = new ast::Identifier(currentToken->getValue(),
+                                                currentToken->getLineNum());
+
+    // consume identifier
+    getNextUsefulToken();
+
+    // consume '('
+    getNextUsefulToken();
+
+    std::vector<ast::Primary*> idents;
+
+    while (currentToken->getKind() != Kind::RPAREN_TOKEN)
+    {
+        idents.push_back(parsePrimary());
+
+        if (currentToken->isEOF())
+        {
+            errorHandler->handle(new Error(currentToken->getLineNum(),
+                                           "Missing a right parenthesis."));
+        }
+    }
+
+    // consume ')'
+    getNextUsefulToken();
+
+    ast::FunctionCall* fc =
+        new ast::FunctionCall(name, idents, currentToken->getLineNum());
+
+    return new ast::AttributeMethodAccess(name, aa, fc, aa->getUDT(),
+                                          currentToken->getLineNum());
 }
 
 /**

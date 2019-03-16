@@ -6,6 +6,7 @@
 
 #include "Assignment.h"
 #include "AttributeAccess.h"
+#include "AttributeMethodAccess.h"
 #include "BinaryCompOrArith.h"
 #include "BinaryExpression.h"
 #include "Block.h"
