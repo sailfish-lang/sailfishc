@@ -52,7 +52,7 @@ executeBinary()
     system("./a.out");
 }
 
-void
+bool
 fullCompilation(std::string filename)
 {
     try
@@ -72,10 +72,13 @@ fullCompilation(std::string filename)
         t->transpile();
 
         std::cout << "Success. sailfishc compiled " + filename + " to: out.c\n";
+
+        return true;
     }
     catch (const std::string msg)
     {
         std::cerr << msg;
+        return false;
     }
 }
 
@@ -158,20 +161,24 @@ handleCommandLine(int argc, char* const* argv)
         else if (std::string("--compile_c").compare(argv[1]) == 0)
         {
             // compile sailfish
-            fullCompilation(argv[2]);
-
-            // compile c
-            compileC();
+            if (fullCompilation(argv[2]))
+            {
+                // compile c
+                compileC();
+            }
         }
         else if (std::string("--compile_and_execute").compare(argv[1]) == 0)
         {
             // compile sailfish
-            fullCompilation(argv[2]);
-
-            // compile c
-            if (compileC())
-                // execute gcc generated binary
-                executeBinary();
+            if (fullCompilation(argv[2]))
+            {
+                // compile c
+                if (compileC())
+                {
+                    // execute gcc generated binary
+                    executeBinary();
+                }
+            }
         }
         else
         {
