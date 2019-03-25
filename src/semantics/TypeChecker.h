@@ -31,9 +31,9 @@ class TypeChecker : public Visitor
 
     // helper methods for easy type checking and error message handling
     bool nameIsLegal(std::string, int);
-    bool typeExists(std::string, std::string, int);
-    bool tryAddToSymbolTable(std::string, std::string, SymbolTable*, int);
-    bool tryAddToSymbolTableIterative(std::string, std::string, SymbolTable*,
+    void typeExists(std::string, std::string, int);
+    void tryAddToSymbolTable(std::string, std::string, SymbolTable*, int);
+    void tryAddToSymbolTableIterative(std::string, std::string, SymbolTable*,
                                       int);
     void compareFunctions(std::vector<std::string>, std::vector<ast::Primary*>,
                           std::string, int);

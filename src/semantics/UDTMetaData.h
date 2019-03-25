@@ -33,12 +33,12 @@ class UDTMetaData
         return methods;
     }
     // set methods
-    SymbolTable*
+    void
     setAttributeSymbolTable(SymbolTable* a)
     {
         attributes = a;
     }
-    SymbolTable*
+    void
     setMethodSymbolTable(SymbolTable* m)
     {
         methods = m;

@@ -22,7 +22,7 @@ TypeChecker::nameIsLegal(std::string name, int lineNumber)
 }
 
 // given a type and its name, ensure the type exists
-bool
+void
 TypeChecker::typeExists(std::string type, std::string name, int lineNumber)
 {
     if (!isPrimitive(type) && !udtTable->hasUDT(type))
@@ -32,7 +32,7 @@ TypeChecker::typeExists(std::string type, std::string name, int lineNumber)
 }
 
 // encapsulate addition to symbol table and error handling for it
-bool
+void
 TypeChecker::tryAddToSymbolTable(std::string name, std::string type,
                                  SymbolTable* symbolTable, int lineNumber)
 {
@@ -46,7 +46,7 @@ TypeChecker::tryAddToSymbolTable(std::string name, std::string type,
 // encapsulate addition to symbol table and error handling for it for
 // attributes, of whom all scope is one and thus we use scope here to mean
 // ordering
-bool
+void
 TypeChecker::tryAddToSymbolTableIterative(std::string name, std::string type,
                                           SymbolTable* symbolTable,
                                           int lineNumber)
@@ -159,6 +159,8 @@ TypeChecker::getType(ast::Expression* node)
     case ast::Expression::UnaryExpression:
         return "bool";
     }
+
+    return "unknown";
 }
 
 // given a primary, determine the type
@@ -362,6 +364,8 @@ TypeChecker::getType(ast::Primary* primary)
         return truncateType(fullType);
     }
     }
+
+    return "unknown";
 }
 
 // given a grouping, determine if it is ultimately a boolean expression
@@ -378,6 +382,8 @@ isLegalGrouping(ast::BinaryExpression* node)
         auto subnode = dynamic_cast<ast::BinaryCompOrArith*>(node);
         return subnode->isComparison();
     }
+
+    return false;
 }
 
 // given a primary, determine if its type is void
