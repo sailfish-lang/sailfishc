@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
 
+set(CMAKE_CXX_STANDARD 17)
+
 # Add sailfishc libs. TODO: write this more eloquently
 ADD_LIBRARY(SailfishcLibs 
     ./src/lexar/Lexar.cpp
+    ./src/lexar/Lexar2.cpp
+    ./src/lexar/Token2.cpp
     ./src/parser/Parser.cpp
     ./src/visitor/Visitor.cpp
     ./src/semantics/SymbolTable.cpp

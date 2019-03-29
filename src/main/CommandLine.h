@@ -5,6 +5,7 @@
 #pragma once
 #include "../ast/Ast.h"
 #include "../lexar/Lexar.h"
+#include "../lexar/Lexar2.h"
 #include "../parser/Parser.h"
 #include "../semantics/SemanticAnalyzer.h"
 #include "../transpiler/Transpiler.h"

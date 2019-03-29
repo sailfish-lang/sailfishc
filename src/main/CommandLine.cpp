@@ -23,7 +23,7 @@ helpMessage()
 void
 versionInfo()
 {
-    std::cout << "sailfishc 0.1.0 (dorsalfin)\n";
+    std::cout << "sailfishc 0.2.0 (dorsalfin)\n";
 }
 
 bool
@@ -121,6 +121,20 @@ handleCommandLine(int argc, char* const* argv)
             while (!t->isEOF())
             {
                 t->display();
+                t = l->getNextToken();
+            }
+        }
+        else if (std::string("--test_lex").compare(argv[1]) == 0)
+        {
+            std::string filename = argv[2];
+            std::cout << "Lexing " << filename << ".\n\n";
+
+            Lexar2* l = new Lexar2(filename);
+            Token2 t = l->getNextToken();
+
+            while (t.kind != Tokenn::EOF_)
+            {
+                std::cout << prettifyFormatToken(t);
                 t = l->getNextToken();
             }
         }
