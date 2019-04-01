@@ -7,6 +7,7 @@
 #include "../src/common/ReservedWords.h"
 #include "../src/errorhandler/Error.h"
 #include "../src/lexar/Lexar.h"
+#include "../src/lexar/Lexar2.h"
 #include "../src/parser/Parser.h"
 #include "../src/semantics/SemanticAnalyzer.h"
 #include "../src/semantics/SymbolMetaData.h"
@@ -15,6 +16,86 @@
 #include "../src/semantics/UDTTable.h"
 #include "visitors/InOrderTraversal.h"
 #include <gtest/gtest.h>
+
+Token2
+makeToken(Tokenn::Kind kind, std::string value, int col, int line)
+{
+    return Token2{kind, value, col, line};
+}
+
+bool
+compareToken2(Token2 a, Token2 b)
+{
+    return a.kind == b.kind && a.value == b.value && a.col == b.col &&
+           a.line == b.line;
+}
+
+TEST(LexarTest, Lex2)
+{
+    Token2 expected[] = {
+        makeToken(Tokenn::Kind::START, "start", 1, 1),
+        makeToken(Tokenn::Kind::LCURLEY, "{", 1, 7),
+        makeToken(Tokenn::Kind::OWN_ACCESSOR, "own", 2, 5),
+        makeToken(Tokenn::Kind::TREE, "Tree", 2, 9),
+        makeToken(Tokenn::Kind::DEC, "dec", 2, 14),
+        makeToken(Tokenn::Kind::LPAREN, "(", 2, 18),
+        makeToken(Tokenn::Kind::UAT, "Ufa", 3, 9),
+        makeToken(Tokenn::Kind::UFN, "Ufn", 3, 13),
+        makeToken(Tokenn::Kind::COMMENT, "# hello", 4, 9),
+        makeToken(Tokenn::Kind::IMPORT, "import", 5, 9),
+        makeToken(Tokenn::Kind::RETURN, "return", 6, 9),
+        makeToken(Tokenn::Kind::NEW, "new", 6, 16),
+        makeToken(Tokenn::Kind::IDENTIFIER, "something", 7, 9),
+        makeToken(Tokenn::Kind::INTEGER, "1", 7, 19),
+        makeToken(Tokenn::Kind::FLOAT, "1.0", 7, 21),
+        makeToken(Tokenn::Kind::BOOL, "true", 7, 25),
+        makeToken(Tokenn::Kind::BOOL, "false", 7, 30),
+        makeToken(Tokenn::Kind::STRING, "\"hello\"", 8, 9),
+        makeToken(Tokenn::Kind::MODULO, "%", 9, 9),
+        makeToken(Tokenn::Kind::ADDITION, "+", 9, 10),
+        makeToken(Tokenn::Kind::ADDTO, "+=", 9, 11),
+        makeToken(Tokenn::Kind::SUBTRACTION, "-", 9, 13),
+        makeToken(Tokenn::Kind::SUBFROM, "-=", 9, 14),
+        makeToken(Tokenn::Kind::EXPONENTIATION, "**", 9, 16),
+        makeToken(Tokenn::Kind::ASSIGNMENT, "=", 9, 18),
+        makeToken(Tokenn::Kind::MULTTO, "*=", 9, 19),
+        makeToken(Tokenn::Kind::MULTIPLICATION, "*", 9, 21),
+        makeToken(Tokenn::Kind::DIVISION, "/", 9, 22),
+        makeToken(Tokenn::Kind::DIVFROM, "/=", 9, 23),
+        makeToken(Tokenn::Kind::GREATER_THAN_OR_EQUALS, ">=", 9, 25),
+        makeToken(Tokenn::Kind::GREATER_THAN, ">", 9, 27),
+        makeToken(Tokenn::Kind::LESS_THAN, "<", 9, 28),
+        makeToken(Tokenn::Kind::LESS_THAN_OR_EQUALS, "<=", 9, 29),
+        makeToken(Tokenn::Kind::EQUIVALENCE, "==", 9, 32),
+        makeToken(Tokenn::Kind::NONEQUIVALENCE, "!=", 9, 33),
+        makeToken(Tokenn::Kind::NEGATION, "!", 9, 35),
+        makeToken(Tokenn::Kind::AND, "and", 9, 36),
+        makeToken(Tokenn::Kind::OR, "or", 9, 40),
+        makeToken(Tokenn::Kind::UNDERSCORE, "_", 10, 9),
+        makeToken(Tokenn::Kind::COLON, ":", 10, 10),
+        makeToken(Tokenn::Kind::COMMA, ",", 10, 11),
+        makeToken(Tokenn::Kind::TRIPLE_DOT, "...", 10, 12),
+        makeToken(Tokenn::Kind::DOT, ".", 10, 15),
+        makeToken(Tokenn::Kind::PIPE, "|", 10, 16),
+        makeToken(Tokenn::Kind::STRING, "\"\"trickystring\"", 10, 17),
+        makeToken(Tokenn::Kind::RPAREN, ")", 11, 5),
+        makeToken(Tokenn::Kind::RCURLEY, "}", 12, 1),
+    };
+
+    Lexar2* lexar2 = new Lexar2("./examples/Lexar2.fish");
+
+    Token2 t;
+    int i = 0;
+
+    t = lexar2->getNextToken();
+
+    while (t.kind != Tokenn::Kind::EOF_)
+    {
+        ASSERT_EQ(compareToken2(expected[i], t), true);
+        t = lexar2->getNextToken();
+        ++i;
+    }
+}
 
 TEST(LexarTest, HelloWorld)
 {

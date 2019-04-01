@@ -25,8 +25,8 @@ Lexar2::makeToken(const Tokenn::Kind& k, const std::string& v)
             kd = Tokenn::Kind::TREE;
         else if (v == "Uat")
             kd = Tokenn::Kind::UAT;
-        else if (v == "Ufa")
-            kd = Tokenn::Kind::UFA;
+        else if (v == "Ufn")
+            kd = Tokenn::Kind::UFN;
         else if (v == "fun")
             kd = Tokenn::Kind::FUN;
         else if (v == "dec")
@@ -37,6 +37,12 @@ Lexar2::makeToken(const Tokenn::Kind& k, const std::string& v)
             kd = Tokenn::Kind::RETURN;
         else if (v == "new")
             kd = Tokenn::Kind::NEW;
+        else if (v == "and")
+            kd = Tokenn::Kind::AND;
+        else if (v == "or")
+            kd = Tokenn::Kind::OR;
+        else if (v == "true" || v == "false")
+            kd = Tokenn::Kind::BOOL;
     }
     return {.kind = kd, .value = v, .col = int(col - v.size()), .line = line};
 }
@@ -226,6 +232,7 @@ Lexar2::getNextToken()
                 state = State::STRING_ESCAPE;
             else if (c == '"')
                 return makeToken(Tokenn::Kind::STRING, buffer);
+            break;
 
         case State::STRING_ESCAPE:
             state = State::STRING;

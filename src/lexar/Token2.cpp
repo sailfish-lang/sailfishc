@@ -8,13 +8,13 @@ Tokenn::displayKind(const Kind& k)
     case START:
         return "START";
     case OWN_ACCESSOR:
-        return "START";
+        return "OWN";
     case TREE:
         return "TREE";
     case UAT:
         return "UAT";
-    case UFA:
-        return "UFA";
+    case UFN:
+        return "UFN";
     case FUN:
         return "FUN";
     case DEC:
@@ -49,6 +49,8 @@ Tokenn::displayKind(const Kind& k)
         return "MULTIPLICATION";
     case MULTTO:
         return "MULTTO";
+    case EXPONENTIATION:
+        return "EXPONENTIATION";
     case DIVISION:
         return "DIVISION";
     case DIVFROM:

@@ -15,7 +15,7 @@ enum Kind
     OWN_ACCESSOR,
     TREE,
     UAT,
-    UFA,
+    UFN,
     FUN,
     DEC,
     IMPORT,
