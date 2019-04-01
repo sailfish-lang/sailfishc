@@ -11,8 +11,6 @@ Tokenn::displayKind(const Kind& k)
         return "START";
     case TREE:
         return "TREE";
-    case BRANCH:
-        return "BRANCH";
     case UAT:
         return "UAT";
     case UFA:
@@ -21,8 +19,6 @@ Tokenn::displayKind(const Kind& k)
         return "FUN";
     case DEC:
         return "DEC";
-    case EXP:
-        return "EXP";
     case IMPORT:
         return "IMPORT";
     case RETURN:

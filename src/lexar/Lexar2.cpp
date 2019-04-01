@@ -14,7 +14,31 @@
 Token2
 Lexar2::makeToken(const Tokenn::Kind& k, const std::string& v)
 {
-    return {.kind = k, .value = v, .col = int(col - v.size()), .line = line};
+    auto kd = k; // since kd is constant we copy here
+    if (kd == Tokenn::IDENTIFIER)
+    {
+        if (v == "start")
+            kd = Tokenn::Kind::START;
+        else if (v == "own")
+            kd = Tokenn::Kind::OWN_ACCESSOR;
+        else if (v == "Tree")
+            kd = Tokenn::Kind::TREE;
+        else if (v == "Uat")
+            kd = Tokenn::Kind::UAT;
+        else if (v == "Ufa")
+            kd = Tokenn::Kind::UFA;
+        else if (v == "fun")
+            kd = Tokenn::Kind::FUN;
+        else if (v == "dec")
+            kd = Tokenn::Kind::DEC;
+        else if (v == "import")
+            kd = Tokenn::Kind::IMPORT;
+        else if (v == "return")
+            kd = Tokenn::Kind::RETURN;
+        else if (v == "new")
+            kd = Tokenn::Kind::NEW;
+    }
+    return {.kind = kd, .value = v, .col = int(col - v.size()), .line = line};
 }
 
 Token2
