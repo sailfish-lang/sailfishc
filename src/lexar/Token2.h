@@ -16,6 +16,7 @@ enum Kind
     TREE,
     UAT,
     UFN,
+    IFE,
     FUN,
     DEC,
     IMPORT,

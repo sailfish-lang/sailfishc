@@ -27,6 +27,8 @@ Lexar2::makeToken(const Tokenn::Kind& k, const std::string& v)
             kd = Tokenn::Kind::UAT;
         else if (v == "Ufn")
             kd = Tokenn::Kind::UFN;
+        else if (v == "Ife")
+            kd = Tokenn::Kind::IFE;
         else if (v == "fun")
             kd = Tokenn::Kind::FUN;
         else if (v == "dec")
