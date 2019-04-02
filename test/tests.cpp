@@ -16,23 +16,17 @@
 #include "../src/semantics/UDTTable.h"
 #include "visitors/InOrderTraversal.h"
 #include <gtest/gtest.h>
+#include <memory>
 
-Token2
+std::unique_ptr<Token2>
 makeToken(Tokenn::Kind kind, std::string value, int col, int line)
 {
-    return Token2{kind, value, col, line};
-}
-
-bool
-compareToken2(Token2 a, Token2 b)
-{
-    return a.kind == b.kind && a.value == b.value && a.col == b.col &&
-           a.line == b.line;
+    return std::make_unique<Token2>(kind, value, col, line);
 }
 
 TEST(LexarTest, Lex2)
 {
-    Token2 expected[] = {
+    std::unique_ptr<Token2> expected[] = {
         makeToken(Tokenn::Kind::START, "start", 1, 1),
         makeToken(Tokenn::Kind::LCURLEY, "{", 1, 7),
         makeToken(Tokenn::Kind::OWN_ACCESSOR, "own", 2, 5),
@@ -84,14 +78,17 @@ TEST(LexarTest, Lex2)
 
     Lexar2* lexar2 = new Lexar2("./examples/Lexar2.fish");
 
-    Token2 t;
     int i = 0;
 
-    t = lexar2->getNextToken();
+    auto t = lexar2->getNextToken();
 
-    while (t.kind != Tokenn::Kind::EOF_)
+    while (t->kind != Tokenn::Kind::EOF_)
     {
-        ASSERT_EQ(compareToken2(expected[i], t), true);
+        auto flag = false;
+        if (t->kind == expected[i]->kind && t->value == expected[i]->value &&
+            t->col == expected[i]->col && t->line == expected[i]->line)
+            flag = true;
+        ASSERT_EQ(flag, true);
         t = lexar2->getNextToken();
         ++i;
     }

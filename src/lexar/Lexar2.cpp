@@ -11,7 +11,7 @@
  * having found the end of the token. In the second case, I need the buffer to
  * pop the last char and to return this char to the scanner.
  */
-Token2
+std::unique_ptr<Token2>
 Lexar2::makeToken(const Tokenn::Kind& k, const std::string& v)
 {
     auto kd = k; // since kd is constant we copy here
@@ -44,10 +44,10 @@ Lexar2::makeToken(const Tokenn::Kind& k, const std::string& v)
         else if (v == "true" || v == "false")
             kd = Tokenn::Kind::BOOL;
     }
-    return {.kind = kd, .value = v, .col = int(col - v.size()), .line = line};
+    return std::make_unique<Token2>(kd, v, col, line);
 }
 
-Token2
+std::unique_ptr<Token2>
 Lexar2::makeTokenPutback(const Tokenn::Kind& k, std::string& v, char& c)
 {
     // readjust the col and line counters
@@ -86,7 +86,7 @@ Lexar2::Lexar2(const std::string& filename)
     prevCol = 0;
 }
 
-Token2
+std::unique_ptr<Token2>
 Lexar2::getNextToken()
 {
     char c;

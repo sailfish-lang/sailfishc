@@ -130,11 +130,11 @@ handleCommandLine(int argc, char* const* argv)
             std::cout << "Lexing " << filename << ".\n\n";
 
             Lexar2* l = new Lexar2(filename);
-            Token2 t = l->getNextToken();
+            std::unique_ptr<Token2> t = l->getNextToken();
 
-            while (t.kind != Tokenn::EOF_)
+            while (t->kind != Tokenn::EOF_)
             {
-                std::cout << prettifyFormatToken(t);
+                std::cout << t->prettifyFormatToken();
                 t = l->getNextToken();
             }
         }

@@ -80,6 +80,7 @@ struct Token2
     std::string value;
     int col;
     int line;
+    Token2(Tokenn::Kind k, std::string v, int c, int l)
+        : kind(k), value(v), col(c), line(l){};
+    std::string prettifyFormatToken();
 };
-
-std::string prettifyFormatToken(const Token2&);

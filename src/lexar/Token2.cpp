@@ -107,8 +107,8 @@ Tokenn::displayKind(const Kind& k)
 }
 
 std::string
-prettifyFormatToken(const Token2& t)
+Token2::prettifyFormatToken()
 {
-    return "[" + std::to_string(t.line) + ":" + std::to_string(t.col) +
-           "]: " + displayKind(t.kind) + " - " + t.value + '\n';
+    return "[" + std::to_string(line) + ":" + std::to_string(col) +
+           "]: " + displayKind(kind) + " - " + value + '\n';
 }
