@@ -757,6 +757,9 @@ Parser2::parseT()
     return makeNode(OP::PRIMARY, primary);
 }
 
+/**
+ * Primary := Bool | Integer |  String | Identifier
+ */
 std::shared_ptr<LeafLexeme>
 Parser2::parsePrimary()
 {
@@ -782,12 +785,18 @@ Parser2::parsePrimary()
     }
 }
 
+/**
+ * Type := Identifier
+ */
 std::shared_ptr<LeafLexeme>
 Parser2::parseType()
 {
     return parseIdentifier();
 }
 
+/**
+ * Variable := Type Identifier
+ */
 std::shared_ptr<NodeLexeme>
 Parser2::parseVariable()
 {
@@ -801,6 +810,9 @@ Parser2::parseVariable()
     return makeNode(OP::VARIABLE, type, name);
 }
 
+/**
+ * Number := Integer | Float
+ */
 std::shared_ptr<LeafLexeme>
 Parser2::parseNumber()
 {
@@ -817,6 +829,9 @@ Parser2::parseNumber()
     return makeLeaf(LIT::FLOAT, v);
 }
 
+/**
+ * Identifier := lexvalue
+ */
 std::shared_ptr<LeafLexeme>
 Parser2::parseIdentifier()
 {
@@ -825,6 +840,9 @@ Parser2::parseIdentifier()
     return makeLeaf(LIT::IDENTIFIER, v);
 }
 
+/**
+ * Bool := lexvalue
+ */
 std::shared_ptr<LeafLexeme>
 Parser2::parseBoolean()
 {
@@ -833,6 +851,9 @@ Parser2::parseBoolean()
     return makeLeaf(LIT::IDENTIFIER, v);
 }
 
+/**
+ * String := lexvalue
+ */
 std::shared_ptr<LeafLexeme>
 Parser2::parseString()
 {

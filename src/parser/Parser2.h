@@ -114,56 +114,5 @@ class Parser2
 
   public:
     Parser2(const std::string& filename);
-
     std::shared_ptr<NodeLexeme> parse();
-
-    void
-    postorder(std::shared_ptr<NodeLexeme> p, int indent = 0)
-    {
-        if (p != NULL && p->op != OP::NULL_VAL)
-        {
-            if (indent)
-            {
-                std::cout << std::setw(indent) << ' ';
-            }
-            std::cout << disp(p->op) << "\n ";
-            auto il = p->left.index();
-
-            if (il == 0)
-            {
-                auto w = std::get<std::shared_ptr<NodeLexeme>>(p->left);
-                if (w)
-                    postorder(w, indent + 4);
-            }
-            else if (il == 1)
-            {
-                auto w = std::get<std::shared_ptr<LeafLexeme>>(p->left);
-                if (w)
-                    postorder(w, indent + 4);
-            }
-
-            auto ir = p->right.index();
-            if (ir == 0)
-            {
-                auto w = std::get<std::shared_ptr<NodeLexeme>>(p->right);
-                if (w)
-                    postorder(w, indent + 4);
-            }
-            else if (ir == 1)
-            {
-                auto w = std::get<std::shared_ptr<LeafLexeme>>(p->right);
-                if (w)
-                    postorder(w, indent + 4);
-            }
-        }
-    }
-    void
-    postorder(std::shared_ptr<LeafLexeme> p, int indent = 0)
-    {
-        if (indent)
-        {
-            std::cout << std::setw(indent) << ' ';
-        }
-        std::cout << disp(p->lit) << ": " << p->value << "\n ";
-    }
 };
