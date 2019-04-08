@@ -170,6 +170,10 @@ handleCommandLine(int argc, char* const* argv)
             {
                 std::cerr << msg;
             }
+            catch (char const* msg)
+            {
+                std::cerr << msg;
+            }
         }
         else if (std::string("--semantic_analysis_only").compare(argv[1]) == 0)
         {

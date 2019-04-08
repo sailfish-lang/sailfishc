@@ -7,14 +7,20 @@ Parser2::advanceAndCheckToken(const TokenKind& k)
     // first check value and kind
     if (currentToken->kind != k)
     {
-        // error
+        errorhandler->handle(
+            new Error2(currentToken->col, currentToken->line,
+                       "Expected a token of type: " + displayKind(k),
+                       "Received: ", currentToken->value,
+                       " of type " + displayKind(currentToken->kind) + "."));
     }
     currentToken = lexar->getNextToken();
 
     // catch errors from the lexar
     if (currentToken->kind == TokenKind::ERROR)
     {
-        // error
+        errorhandler->handle(new Error2(currentToken->col, currentToken->line,
+                                        "Lexar Error.",
+                                        "Error: ", currentToken->value, ""));
     }
 
     while (currentToken->kind == TokenKind::COMMENT ||
@@ -25,7 +31,9 @@ Parser2::advanceAndCheckToken(const TokenKind& k)
         // catch errors from the lexar
         if (currentToken->kind == TokenKind::ERROR)
         {
-            // error
+            errorhandler->handle(
+                new Error2(currentToken->col, currentToken->line,
+                           "Lexar Error.", "Error: ", currentToken->value, ""));
         }
     }
 }
@@ -35,6 +43,7 @@ Parser2::Parser2(const std::string& filename)
 {
     lexar = std::make_unique<Lexar2>(filename);
     currentToken = lexar->getNextToken();
+    errorhandler = std::make_unique<Parser2ErrorHandler>(Parser2ErrorHandler());
 }
 
 // public interface method
@@ -634,8 +643,12 @@ Parser2::parseMemberAccess()
         return parseAttributeAccess();
     case TokenKind::TRIPLE_DOT:
         return parseMethodAccess();
-
-        // error case
+    default:
+        errorhandler->handle(new Error2(
+            currentToken->col, currentToken->line, "Expected a ... or . token.",
+            "Received: ", currentToken->value,
+            " of type " + displayKind(currentToken->kind) + "."));
+        return makeNullNode(); //  unreachable
     }
 }
 
@@ -688,8 +701,14 @@ Parser2::parseNew()
     {
     case TokenKind::LCURLEY:
         return parseUDTDec();
-
-        // error case
+    default:
+        errorhandler->handle(
+            new Error2(currentToken->col, currentToken->line,
+                       "Expected a valid new declaration such as a UDT defined "
+                       "by '{' '}'.",
+                       "Received: ", currentToken->value,
+                       " of type " + displayKind(currentToken->kind) + "."));
+        return makeNullNode(); //  unreachable
     }
 }
 
@@ -752,8 +771,14 @@ Parser2::parsePrimary()
         return parseString();
     case TokenKind::IDENTIFIER:
         return parseIdentifier();
-
-        // error case
+    default:
+        errorhandler->handle(
+            new Error2(currentToken->col, currentToken->line,
+                       "Expected a valid primary token such as a boolean, "
+                       "integer, float, string, or identifier.",
+                       "Received: ", currentToken->value,
+                       " of type " + displayKind(currentToken->kind) + "."));
+        return parseIdentifier(); //  unreachable
     }
 }
 
@@ -781,10 +806,14 @@ Parser2::parseNumber()
 {
     auto v = currentToken->value;
     auto k = currentToken->kind;
-    advanceAndCheckToken(TokenKind::IDENTIFIER); // eat identifier
 
     if (k == TokenKind::INTEGER)
+    {
+        advanceAndCheckToken(TokenKind::INTEGER); // eat integer
         return makeLeaf(LIT::INTEGER, v);
+    }
+
+    advanceAndCheckToken(TokenKind::FLOAT); // eat float
     return makeLeaf(LIT::FLOAT, v);
 }
 

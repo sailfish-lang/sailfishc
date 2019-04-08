@@ -3,6 +3,8 @@
  * Sailfish Programming Language
  */
 #pragma once
+#include "../errorhandler/Error2.h"
+#include "../errorhandler/Parser2ErrorHandler.h"
 #include "../lexar/Lexar2.h"
 #include "../lexar/Token2.h"
 #include "Lexeme.h"
@@ -18,6 +20,7 @@ class Parser2
   private:
     std::unique_ptr<Lexar2> lexar;
     std::unique_ptr<Token2> currentToken;
+    std::unique_ptr<Parser2ErrorHandler> errorhandler;
 
     // helper for simplifying redundancy of recursive loops
     template <typename F>
@@ -31,7 +34,13 @@ class Parser2
         }
         else if (currentToken->kind == TokenKind::EOF_)
         {
-            // error
+            errorhandler->handle(
+                new Error2(currentToken->col, currentToken->line,
+                           "Unexpected end of file.",
+                           "Expected to receive an end of token delimiter such "
+                           "as '(' or '}'",
+                           "", ""));
+            return makeNullNode(); // unreachable
         }
         else
         {

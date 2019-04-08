@@ -16,6 +16,7 @@ ADD_LIBRARY(SailfishcLibs
     ./src/errorhandler/SemanticErrorHandler.cpp 
     ./src/errorhandler/SymbolTableErrorHandler.cpp 
     ./src/errorhandler/ParserErrorHandler.cpp
+     ./src/errorhandler/Parser2ErrorHandler.cpp
     ./src/common/ReservedWords.cpp
     ./src/main/CommandLine.cpp
     ./src/transpiler/Transpiler.cpp
