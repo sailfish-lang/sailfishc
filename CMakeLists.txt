@@ -8,6 +8,8 @@ ADD_LIBRARY(SailfishcLibs
     ./src/lexar/Lexar2.cpp
     ./src/lexar/Token2.cpp
     ./src/parser/Parser.cpp
+    ./src/parser/Parser2.cpp
+    ./src/parser/Lexeme.cpp
     ./src/visitor/Visitor.cpp
     ./src/semantics/SymbolTable.cpp
     ./src/semantics/TypeChecker.cpp

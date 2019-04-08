@@ -154,6 +154,23 @@ handleCommandLine(int argc, char* const* argv)
                 std::cerr << msg;
             }
         }
+        else if (std::string("--parse").compare(argv[1]) == 0)
+        {
+
+            try
+            {
+                auto filename = argv[2];
+                std::cout << "Parsing " << filename << ".\n\n";
+
+                Parser2* p = new Parser2(filename);
+                auto n = p->parse();
+                p->postorder(n);
+            }
+            catch (const std::string msg)
+            {
+                std::cerr << msg;
+            }
+        }
         else if (std::string("--semantic_analysis_only").compare(argv[1]) == 0)
         {
             try

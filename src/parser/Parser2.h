@@ -1,0 +1,139 @@
+/*
+ * Robert Durst 2019
+ * Sailfish Programming Language
+ */
+#pragma once
+#include "../lexar/Lexar2.h"
+#include "../lexar/Token2.h"
+#include "Lexeme.h"
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <variant>
+#include <vector>
+
+class Parser2
+{
+  private:
+    std::unique_ptr<Lexar2> lexar;
+    std::unique_ptr<Token2> currentToken;
+
+    std::shared_ptr<NodeLexeme> parseProgram();
+    std::shared_ptr<NodeLexeme> parseSource();
+    std::shared_ptr<NodeLexeme> parseImport();
+    std::shared_ptr<NodeLexeme> parseSourcePart();
+    std::shared_ptr<NodeLexeme> parseImportInfo();
+    std::shared_ptr<LeafLexeme> parseUDName();
+    std::shared_ptr<LeafLexeme> parseLocation();
+    std::shared_ptr<NodeLexeme> parseFunctionsRecurse();
+    std::shared_ptr<NodeLexeme> parseUDT();
+    std::shared_ptr<NodeLexeme> parseUserDefinedType();
+    std::shared_ptr<NodeLexeme> parseAttributes();
+    std::shared_ptr<NodeLexeme> parseAttributesRecurse();
+    std::shared_ptr<NodeLexeme> parseMethods();
+    std::shared_ptr<NodeLexeme> parseMethodsRecurse();
+    std::shared_ptr<NodeLexeme> parseScript();
+    std::shared_ptr<NodeLexeme> parseScript_();
+    std::shared_ptr<NodeLexeme> parseFunctionDefinition();
+    std::shared_ptr<NodeLexeme> parseFunctionInfo();
+    std::shared_ptr<NodeLexeme> parseFunctionInOut();
+    std::shared_ptr<NodeLexeme> parseFunctionInputs();
+    std::shared_ptr<NodeLexeme> parseFunctionInputsRecurse();
+    std::shared_ptr<LeafLexeme> parseFunctionOutput();
+    std::shared_ptr<NodeLexeme> parseStart();
+    std::shared_ptr<NodeLexeme> parseBlock();
+    std::shared_ptr<NodeLexeme> parseBlockRecurse();
+    std::shared_ptr<NodeLexeme> parseStatement();
+    std::shared_ptr<NodeLexeme> parseTree();
+    std::shared_ptr<NodeLexeme> parseTreeRecurse();
+    std::shared_ptr<NodeLexeme> parseBranch();
+    std::shared_ptr<NodeLexeme> parseGrouping();
+    std::shared_ptr<NodeLexeme> parseReturn();
+    std::shared_ptr<NodeLexeme> parseDeclaration();
+    std::shared_ptr<NodeLexeme> parseE0();
+    std::shared_ptr<NodeLexeme> parseE1(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE2(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE3(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE4(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE5(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE6(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE7(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE8(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE9(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE10(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseE11(std::shared_ptr<NodeLexeme>);
+    std::shared_ptr<NodeLexeme> parseMemberAccess();
+    std::shared_ptr<NodeLexeme> parseAttributeAccess();
+    std::shared_ptr<NodeLexeme> parseMethodAccess();
+    std::shared_ptr<NodeLexeme> parseFunctionCall();
+    std::shared_ptr<NodeLexeme> parseNew();
+    std::shared_ptr<NodeLexeme> parseUDTDec();
+    std::shared_ptr<NodeLexeme> parseUDTDecItem();
+    std::shared_ptr<NodeLexeme> parseT();
+    std::shared_ptr<LeafLexeme> parsePrimary();
+    std::shared_ptr<NodeLexeme> parseVariable();
+    std::shared_ptr<LeafLexeme> parseType();
+    std::shared_ptr<LeafLexeme> parseBoolean();
+    std::shared_ptr<LeafLexeme> parseNumber();
+    std::shared_ptr<LeafLexeme> parseInteger();
+    std::shared_ptr<LeafLexeme> parseFloat();
+    std::shared_ptr<LeafLexeme> parseString();
+    std::shared_ptr<LeafLexeme> parseIdentifier();
+
+    void advanceAndCheckToken(const Tokenn::Kind&);
+
+  public:
+    Parser2(const std::string& filename);
+
+    std::shared_ptr<NodeLexeme> parse();
+
+    void
+    postorder(std::shared_ptr<NodeLexeme> p, int indent = 0)
+    {
+        if (p != NULL)
+        {
+            if (indent)
+            {
+                std::cout << std::setw(indent) << ' ';
+            }
+            std::cout << disp(p->op) << "\n ";
+            auto il = p->left.index();
+
+            if (il == 0)
+            {
+                auto w = std::get<std::shared_ptr<NodeLexeme>>(p->left);
+                if (w)
+                    postorder(w, indent + 4);
+            }
+            else if (il == 1)
+            {
+                auto w = std::get<std::shared_ptr<LeafLexeme>>(p->left);
+                if (w)
+                    postorder(w, indent + 4);
+            }
+
+            auto ir = p->right.index();
+            if (ir == 0)
+            {
+                auto w = std::get<std::shared_ptr<NodeLexeme>>(p->right);
+                if (w)
+                    postorder(w, indent + 4);
+            }
+            else if (ir == 1)
+            {
+                auto w = std::get<std::shared_ptr<LeafLexeme>>(p->right);
+                if (w)
+                    postorder(w, indent + 4);
+            }
+        }
+    }
+    void
+    postorder(std::shared_ptr<LeafLexeme> p, int indent = 0)
+    {
+        if (indent)
+        {
+            std::cout << std::setw(indent) << ' ';
+        }
+        std::cout << disp(p->lit) << ": " << p->value << "\n ";
+    }
+};
