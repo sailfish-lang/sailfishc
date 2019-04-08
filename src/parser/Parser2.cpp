@@ -57,32 +57,12 @@ Parser2::parseProgram()
 std::shared_ptr<NodeLexeme>
 Parser2::parseSource()
 {
-    auto imports = parseImport();
+    auto imports = getChain(false, Tokenn::Kind::IMPORT, OP::IMPORT,
+                            [this]() -> std::shared_ptr<NodeLexeme> {
+                                return this->parseImportInfo();
+                            });
     auto sourcepart = parseSourcePart();
     return makeNode(OP::SOURCE, imports, sourcepart);
-}
-
-/**
- * Import := ['Import' ImportInfo ]+
- */
-std::shared_ptr<NodeLexeme>
-Parser2::parseImport()
-{
-    if ((currentToken->kind != Tokenn::Kind::IMPORT))
-    {
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
-    }
-    else if (currentToken->kind == Tokenn::Kind::EOF_)
-    {
-        // error
-    }
-    else
-    {
-        auto importL = parseImportInfo();
-        auto importR = parseImport(); // call recursively instead of vectorize
-        return makeNode(OP::IMPORT, importL, importR);
-    }
 }
 
 /**
@@ -159,31 +139,13 @@ Parser2::parseAttributes()
 {
     advanceAndCheckToken(Tokenn::Kind::UAT);     // consume uat
     advanceAndCheckToken(Tokenn::Kind::LCURLEY); // consume l curley
-    auto topattribute = parseAttributesRecurse();
+    auto topattribute = getChain(true, Tokenn::Kind::RCURLEY, OP::ATTRIBUTE,
+                                 [this]() -> std::shared_ptr<NodeLexeme> {
+                                     return this->parseVariable();
+                                 });
     advanceAndCheckToken(Tokenn::Kind::RCURLEY); // consume r curley
     return makeNode(OP::ATTRIBUTE, topattribute,
                     makeLeaf(LIT::IDENTIFIER, "attribute"));
-}
-
-std::shared_ptr<NodeLexeme>
-Parser2::parseAttributesRecurse()
-{
-    if (currentToken->kind == Tokenn::Kind::RCURLEY)
-    {
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
-    }
-    else if (currentToken->kind == Tokenn::Kind::EOF_)
-    {
-        // error
-    }
-    else
-    {
-        auto childL = parseVariable();
-        auto childR =
-            parseAttributesRecurse(); // call recursively instead of vectorize
-        return makeNode(OP::ATTRIBUTE, childL, childR);
-    }
 }
 
 /**
@@ -194,30 +156,12 @@ Parser2::parseMethods()
 {
     advanceAndCheckToken(Tokenn::Kind::UFN);     // consume ufn
     advanceAndCheckToken(Tokenn::Kind::LCURLEY); // consume l curley
-    auto topmethod = parseMethodsRecurse();
+    auto topmethod = getChain(true, Tokenn::Kind::RCURLEY, OP::METHOD,
+                              [this]() -> std::shared_ptr<NodeLexeme> {
+                                  return this->parseFunctionDefinition();
+                              });
     advanceAndCheckToken(Tokenn::Kind::RCURLEY); // consume r curley
     return makeNode(OP::METHOD, topmethod, makeLeaf(LIT::IDENTIFIER, "method"));
-}
-
-std::shared_ptr<NodeLexeme>
-Parser2::parseMethodsRecurse()
-{
-    if (currentToken->kind == Tokenn::Kind::RCURLEY)
-    {
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
-    }
-    else if (currentToken->kind == Tokenn::Kind::EOF_)
-    {
-        // error
-    }
-    else
-    {
-        auto childL = parseFunctionDefinition();
-        auto childR =
-            parseMethodsRecurse(); // call recursively instead of vectorize
-        return makeNode(OP::METHOD, childL, childR);
-    }
 }
 
 std::shared_ptr<NodeLexeme>
@@ -229,30 +173,12 @@ Parser2::parseScript()
 std::shared_ptr<NodeLexeme>
 Parser2::parseScript_()
 {
-    auto func = parseFunctionsRecurse();
+    auto func = getChain(true, Tokenn::Kind::START, OP::FUNCTION,
+                         [this]() -> std::shared_ptr<NodeLexeme> {
+                             return this->parseFunctionDefinition();
+                         });
     auto start = parseStart();
     return makeNode(OP::SCRIPT, func, start);
-}
-
-std::shared_ptr<NodeLexeme>
-Parser2::parseFunctionsRecurse()
-{
-    if (currentToken->kind == Tokenn::Kind::START)
-    {
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
-    }
-    else if (currentToken->kind == Tokenn::Kind::EOF_)
-    {
-        // error
-    }
-    else
-    {
-        auto childL = parseFunctionDefinition();
-        auto childR = parseFunctionsRecurse(); // call recursively instead
-                                               // of vectorize
-        return makeNode(OP::FUNCTION, childL, childR);
-    }
 }
 
 /**
@@ -300,31 +226,13 @@ Parser2::parseFunctionInputs()
     advanceAndCheckToken(
         Tokenn::Kind::LPAREN); // consume l paren
                                // TODO: check for multiple voids
-    auto topinput = parseFunctionInputsRecurse();
+    auto topinput = getChain(true, Tokenn::Kind::RPAREN, OP::FUNCTION_INPUT,
+                             [this]() -> std::shared_ptr<NodeLexeme> {
+                                 return this->parseVariable();
+                             });
     advanceAndCheckToken(Tokenn::Kind::RPAREN); // consume r paren
     return makeNode(OP::FUNCTION_INPUT, topinput,
                     makeLeaf(LIT::IDENTIFIER, "input"));
-}
-
-std::shared_ptr<NodeLexeme>
-Parser2::parseFunctionInputsRecurse()
-{
-    if (currentToken->kind == Tokenn::Kind::RPAREN)
-    {
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
-    }
-    else if (currentToken->kind == Tokenn::Kind::EOF_)
-    {
-        // error
-    }
-    else
-    {
-        auto childL = parseVariable();
-        auto childR = parseFunctionInputsRecurse(); // call recursively instead
-                                                    // of vectorize
-        return makeNode(OP::FUNCTION_INPUT, childL, childR);
-    }
 }
 
 /**
@@ -357,31 +265,15 @@ std::shared_ptr<NodeLexeme>
 Parser2::parseBlock()
 {
     advanceAndCheckToken(Tokenn::Kind::LCURLEY); // eat '{'
-    auto topstatement = parseBlockRecurse();
+    auto topstatement = getChain(true, Tokenn::Kind::RCURLEY, OP::STATEMENT,
+                                 [this]() -> std::shared_ptr<NodeLexeme> {
+                                     return this->parseStatement();
+                                 });
+    std::shared_ptr<NodeLexeme> parseBlockRecurse();
+
     advanceAndCheckToken(Tokenn::Kind::RCURLEY); // eat '}'
     return makeNode(OP::BLOCK, topstatement,
                     makeLeaf(LIT::IDENTIFIER, "block"));
-}
-
-std::shared_ptr<NodeLexeme>
-Parser2::parseBlockRecurse()
-{
-    if (currentToken->kind == Tokenn::Kind::RCURLEY)
-    {
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
-    }
-    else if (currentToken->kind == Tokenn::Kind::EOF_)
-    {
-        // error
-    }
-    else
-    {
-        auto childL = parseStatement();
-        auto childR = parseBlockRecurse(); // call recursively instead
-                                           // of vectorize
-        return makeNode(OP::STATEMENT, childL, childR);
-    }
 }
 
 /**
@@ -415,30 +307,12 @@ Parser2::parseTree()
     advanceAndCheckToken(Tokenn::Kind::LPAREN); // eat '('
     std::vector<std::shared_ptr<NodeLexeme>> branches;
 
-    auto topbranch = parseTreeRecurse();
+    auto topbranch = getChain(true, Tokenn::Kind::RPAREN, OP::BRANCH,
+                              [this]() -> std::shared_ptr<NodeLexeme> {
+                                  return this->parseBranch();
+                              });
     advanceAndCheckToken(Tokenn::Kind::RPAREN); // eat ')'
     return makeNode(OP::TREE, topbranch, makeLeaf(LIT::IDENTIFIER, "Tree"));
-}
-
-std::shared_ptr<NodeLexeme>
-Parser2::parseTreeRecurse()
-{
-    if ((currentToken->kind == Tokenn::Kind::RPAREN))
-    {
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
-    }
-    else if (currentToken->kind == Tokenn::Kind::EOF_)
-    {
-        // error
-    }
-    else
-    {
-        auto importL = parseBranch();
-        auto importR =
-            parseTreeRecurse(); // call recursively instead of vectorize
-        return makeNode(OP::BRANCH, importL, importR);
-    }
 }
 
 /**

@@ -6,6 +6,7 @@
 #include "../lexar/Lexar2.h"
 #include "../lexar/Token2.h"
 #include "Lexeme.h"
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -18,18 +19,40 @@ class Parser2
     std::unique_ptr<Lexar2> lexar;
     std::unique_ptr<Token2> currentToken;
 
+    // helper for simplifying redundancy of recursive loops
+    template <typename F>
+    std::shared_ptr<NodeLexeme>
+    getChain(bool eq, Tokenn::Kind k, OP op, const F& f)
+    {
+        if (((currentToken->kind == k) && (eq)) ||
+            ((currentToken->kind != k) && (!eq)))
+        {
+            return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
+                            makeLeaf(LIT::IDENTIFIER, ""));
+        }
+        else if (currentToken->kind == Tokenn::Kind::EOF_)
+        {
+            // error
+        }
+        else
+        {
+            auto childL = f();
+            auto childR =
+                getChain(eq, k, op, f); // call recursively instead of vectorize
+            return makeNode(op, childL, childR);
+        }
+    }
+
+    // parse methods
     std::shared_ptr<NodeLexeme> parseProgram();
     std::shared_ptr<NodeLexeme> parseSource();
-    std::shared_ptr<NodeLexeme> parseImport();
     std::shared_ptr<NodeLexeme> parseSourcePart();
     std::shared_ptr<NodeLexeme> parseImportInfo();
     std::shared_ptr<LeafLexeme> parseUDName();
     std::shared_ptr<LeafLexeme> parseLocation();
-    std::shared_ptr<NodeLexeme> parseFunctionsRecurse();
     std::shared_ptr<NodeLexeme> parseUDT();
     std::shared_ptr<NodeLexeme> parseUserDefinedType();
     std::shared_ptr<NodeLexeme> parseAttributes();
-    std::shared_ptr<NodeLexeme> parseAttributesRecurse();
     std::shared_ptr<NodeLexeme> parseMethods();
     std::shared_ptr<NodeLexeme> parseMethodsRecurse();
     std::shared_ptr<NodeLexeme> parseScript();
@@ -38,14 +61,11 @@ class Parser2
     std::shared_ptr<NodeLexeme> parseFunctionInfo();
     std::shared_ptr<NodeLexeme> parseFunctionInOut();
     std::shared_ptr<NodeLexeme> parseFunctionInputs();
-    std::shared_ptr<NodeLexeme> parseFunctionInputsRecurse();
     std::shared_ptr<LeafLexeme> parseFunctionOutput();
     std::shared_ptr<NodeLexeme> parseStart();
     std::shared_ptr<NodeLexeme> parseBlock();
-    std::shared_ptr<NodeLexeme> parseBlockRecurse();
     std::shared_ptr<NodeLexeme> parseStatement();
     std::shared_ptr<NodeLexeme> parseTree();
-    std::shared_ptr<NodeLexeme> parseTreeRecurse();
     std::shared_ptr<NodeLexeme> parseBranch();
     std::shared_ptr<NodeLexeme> parseGrouping();
     std::shared_ptr<NodeLexeme> parseReturn();
