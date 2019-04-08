@@ -121,3 +121,10 @@ makeLeaf(LIT l, std::string v)
 {
     return std::make_shared<LeafLexeme>(l, v);
 }
+
+std::shared_ptr<NodeLexeme>
+makeNullNode()
+{
+    return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
+                    makeLeaf(LIT::IDENTIFIER, ""));
+}

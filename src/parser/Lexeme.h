@@ -87,3 +87,4 @@ struct NodeLexeme
     NodeLexeme(OP o, Lexeme l, Lexeme r) : op(o), left(l), right(r){};
 };
 std::shared_ptr<NodeLexeme> makeNode(OP o, Lexeme, Lexeme);
+std::shared_ptr<NodeLexeme> makeNullNode();

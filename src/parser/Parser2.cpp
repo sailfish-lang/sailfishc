@@ -597,8 +597,7 @@ Parser2::parseE9(std::shared_ptr<NodeLexeme> T8)
     {
         // auto e0 = parseE0();
         // return makeNode(OP::NEGATION, t7, e0);
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
+        return makeNullNode();
     }
     return parseE10(T8);
 }
@@ -613,8 +612,7 @@ Parser2::parseE10(std::shared_ptr<NodeLexeme> T9)
     {
         // auto e0 = parseE0();
         // return makeNode(OP::NEGATION, t7, e0);
-        return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                        makeLeaf(LIT::IDENTIFIER, ""));
+        return makeNullNode();
     }
     return parseE11(T9);
 }

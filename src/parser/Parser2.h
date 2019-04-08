@@ -27,8 +27,7 @@ class Parser2
         if (((currentToken->kind == k) && (eq)) ||
             ((currentToken->kind != k) && (!eq)))
         {
-            return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),
-                            makeLeaf(LIT::IDENTIFIER, ""));
+            return makeNullNode();
         }
         else if (currentToken->kind == Tokenn::Kind::EOF_)
         {
@@ -42,6 +41,10 @@ class Parser2
             return makeNode(op, childL, childR);
         }
     }
+
+    // helper method for easy token advancement and
+    // catching errors
+    void advanceAndCheckToken(const Tokenn::Kind&);
 
     // parse methods
     std::shared_ptr<NodeLexeme> parseProgram();
@@ -99,8 +102,6 @@ class Parser2
     std::shared_ptr<LeafLexeme> parseFloat();
     std::shared_ptr<LeafLexeme> parseString();
     std::shared_ptr<LeafLexeme> parseIdentifier();
-
-    void advanceAndCheckToken(const Tokenn::Kind&);
 
   public:
     Parser2(const std::string& filename);
