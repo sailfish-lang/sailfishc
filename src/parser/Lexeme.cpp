@@ -107,6 +107,10 @@ disp(OP o)
         return "Input";
     case OP::FUNCTION_CALL:
         return "Function Call";
+    case OP::UDTDEC:
+        return "UDT dec";
+    case OP::UDTDECITEM:
+        return "UDT dec item";
     default:
         return "Unknown";
     }

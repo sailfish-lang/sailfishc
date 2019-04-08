@@ -58,6 +58,8 @@ enum class OP
     METHOD_ACCESS,
     INPUT,
     FUNCTION_CALL,
+    UDTDEC,
+    UDTDECITEM,
 };
 std::string disp(OP o);
 

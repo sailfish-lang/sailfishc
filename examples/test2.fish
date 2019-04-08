@@ -1,3 +1,3 @@
 start {
-    z = foo...i(foo, bar, baz)
+   f.f = f.f + 10
 }

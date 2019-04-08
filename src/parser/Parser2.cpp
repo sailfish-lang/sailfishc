@@ -348,7 +348,7 @@ Parser2::parseReturn()
 }
 
 /**
- * Declaration :=  'dec' Variable '=' T
+ * Declaration :=  'dec' Variable '=' E0
  */
 std::shared_ptr<NodeLexeme>
 Parser2::parseDeclaration()
@@ -356,8 +356,8 @@ Parser2::parseDeclaration()
     advanceAndCheckToken(Tokenn::Kind::DEC); // consume 'dec'
     auto var = parseVariable();
     advanceAndCheckToken(Tokenn::Kind::ASSIGNMENT); // consume '='
-    auto t = parseT();
-    return makeNode(OP::DECLARATION, var, t);
+    auto e0 = parseE0();
+    return makeNode(OP::DECLARATION, var, e0);
 }
 
 /**
@@ -592,23 +592,23 @@ Parser2::parseE9(std::shared_ptr<NodeLexeme> T8)
         currentToken->kind == Tokenn::Kind::TRIPLE_DOT)
     {
         auto memberAccess = parseMemberAccess();
-        // auto e0 = parseE0();
-        return makeNode(OP::MEMBER, memberAccess, makeNullNode());
+        auto e1 =
+            parseE1(makeNullNode()); // like calling E0 where T0 does not exist
+        return makeNode(OP::MEMBER, memberAccess, e1);
     }
     return parseE10(T8);
 }
 
 /**
- * E10 := new New | E11
+ * E10 := New | E11
  */
 std::shared_ptr<NodeLexeme>
 Parser2::parseE10(std::shared_ptr<NodeLexeme> T9)
 {
     if (currentToken->kind == Tokenn::Kind::NEW)
     {
-        // auto e0 = parseE0();
-        // return makeNode(OP::NEGATION, t7, e0);
-        return makeNullNode();
+        auto New = parseNew();
+        return makeNode(OP::MEMBER, New);
     }
     return parseE11(T9);
 }
@@ -620,7 +620,6 @@ std::shared_ptr<NodeLexeme>
 Parser2::parseE11(std::shared_ptr<NodeLexeme> T10)
 {
     return makeNode(OP::END, T10);
-    ;
 }
 
 /**
@@ -676,6 +675,49 @@ Parser2::parseFunctionCall()
                              });
     advanceAndCheckToken(Tokenn::Kind::RPAREN); // consume r paren
     return makeNode(OP::FUNCTION_CALL, topinput);
+}
+
+/**
+ * New := UDTDec
+ */
+std::shared_ptr<NodeLexeme>
+Parser2::parseNew()
+{
+    advanceAndCheckToken(Tokenn::Kind::NEW); // consume new
+    switch (currentToken->kind)
+    {
+    case Tokenn::Kind::LCURLEY:
+        return parseUDTDec();
+
+        // error case
+    }
+}
+
+/**
+ * UDTDec := '{' [UDTDecItem [',' UDTDecItem]*] '}'
+ */
+std::shared_ptr<NodeLexeme>
+Parser2::parseUDTDec()
+{
+    advanceAndCheckToken(Tokenn::Kind::LCURLEY); // consume l curley
+    auto topitem = getChain(true, Tokenn::Kind::RCURLEY, OP::UDTDECITEM,
+                            [this]() -> std::shared_ptr<NodeLexeme> {
+                                return this->parseUDTDecItem();
+                            });
+    advanceAndCheckToken(Tokenn::Kind::RCURLEY); // consume r curley
+    return makeNode(OP::UDTDEC, topitem);
+}
+
+/**
+ * UDTDecItem := Identifier ':' Primary
+ */
+std::shared_ptr<NodeLexeme>
+Parser2::parseUDTDecItem()
+{
+    auto identifier = parseIdentifier();
+    advanceAndCheckToken(Tokenn::Kind::COLON); // consume ':'
+    auto primary = parsePrimary();
+    return makeNode(OP::UDTDECITEM, identifier, primary);
 }
 
 /**
