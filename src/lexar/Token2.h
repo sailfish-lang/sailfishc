@@ -6,9 +6,7 @@
 #include <iostream>
 #include <string>
 
-namespace Tokenn
-{
-enum Kind
+enum class TokenKind
 {
     // Keywords
     START,
@@ -72,16 +70,15 @@ enum Kind
     EOF_,
 };
 
-std::string displayKind(const Kind&);
-}
+std::string displayKind(const TokenKind&);
 
 struct Token2
 {
-    Tokenn::Kind kind;
+    TokenKind kind;
     std::string value;
     int col;
     int line;
-    Token2(Tokenn::Kind k, std::string v, int c, int l)
+    Token2(TokenKind k, std::string v, int c, int l)
         : kind(k), value(v), col(c), line(l){};
     std::string prettifyFormatToken();
 };

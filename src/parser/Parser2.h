@@ -22,14 +22,14 @@ class Parser2
     // helper for simplifying redundancy of recursive loops
     template <typename F>
     std::shared_ptr<NodeLexeme>
-    getChain(bool eq, Tokenn::Kind k, OP op, const F& f)
+    getChain(bool eq, TokenKind k, OP op, const F& f)
     {
         if (((currentToken->kind == k) && (eq)) ||
             ((currentToken->kind != k) && (!eq)))
         {
             return makeNullNode();
         }
-        else if (currentToken->kind == Tokenn::Kind::EOF_)
+        else if (currentToken->kind == TokenKind::EOF_)
         {
             // error
         }
@@ -44,7 +44,7 @@ class Parser2
 
     // helper method for easy token advancement and
     // catching errors
-    void advanceAndCheckToken(const Tokenn::Kind&);
+    void advanceAndCheckToken(const TokenKind&);
 
     // parse methods
     std::shared_ptr<NodeLexeme> parseProgram();

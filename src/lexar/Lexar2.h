@@ -16,8 +16,8 @@ class Lexar2
     int prevCol; // for when we need to jump back a line and remember where the
                  // end of that line was
     char getNextChar();
-    std::unique_ptr<Token2> makeToken(const Tokenn::Kind&, const std::string&);
-    std::unique_ptr<Token2> makeTokenPutback(const Tokenn::Kind&, std::string&,
+    std::unique_ptr<Token2> makeToken(const TokenKind&, const std::string&);
+    std::unique_ptr<Token2> makeTokenPutback(const TokenKind&, std::string&,
                                              char&);
 
     enum State

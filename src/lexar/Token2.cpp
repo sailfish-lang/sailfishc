@@ -1,105 +1,105 @@
 #include "Token2.h"
 
 std::string
-Tokenn::displayKind(const Kind& k)
+displayKind(const TokenKind& k)
 {
     switch (k)
     {
-    case START:
+    case TokenKind::START:
         return "START";
-    case OWN_ACCESSOR:
+    case TokenKind::OWN_ACCESSOR:
         return "OWN";
-    case TREE:
+    case TokenKind::TREE:
         return "TREE";
-    case UAT:
+    case TokenKind::UAT:
         return "UAT";
-    case UFN:
+    case TokenKind::UFN:
         return "UFN";
-    case FUN:
+    case TokenKind::FUN:
         return "FUN";
-    case DEC:
+    case TokenKind::DEC:
         return "DEC";
-    case IMPORT:
+    case TokenKind::IMPORT:
         return "IMPORT";
-    case RETURN:
+    case TokenKind::RETURN:
         return "RETURN";
-    case NEW:
+    case TokenKind::NEW:
         return "NEW";
-    case IDENTIFIER:
+    case TokenKind::IDENTIFIER:
         return "IDENTIFIER";
-    case INTEGER:
+    case TokenKind::INTEGER:
         return "INTEGER";
-    case FLOAT:
+    case TokenKind::FLOAT:
         return "FLOAT";
-    case BOOL:
+    case TokenKind::BOOL:
         return "BOOL";
-    case STRING:
+    case TokenKind::STRING:
         return "STRING";
-    case MODULO:
+    case TokenKind::MODULO:
         return "MODULO";
-    case ADDITION:
+    case TokenKind::ADDITION:
         return "ADDITION";
-    case ADDTO:
+    case TokenKind::ADDTO:
         return "ADDTO";
-    case SUBTRACTION:
+    case TokenKind::SUBTRACTION:
         return "SUBTRACTION";
-    case SUBFROM:
+    case TokenKind::SUBFROM:
         return "SUBFROM";
-    case MULTIPLICATION:
+    case TokenKind::MULTIPLICATION:
         return "MULTIPLICATION";
-    case MULTTO:
+    case TokenKind::MULTTO:
         return "MULTTO";
-    case EXPONENTIATION:
+    case TokenKind::EXPONENTIATION:
         return "EXPONENTIATION";
-    case DIVISION:
+    case TokenKind::DIVISION:
         return "DIVISION";
-    case DIVFROM:
+    case TokenKind::DIVFROM:
         return "DIVFROM";
-    case GREATER_THAN:
+    case TokenKind::GREATER_THAN:
         return "GREATER_THAN";
-    case GREATER_THAN_OR_EQUALS:
+    case TokenKind::GREATER_THAN_OR_EQUALS:
         return "GREATER_THAN_OR_EQUALS";
-    case LESS_THAN:
+    case TokenKind::LESS_THAN:
         return "LESS_THAN";
-    case LESS_THAN_OR_EQUALS:
+    case TokenKind::LESS_THAN_OR_EQUALS:
         return "LESS_THAN_OR_EQUALS";
-    case AND:
+    case TokenKind::AND:
         return "AND";
-    case OR:
+    case TokenKind::OR:
         return "OR";
-    case EQUIVALENCE:
+    case TokenKind::EQUIVALENCE:
         return "EQUIVALENCE";
-    case NONEQUIVALENCE:
+    case TokenKind::NONEQUIVALENCE:
         return "NONEQUIVALENCE";
-    case ASSIGNMENT:
+    case TokenKind::ASSIGNMENT:
         return "ASSIGNMENT";
-    case NEGATION:
+    case TokenKind::NEGATION:
         return "NEGATION";
-    case COMMENT:
+    case TokenKind::COMMENT:
         return "COMMENT";
-    case UNDERSCORE:
+    case TokenKind::UNDERSCORE:
         return "UNDERSCORE";
-    case COMMA:
+    case TokenKind::COMMA:
         return "COMMA";
-    case LCURLEY:
+    case TokenKind::LCURLEY:
         return "LCURLEY";
-    case RCURLEY:
+    case TokenKind::RCURLEY:
         return "RCURLEY";
-    case LPAREN:
+    case TokenKind::LPAREN:
         return "LPAREN";
-    case RPAREN:
+    case TokenKind::RPAREN:
         return "RPAREN";
-    case DOT:
+    case TokenKind::DOT:
         return "DOT";
-    case TRIPLE_DOT:
+    case TokenKind::TRIPLE_DOT:
         return "TRIPLE_DOT";
-    case PIPE:
+    case TokenKind::PIPE:
         return "PIPE";
-    case COLON:
+    case TokenKind::COLON:
         return "COLON";
-    case ERROR:
+    case TokenKind::ERROR:
         return "ERROR";
-    case EOF_:
+    case TokenKind::EOF_:
         return "EOF_";
     default:
         return "Unrecognized Token kind";

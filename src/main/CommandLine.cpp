@@ -132,7 +132,7 @@ handleCommandLine(int argc, char* const* argv)
             Lexar2* l = new Lexar2(filename);
             std::unique_ptr<Token2> t = l->getNextToken();
 
-            while (t->kind != Tokenn::EOF_)
+            while (t->kind != TokenKind::EOF_)
             {
                 std::cout << t->prettifyFormatToken();
                 t = l->getNextToken();
