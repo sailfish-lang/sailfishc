@@ -144,8 +144,7 @@ Parser2::parseAttributes()
                                      return this->parseVariable();
                                  });
     advanceAndCheckToken(Tokenn::Kind::RCURLEY); // consume r curley
-    return makeNode(OP::ATTRIBUTE, topattribute,
-                    makeLeaf(LIT::IDENTIFIER, "attribute"));
+    return makeNode(OP::ATTRIBUTE, topattribute);
 }
 
 /**
@@ -161,7 +160,7 @@ Parser2::parseMethods()
                                   return this->parseFunctionDefinition();
                               });
     advanceAndCheckToken(Tokenn::Kind::RCURLEY); // consume r curley
-    return makeNode(OP::METHOD, topmethod, makeLeaf(LIT::IDENTIFIER, "method"));
+    return makeNode(OP::METHOD, topmethod);
 }
 
 std::shared_ptr<NodeLexeme>
@@ -231,8 +230,7 @@ Parser2::parseFunctionInputs()
                                  return this->parseVariable();
                              });
     advanceAndCheckToken(Tokenn::Kind::RPAREN); // consume r paren
-    return makeNode(OP::FUNCTION_INPUT, topinput,
-                    makeLeaf(LIT::IDENTIFIER, "input"));
+    return makeNode(OP::FUNCTION_INPUT, topinput);
 }
 
 /**
@@ -272,8 +270,7 @@ Parser2::parseBlock()
     std::shared_ptr<NodeLexeme> parseBlockRecurse();
 
     advanceAndCheckToken(Tokenn::Kind::RCURLEY); // eat '}'
-    return makeNode(OP::BLOCK, topstatement,
-                    makeLeaf(LIT::IDENTIFIER, "block"));
+    return makeNode(OP::BLOCK, topstatement);
 }
 
 /**
@@ -282,7 +279,6 @@ Parser2::parseBlock()
 std::shared_ptr<NodeLexeme>
 Parser2::parseStatement()
 {
-    std::cout << "inside statement\n";
     switch (currentToken->kind)
     {
     case Tokenn::Kind::TREE:
@@ -312,7 +308,7 @@ Parser2::parseTree()
                                   return this->parseBranch();
                               });
     advanceAndCheckToken(Tokenn::Kind::RPAREN); // eat ')'
-    return makeNode(OP::TREE, topbranch, makeLeaf(LIT::IDENTIFIER, "Tree"));
+    return makeNode(OP::TREE, topbranch);
 }
 
 /**
@@ -348,7 +344,7 @@ Parser2::parseReturn()
 {
     advanceAndCheckToken(Tokenn::Kind::RETURN); // consume 'return'
     auto t = parseT();
-    return makeNode(OP::RETURN, t, makeLeaf(LIT::IDENTIFIER, "return"));
+    return makeNode(OP::RETURN, t);
 }
 
 /**
@@ -595,9 +591,9 @@ Parser2::parseE9(std::shared_ptr<NodeLexeme> T8)
     if (currentToken->kind == Tokenn::Kind::DOT ||
         currentToken->kind == Tokenn::Kind::TRIPLE_DOT)
     {
+        auto memberAccess = parseMemberAccess();
         // auto e0 = parseE0();
-        // return makeNode(OP::NEGATION, t7, e0);
-        return makeNullNode();
+        return makeNode(OP::MEMBER, memberAccess, makeNullNode());
     }
     return parseE10(T8);
 }
@@ -623,8 +619,63 @@ Parser2::parseE10(std::shared_ptr<NodeLexeme> T9)
 std::shared_ptr<NodeLexeme>
 Parser2::parseE11(std::shared_ptr<NodeLexeme> T10)
 {
-    return makeNode(OP::END, T10, makeLeaf(LIT::IDENTIFIER, "end"));
+    return makeNode(OP::END, T10);
     ;
+}
+
+/**
+ * MemberAccess := AttributeAccess | MethodAccess
+ */
+std::shared_ptr<NodeLexeme>
+Parser2::parseMemberAccess()
+{
+    switch (currentToken->kind)
+    {
+    case Tokenn::Kind::DOT:
+        return parseAttributeAccess();
+    case Tokenn::Kind::TRIPLE_DOT:
+        return parseMethodAccess();
+
+        // error case
+    }
+}
+
+/**
+ * AttributeAccess := '.' Identifier
+ */
+std::shared_ptr<NodeLexeme>
+Parser2::parseAttributeAccess()
+{
+    advanceAndCheckToken(Tokenn::Kind::DOT); // consume '.'
+    auto attribute = parseIdentifier();
+    return makeNode(OP::ATTRIBUTE_ACCESS, attribute);
+}
+
+/**
+ * MethodAccess := '...' Identifier FunctionCall
+ */
+std::shared_ptr<NodeLexeme>
+Parser2::parseMethodAccess()
+{
+    advanceAndCheckToken(Tokenn::Kind::TRIPLE_DOT); // consume '...'
+    auto name = parseIdentifier();
+    auto method = parseFunctionCall();
+    return makeNode(OP::METHOD_ACCESS, method, name);
+}
+
+/**
+ * FunctionCall := '(' [Identifier [',' Identifier]*] ')'
+ */
+std::shared_ptr<NodeLexeme>
+Parser2::parseFunctionCall()
+{
+    advanceAndCheckToken(Tokenn::Kind::LPAREN); // consume l paren
+    auto topinput = getChain(true, Tokenn::Kind::RPAREN, OP::INPUT,
+                             [this]() -> std::shared_ptr<LeafLexeme> {
+                                 return this->parseIdentifier();
+                             });
+    advanceAndCheckToken(Tokenn::Kind::RPAREN); // consume r paren
+    return makeNode(OP::FUNCTION_CALL, topinput);
 }
 
 /**
@@ -642,7 +693,7 @@ Parser2::parseT()
     }
 
     auto primary = parsePrimary();
-    return makeNode(OP::PRIMARY, primary, makeLeaf(LIT::IDENTIFIER, "end"));
+    return makeNode(OP::PRIMARY, primary);
 }
 
 std::shared_ptr<LeafLexeme>

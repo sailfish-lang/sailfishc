@@ -6,6 +6,12 @@ makeNode(OP o, Lexeme l, Lexeme r)
     return std::make_shared<NodeLexeme>(o, l, r);
 }
 
+std::shared_ptr<NodeLexeme>
+makeNode(OP o, Lexeme l)
+{
+    return std::make_shared<NodeLexeme>(o, l, makeNullNode());
+}
+
 std::string
 disp(OP o)
 {
@@ -91,6 +97,16 @@ disp(OP o)
         return "Block";
     case OP::NULL_VAL:
         return "null";
+    case OP::MEMBER:
+        return "Member";
+    case OP::ATTRIBUTE_ACCESS:
+        return "Attribute Access";
+    case OP::METHOD_ACCESS:
+        return "Method Access";
+    case OP::INPUT:
+        return "Input";
+    case OP::FUNCTION_CALL:
+        return "Function Call";
     default:
         return "Unknown";
     }

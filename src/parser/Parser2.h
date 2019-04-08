@@ -111,7 +111,7 @@ class Parser2
     void
     postorder(std::shared_ptr<NodeLexeme> p, int indent = 0)
     {
-        if (p != NULL)
+        if (p != NULL && p->op != OP::NULL_VAL)
         {
             if (indent)
             {
