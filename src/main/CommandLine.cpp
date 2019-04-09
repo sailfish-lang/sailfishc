@@ -130,11 +130,11 @@ handleCommandLine(int argc, char* const* argv)
             std::cout << "Lexing " << filename << ".\n\n";
 
             Lexar2* l = new Lexar2(filename);
-            Token2 t = l->getNextToken();
+            std::unique_ptr<Token2> t = l->getNextToken();
 
-            while (t.kind != Tokenn::EOF_)
+            while (t->kind != TokenKind::EOF_)
             {
-                std::cout << prettifyFormatToken(t);
+                std::cout << t->prettifyFormatToken();
                 t = l->getNextToken();
             }
         }
@@ -150,6 +150,29 @@ handleCommandLine(int argc, char* const* argv)
                 ast::Start* root = p->parse(filename);
             }
             catch (const std::string msg)
+            {
+                std::cerr << msg;
+            }
+        }
+        else if (std::string("--parse").compare(argv[1]) == 0)
+        {
+
+            try
+            {
+                auto filename = argv[2];
+                std::cout << "Parsing " << filename << ".\n\n";
+
+                Parser2* p = new Parser2(filename);
+                auto n = p->parse();
+                p->postorder(std::move(n), [](std::string s) -> void {
+                    std::cout << s << '\n';
+                });
+            }
+            catch (const std::string msg)
+            {
+                std::cerr << msg;
+            }
+            catch (char const* msg)
             {
                 std::cerr << msg;
             }

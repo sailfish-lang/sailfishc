@@ -6,20 +6,17 @@
 #include <iostream>
 #include <string>
 
-namespace Tokenn
-{
-enum Kind
+enum class TokenKind
 {
     // Keywords
     START,
     OWN_ACCESSOR,
     TREE,
-    BRANCH,
     UAT,
-    UFA,
+    UFN,
+    IFE,
     FUN,
     DEC,
-    EXP,
     IMPORT,
     RETURN,
     NEW,
@@ -30,6 +27,7 @@ enum Kind
     FLOAT,
     BOOL,
     STRING,
+    LIST,
 
     // Compairsons, Arithmetic, etc.
     MODULO,
@@ -51,7 +49,11 @@ enum Kind
     EQUIVALENCE,
     NONEQUIVALENCE,
     ASSIGNMENT,
+
+    // unaries
     NEGATION,
+    UNARYADD,
+    UNARYMINUS,
 
     // Structure
     COMMENT,
@@ -69,19 +71,20 @@ enum Kind
     COLON,
 
     // Else
+    LISTTYPE,
     ERROR,
     EOF_,
 };
 
-std::string displayKind(const Kind&);
-}
+std::string displayKind(const TokenKind&);
 
 struct Token2
 {
-    Tokenn::Kind kind;
+    TokenKind kind;
     std::string value;
     int col;
     int line;
+    Token2(TokenKind k, const std::string& v, int c, int l)
+        : kind(k), value(v), col(c), line(l){};
+    std::string prettifyFormatToken();
 };
-
-std::string prettifyFormatToken(const Token2&);

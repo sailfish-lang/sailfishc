@@ -11,14 +11,49 @@
  * having found the end of the token. In the second case, I need the buffer to
  * pop the last char and to return this char to the scanner.
  */
-Token2
-Lexar2::makeToken(const Tokenn::Kind& k, const std::string& v)
+std::unique_ptr<Token2>
+Lexar2::makeToken(const TokenKind& k, const std::string& v)
 {
-    return {.kind = k, .value = v, .col = int(col - v.size()), .line = line};
+    auto kd = k; // since kd is constant we copy here
+
+    // instead of a symbol table or a keyword table/data structure, we have this
+    // nice if-else tree
+    if (kd == TokenKind::IDENTIFIER)
+    {
+        if (v == "start")
+            kd = TokenKind::START;
+        else if (v == "own")
+            kd = TokenKind::OWN_ACCESSOR;
+        else if (v == "Tree")
+            kd = TokenKind::TREE;
+        else if (v == "Uat")
+            kd = TokenKind::UAT;
+        else if (v == "Ufn")
+            kd = TokenKind::UFN;
+        else if (v == "Ife")
+            kd = TokenKind::IFE;
+        else if (v == "fun")
+            kd = TokenKind::FUN;
+        else if (v == "dec")
+            kd = TokenKind::DEC;
+        else if (v == "import")
+            kd = TokenKind::IMPORT;
+        else if (v == "return")
+            kd = TokenKind::RETURN;
+        else if (v == "new")
+            kd = TokenKind::NEW;
+        else if (v == "and")
+            kd = TokenKind::AND;
+        else if (v == "or")
+            kd = TokenKind::OR;
+        else if (v == "true" || v == "false")
+            kd = TokenKind::BOOL;
+    }
+    return std::make_unique<Token2>(kd, v, col, line);
 }
 
-Token2
-Lexar2::makeTokenPutback(const Tokenn::Kind& k, std::string& v, char& c)
+std::unique_ptr<Token2>
+Lexar2::makeTokenPutback(const TokenKind& k, std::string& v, char& c)
 {
     // readjust the col and line counters
     col = prevCol;
@@ -29,6 +64,8 @@ Lexar2::makeTokenPutback(const Tokenn::Kind& k, std::string& v, char& c)
     // put the char back in the filebuffer
     file.putback(c);
 
+    // edge case where if the last char was a space, even though we want to
+    // putback, the buffer itself won't be off by one
     if (!isspace(c))
         v.pop_back();
 
@@ -39,9 +76,7 @@ char
 Lexar2::getNextChar()
 {
     if (file.peek() == EOF)
-    {
         return -1;
-    }
 
     char c;
     file.get(c);
@@ -56,7 +91,7 @@ Lexar2::Lexar2(const std::string& filename)
     prevCol = 0;
 }
 
-Token2
+std::unique_ptr<Token2>
 Lexar2::getNextToken()
 {
     char c;
@@ -86,7 +121,7 @@ Lexar2::getNextToken()
 
         // catch EOF
         if (c == EOF)
-            return makeToken(Tokenn::Kind::EOF_, buffer);
+            return makeToken(TokenKind::EOF_, buffer);
 
         switch (state)
         {
@@ -106,28 +141,26 @@ Lexar2::getNextToken()
                 {
                 // completed on the first char
                 case '_':
-                    return makeToken(Tokenn::Kind::UNDERSCORE, buffer);
+                    return makeToken(TokenKind::UNDERSCORE, buffer);
                 case ',':
-                    return makeToken(Tokenn::Kind::COMMA, buffer);
+                    return makeToken(TokenKind::COMMA, buffer);
                 case '{':
-                    return makeToken(Tokenn::Kind::LCURLEY, buffer);
+                    return makeToken(TokenKind::LCURLEY, buffer);
                 case '}':
-                    return makeToken(Tokenn::Kind::RCURLEY, buffer);
+                    return makeToken(TokenKind::RCURLEY, buffer);
                 case '(':
-                    return makeToken(Tokenn::Kind::LPAREN, buffer);
+                    return makeToken(TokenKind::LPAREN, buffer);
                 case ')':
-                    return makeToken(Tokenn::Kind::RPAREN, buffer);
+                    return makeToken(TokenKind::RPAREN, buffer);
                 case '%':
-                    return makeToken(Tokenn::Kind::MODULO, buffer);
+                    return makeToken(TokenKind::MODULO, buffer);
                 case ':':
-                    return makeToken(Tokenn::Kind::COLON, buffer);
+                    return makeToken(TokenKind::COLON, buffer);
                 case '|':
-                    return makeToken(Tokenn::Kind::PIPE, buffer);
+                    return makeToken(TokenKind::PIPE, buffer);
                 case ';':
-                case '[':
-                case ']':
-                    return makeToken(Tokenn::Kind::ERROR,
-                                     "No semi-colons or brackets in Sailfish.");
+                    return makeToken(TokenKind::ERROR,
+                                     "No semi-colons in Sailfish.");
 
                 // multiple states for completion
                 case '+':
@@ -163,8 +196,11 @@ Lexar2::getNextToken()
                 case '.':
                     state = State::DOUBLE_DOT;
                     break;
+                case '[':
+                    state = State::LIST;
+                    break;
                 default:
-                    return makeToken(Tokenn::Kind::ERROR,
+                    return makeToken(TokenKind::ERROR,
                                      "Unrecognized character.");
                 }
             }
@@ -172,91 +208,106 @@ Lexar2::getNextToken()
 
         case State::IDENTIFIER:
             if (!isalnum(c) && c != '_')
-                return makeTokenPutback(Tokenn::Kind::IDENTIFIER, buffer, c);
+                return makeTokenPutback(TokenKind::IDENTIFIER, buffer, c);
             break;
 
         case State::INTEGER:
             if (c == '.')
                 state = State::FLOAT;
             else if (!isdigit(c))
-                return makeTokenPutback(Tokenn::Kind::INTEGER, buffer, c);
+                return makeTokenPutback(TokenKind::INTEGER, buffer, c);
             break;
 
         case State::FLOAT:
             if (!isdigit(c))
-                return makeTokenPutback(Tokenn::Kind::FLOAT, buffer, c);
+                return makeTokenPutback(TokenKind::FLOAT, buffer, c);
             break;
 
         case State::COMMENT:
             if (c == '\n')
-                return makeTokenPutback(Tokenn::Kind::COMMENT, buffer, c);
+                return makeTokenPutback(TokenKind::COMMENT, buffer, c);
             break;
 
         case State::DIVISION:
-            return c == '='
-                       ? makeToken(Tokenn::Kind::DIVFROM, buffer)
-                       : makeTokenPutback(Tokenn::Kind::DIVISION, buffer, c);
+            return c == '=' ? makeToken(TokenKind::DIVFROM, buffer)
+                            : makeTokenPutback(TokenKind::DIVISION, buffer, c);
 
         case State::STRING:
             if (c == '\\')
                 state = State::STRING_ESCAPE;
             else if (c == '"')
-                return makeToken(Tokenn::Kind::STRING, buffer);
+                return makeToken(TokenKind::STRING, buffer);
+            break;
 
         case State::STRING_ESCAPE:
             state = State::STRING;
             break;
 
         case State::SUBTRACTION:
-            return c == '='
-                       ? makeToken(Tokenn::Kind::SUBFROM, buffer)
-                       : makeTokenPutback(Tokenn::Kind::SUBTRACTION, buffer, c);
+            if (c == '=')
+                return makeToken(TokenKind::SUBFROM, buffer);
+            else if (c == '-')
+                return makeToken(TokenKind::UNARYMINUS, buffer);
+            else
+                return makeTokenPutback(TokenKind::SUBTRACTION, buffer, c);
 
         case State::ADDITION:
-            return c == '='
-                       ? makeToken(Tokenn::Kind::ADDTO, buffer)
-                       : makeTokenPutback(Tokenn::Kind::ADDITION, buffer, c);
+            if (c == '=')
+                return makeToken(TokenKind::ADDTO, buffer);
+            else if (c == '+')
+                return makeToken(TokenKind::UNARYADD, buffer);
+            else
+                return makeTokenPutback(TokenKind::ADDITION, buffer, c);
 
         case State::ASSIGNMENT:
             return c == '='
-                       ? makeToken(Tokenn::Kind::EQUIVALENCE, buffer)
-                       : makeTokenPutback(Tokenn::Kind::ASSIGNMENT, buffer, c);
+                       ? makeToken(TokenKind::EQUIVALENCE, buffer)
+                       : makeTokenPutback(TokenKind::ASSIGNMENT, buffer, c);
 
         case State::NEGATION:
-            return c == '='
-                       ? makeToken(Tokenn::Kind::NONEQUIVALENCE, buffer)
-                       : makeTokenPutback(Tokenn::Kind::NEGATION, buffer, c);
+            return c == '=' ? makeToken(TokenKind::NONEQUIVALENCE, buffer)
+                            : makeTokenPutback(TokenKind::NEGATION, buffer, c);
 
         case State::MULTIPLICATION:
             if (c == '=')
-                return makeToken(Tokenn::Kind::MULTTO, buffer);
+                return makeToken(TokenKind::MULTTO, buffer);
             if (c == '*')
-                return makeToken(Tokenn::Kind::EXPONENTIATION, buffer);
-            return makeTokenPutback(Tokenn::Kind::MULTIPLICATION, buffer, c);
+                return makeToken(TokenKind::EXPONENTIATION, buffer);
+            return makeTokenPutback(TokenKind::MULTIPLICATION, buffer, c);
 
         case State::LESS_THAN:
-            return c == '='
-                       ? makeToken(Tokenn::Kind::LESS_THAN_OR_EQUALS, buffer)
-                       : makeTokenPutback(Tokenn::Kind::LESS_THAN, buffer, c);
+            return c == '=' ? makeToken(TokenKind::LESS_THAN_OR_EQUALS, buffer)
+                            : makeTokenPutback(TokenKind::LESS_THAN, buffer, c);
 
         case State::GREATER_THAN:
             return c == '='
-                       ? makeToken(Tokenn::Kind::GREATER_THAN_OR_EQUALS, buffer)
-                       : makeTokenPutback(Tokenn::Kind::GREATER_THAN, buffer,
-                                          c);
+                       ? makeToken(TokenKind::GREATER_THAN_OR_EQUALS, buffer)
+                       : makeTokenPutback(TokenKind::GREATER_THAN, buffer, c);
 
         case State::DOUBLE_DOT:
             if (c != '.')
-                return makeTokenPutback(Tokenn::Kind::DOT, buffer, c);
+                return makeTokenPutback(TokenKind::DOT, buffer, c);
             state = State::TRIPLE_DOT;
             break;
 
         case State::TRIPLE_DOT:
-            return c == '.' ? makeToken(Tokenn::Kind::TRIPLE_DOT, buffer)
-                            : makeToken(Tokenn::Kind::ERROR, "Expected a dot.");
+            return c == '.' ? makeToken(TokenKind::TRIPLE_DOT, buffer)
+                            : makeToken(TokenKind::ERROR, "Expected a dot.");
+
+        case State::LIST:
+            if (c == ']')
+            {
+                if (buffer == "[int]" || buffer == "[bool]" ||
+                    buffer == "[str]" || buffer == "[flt]")
+                    return makeToken(TokenKind::LISTTYPE, buffer);
+
+                else
+                    return makeToken(TokenKind::LIST, buffer);
+            }
+            break;
 
         default:
-            return makeToken(Tokenn::Kind::ERROR, "Unexpected state.");
+            return makeToken(TokenKind::ERROR, "Unexpected state.");
         }
     }
 }

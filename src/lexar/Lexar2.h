@@ -16,9 +16,10 @@ class Lexar2
     int prevCol; // for when we need to jump back a line and remember where the
                  // end of that line was
     char getNextChar();
-    Token2 makeToken(const Tokenn::Kind&, const std::string&);
-    Token2 makeTokenPutback(const Tokenn::Kind&, std::string&, char&);
-
+    std::unique_ptr<Token2> makeToken(const TokenKind&, const std::string&);
+    std::unique_ptr<Token2> makeTokenPutback(const TokenKind&, std::string&,
+                                             char&);
+    // represents dfa states in our pseudo dfa/state machine implementation
     enum State
     {
         START,
@@ -38,10 +39,11 @@ class Lexar2
         DOUBLE_DOT,
         TRIPLE_DOT,
         COMMENT,
+        LIST,
         ERROR
     };
 
   public:
     Lexar2(const std::string& filename);
-    Token2 getNextToken();
+    std::unique_ptr<Token2> getNextToken();
 };
