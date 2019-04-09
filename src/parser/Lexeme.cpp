@@ -143,6 +143,10 @@ disp(LIT o)
         return "Integer";
     case LIT::FLOAT:
         return "Float";
+    case LIT::LIST:
+        return "List";
+    case LIT::LISTTYPE:
+        return "List type";
     default:
         return "Unknown";
     }

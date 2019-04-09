@@ -156,10 +156,8 @@ Lexar2::getNextToken()
                 case '|':
                     return makeToken(TokenKind::PIPE, buffer);
                 case ';':
-                case '[':
-                case ']':
                     return makeToken(TokenKind::ERROR,
-                                     "No semi-colons or brackets in Sailfish.");
+                                     "No semi-colons in Sailfish.");
 
                 // multiple states for completion
                 case '+':
@@ -194,6 +192,9 @@ Lexar2::getNextToken()
                     break;
                 case '.':
                     state = State::DOUBLE_DOT;
+                    break;
+                case '[':
+                    state = State::LIST;
                     break;
                 default:
                     return makeToken(TokenKind::ERROR,
@@ -289,6 +290,18 @@ Lexar2::getNextToken()
         case State::TRIPLE_DOT:
             return c == '.' ? makeToken(TokenKind::TRIPLE_DOT, buffer)
                             : makeToken(TokenKind::ERROR, "Expected a dot.");
+
+        case State::LIST:
+            if (c == ']')
+            {
+                if (buffer == "[int]" || buffer == "[bool]" ||
+                    buffer == "[str]" || buffer == "[flt]")
+                    return makeToken(TokenKind::LISTTYPE, buffer);
+
+                else
+                    return makeToken(TokenKind::LIST, buffer);
+            }
+            break;
 
         default:
             return makeToken(TokenKind::ERROR, "Unexpected state.");

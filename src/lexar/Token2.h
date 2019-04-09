@@ -27,6 +27,7 @@ enum class TokenKind
     FLOAT,
     BOOL,
     STRING,
+    LIST,
 
     // Compairsons, Arithmetic, etc.
     MODULO,
@@ -70,6 +71,7 @@ enum class TokenKind
     COLON,
 
     // Else
+    LISTTYPE,
     ERROR,
     EOF_,
 };

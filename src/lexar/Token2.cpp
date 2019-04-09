@@ -35,6 +35,8 @@ displayKind(const TokenKind& k)
         return "BOOL";
     case TokenKind::STRING:
         return "STRING";
+    case TokenKind::LIST:
+        return "LIST";
     case TokenKind::MODULO:
         return "MODULO";
     case TokenKind::ADDITION:
@@ -101,6 +103,8 @@ displayKind(const TokenKind& k)
         return "PIPE";
     case TokenKind::COLON:
         return "COLON";
+    case TokenKind::LISTTYPE:
+        return "LISTTYPE";
     case TokenKind::ERROR:
         return "ERROR";
     case TokenKind::EOF_:

@@ -39,6 +39,7 @@ class Lexar2
         DOUBLE_DOT,
         TRIPLE_DOT,
         COMMENT,
+        LIST,
         ERROR
     };
 

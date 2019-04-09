@@ -827,11 +827,13 @@ Parser2::parsePrimary()
         return parseString();
     case TokenKind::IDENTIFIER:
         return parseIdentifier();
+    case TokenKind::LIST:
+        return parseList();
     default:
         errorhandler->handle(
             new Error2(currentToken->col, currentToken->line,
                        "Expected a valid primary token such as a boolean, "
-                       "integer, float, string, or identifier.",
+                       "integer, float, string, identifier, or list.",
                        "Received: ", currentToken->value,
                        " of type " + displayKind(currentToken->kind) + "."));
         return parseIdentifier(); //  unreachable
@@ -844,6 +846,8 @@ Parser2::parsePrimary()
 std::shared_ptr<LeafLexeme>
 Parser2::parseType()
 {
+    if (currentToken->kind == TokenKind::LISTTYPE)
+        return parseListType();
     return parseIdentifier();
 }
 
@@ -913,4 +917,26 @@ Parser2::parseString()
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::STRING); // eat string
     return makeLeaf(LIT::STRING, v);
+}
+
+/**
+ * List := lexvalue
+ */
+std::shared_ptr<LeafLexeme>
+Parser2::parseList()
+{
+    auto v = currentToken->value;
+    advanceAndCheckToken(TokenKind::LIST); // eat list
+    return makeLeaf(LIT::LIST, v);
+}
+
+/**
+ * ListType := lexvalue
+ */
+std::shared_ptr<LeafLexeme>
+Parser2::parseListType()
+{
+    auto v = currentToken->value;
+    advanceAndCheckToken(TokenKind::LISTTYPE); // eat list type
+    return makeLeaf(LIT::LISTTYPE, v);
 }

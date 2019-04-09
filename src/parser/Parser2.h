@@ -110,6 +110,8 @@ class Parser2
     std::shared_ptr<LeafLexeme> parseFloat();
     std::shared_ptr<LeafLexeme> parseString();
     std::shared_ptr<LeafLexeme> parseIdentifier();
+    std::shared_ptr<LeafLexeme> parseList();
+    std::shared_ptr<LeafLexeme> parseListType();
 
   public:
     Parser2(const std::string& filename);

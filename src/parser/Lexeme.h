@@ -76,6 +76,8 @@ enum class LIT
     BOOLEAN,
     INTEGER,
     FLOAT,
+    LIST,
+    LISTTYPE,
 };
 std::string disp(LIT l);
 
