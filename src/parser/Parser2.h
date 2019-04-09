@@ -117,31 +117,36 @@ class Parser2
     Parser2(const std::string& filename);
     std::shared_ptr<NodeLexeme> parse();
 
+    template <typename F>
     void
-    lexemeIt(Lexeme l, int indent)
+    lexemeIt(Lexeme l, F f)
     {
         auto i = l.index();
         if (i == 0)
-            postorder(std::get<std::shared_ptr<NodeLexeme>>(l), indent + 4);
+            postorder(std::get<std::shared_ptr<NodeLexeme>>(l), f);
         else if (i == 1)
-            postorder(std::get<std::shared_ptr<LeafLexeme>>(l), indent + 4);
+            postorder(std::get<std::shared_ptr<LeafLexeme>>(l), f);
     }
+
+    template <typename F>
     void
-    postorder(std::shared_ptr<NodeLexeme> n, int indent = 0)
+    postorder(std::shared_ptr<NodeLexeme> n, F f)
     {
         if (n != nullptr && n->op != OP::NULL_VAL)
         {
             // root
-            std::cout << std::setw(indent) << disp(n->op) << '\n';
+            f(disp(n->op));
             // left
-            lexemeIt(n->left, indent);
+            lexemeIt(n->left, f);
             // right
-            lexemeIt(n->right, indent);
+            lexemeIt(n->right, f);
         }
     }
+
+    template <typename F>
     void
-    postorder(std::shared_ptr<LeafLexeme> n, int indent = 0)
+    postorder(std::shared_ptr<LeafLexeme> n, F f)
     {
-        std::cout << std::setw(indent) << n->value << '\n';
+        f(n->value);
     }
 };

@@ -164,7 +164,8 @@ handleCommandLine(int argc, char* const* argv)
 
                 Parser2* p = new Parser2(filename);
                 auto n = p->parse();
-                p->postorder(n);
+                p->postorder(
+                    n, [](std::string s) -> void { std::cout << s << '\n'; });
             }
             catch (const std::string msg)
             {

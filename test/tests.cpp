@@ -9,6 +9,7 @@
 #include "../src/lexar/Lexar.h"
 #include "../src/lexar/Lexar2.h"
 #include "../src/parser/Parser.h"
+#include "../src/parser/Parser2.h"
 #include "../src/semantics/SemanticAnalyzer.h"
 #include "../src/semantics/SymbolMetaData.h"
 #include "../src/semantics/SymbolTable.h"
@@ -17,6 +18,7 @@
 #include "visitors/InOrderTraversal.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <variant>
 
 std::unique_ptr<Token2>
 makeToken(TokenKind kind, std::string value, int col, int line)
@@ -201,6 +203,157 @@ TEST(ParserTest, AllTokens)
 
 TEST(ParserTest, Parser2UDT)
 {
+    static const std::string expected[] = {"Source",
+                                           "Import",
+                                           "Import",
+                                           "foo",
+                                           "\"foo.fish\"",
+                                           "Import",
+                                           "Import",
+                                           "bar",
+                                           "\"bar.fish\"",
+                                           "Script",
+                                           "Function",
+                                           "Function",
+                                           "foo",
+                                           "Function Info",
+                                           "Function In Out",
+                                           "Function Input",
+                                           "Variable",
+                                           "int",
+                                           "i",
+                                           "Function Input",
+                                           "Variable",
+                                           "flt",
+                                           "f",
+                                           "void",
+                                           "Block",
+                                           "Statement",
+                                           "Return",
+                                           "Primary",
+                                           "i",
+                                           "Start",
+                                           "start",
+                                           "Block",
+                                           "Statement",
+                                           "Tree",
+                                           "Branch",
+                                           "Branch",
+                                           "Equivalence",
+                                           "Primary",
+                                           "1",
+                                           "And",
+                                           "Primary",
+                                           "2",
+                                           "Less than",
+                                           "Primary",
+                                           "2",
+                                           "Primary",
+                                           "3",
+                                           "Block",
+                                           "Branch",
+                                           "Branch",
+                                           "Negation",
+                                           "Primary",
+                                           "true",
+                                           "Block",
+                                           "Statement",
+                                           "Declaration",
+                                           "Variable",
+                                           "flt",
+                                           "f",
+                                           "Primary",
+                                           "12.0",
+                                           "Statement",
+                                           "Declaration",
+                                           "Variable",
+                                           "[int]",
+                                           "is",
+                                           "Primary",
+                                           "[1,2,3]",
+                                           "Statement",
+                                           "Declaration",
+                                           "Variable",
+                                           "Foo",
+                                           "f",
+                                           "Member",
+                                           "UDT dec",
+                                           "Foo",
+                                           "UDT dec item",
+                                           "UDT dec item",
+                                           "f",
+                                           "i",
+                                           "Statement",
+                                           "Member",
+                                           "Attribute Access",
+                                           "f",
+                                           "Add to",
+                                           "Member",
+                                           "Method Access",
+                                           "Function Call",
+                                           "f",
+                                           "Addition",
+                                           "Unary add",
+                                           "Primary",
+                                           "1",
+                                           "Member",
+                                           "Attribute Access",
+                                           "f"};
+
+    Parser2* p = new Parser2("./examples/parser2_script.fish");
+    auto n = p->parse();
+
+    std::vector<std::string> out;
+
+    const auto& func = [&out](std::string s) mutable { out.push_back(s); };
+
+    p->postorder(n, func);
+
+    int i = 0;
+    for (auto const& a : out)
+    {
+        ASSERT_EQ(expected[i], a);
+        ++i;
+    }
+}
+
+TEST(ParserTest, Parser2Script)
+{
+    static const std::string expected[] = {"Source",
+                                           "Udt",
+                                           "Attribute",
+                                           "Attribute",
+                                           "Variable",
+                                           "flt",
+                                           "f",
+                                           "Method",
+                                           "Method",
+                                           "Function",
+                                           "foo",
+                                           "Function Info",
+                                           "Function In Out",
+                                           "Function Input",
+                                           "Variable",
+                                           "int",
+                                           "i",
+                                           "void",
+                                           "Block"};
+
+    Parser2* p = new Parser2("./examples/parser2_udt.fish");
+    auto n = p->parse();
+
+    std::vector<std::string> out;
+
+    const auto& func = [&out](std::string s) mutable { out.push_back(s); };
+
+    p->postorder(n, func);
+
+    int i = 0;
+    for (auto const& a : out)
+    {
+        ASSERT_EQ(expected[i], a);
+        ++i;
+    }
 }
 
 TEST(SymbolTableDataStructure, SymbolTable)
@@ -261,20 +414,27 @@ TEST(SymbolTableDataStructure, SymbolTable)
 TEST(SemanticTest, TypeCheckerFunctions)
 {
     static const std::string expected[] = {
-        "Declared type: nonExistentType for variable named: foo is not a legal "
+        "Declared type: nonExistentType for variable named: foo is not a "
+        "legal "
         "or known type.",
-        "Declared function input named: flt illegally shares its name with a "
+        "Declared function input named: flt illegally shares its name with "
+        "a "
         "type or a keyword/reserved word.",
-        "Declared type: nonExistentType for variable named: nonExistentType is "
+        "Declared type: nonExistentType for variable named: "
+        "nonExistentType is "
         "not a legal or known type.",
-        "Actual return type of: int does not match expected return type of: "
+        "Actual return type of: int does not match expected return type "
+        "of: "
         "nonExistentType.",
-        "Declared variable named: flt illegally shares its name with a type or "
+        "Declared variable named: flt illegally shares its name with a "
+        "type or "
         "a keyword/reserved word.",
         "Function: foo is not defined.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and unknown.",
-        "Supplied argument type of: int does not match expected type of: str.",
+        "Supplied argument type of: int does not match expected type of: "
+        "str.",
         "Not enough args supplied to function: good.",
         "Too many args supplied to function: good.",
     };
@@ -295,10 +455,12 @@ TEST(SemanticTest, TypeCheckerFunctions)
 TEST(SemanticTest, TypeCheckerPrimitiveDeclerations)
 {
     static const std::string expected[] = {
-        "Declared variable named: dec illegally shares its name with a type or "
+        "Declared variable named: dec illegally shares its name with a "
+        "type or "
         "a "
         "keyword/reserved word.",
-        "Declared type: flt of primitive for variable named: function_foo does "
+        "Declared type: flt of primitive for variable named: function_foo "
+        "does "
         "not match assigned expression type of: int.",
     };
 
@@ -321,86 +483,112 @@ TEST(SemanticTest, TypeCheckerBinariesAndUnaries)
     static const std::string expected[] = {
         "Expected either float or integer type on left side of operation. "
         "Instead received: bool.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and int.",
 
         "Expected either float or integer type on left side of operation. "
         "Instead received: bool.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and int.",
 
         "Expected either float or integer type on left side of operation. "
         "Instead received: bool.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and int.",
 
         "Expected either float or integer type on left side of operation. "
         "Instead received: bool.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and int.",
 
         "Expected either float or integer type on left side of operation. "
         "Instead received: bool.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and int.",
 
         "Expected either float or integer type on left side of operation. "
         "Instead received: bool.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and int.",
 
         "Expected either float or integer type on left side of operation. "
         "Instead received: bool.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and int.",
 
         "Expected either float or integer type on left side of operation. "
         "Instead received: bool.",
-        "Expected the same types on each side of operation. Instead received:"
+        "Expected the same types on each side of operation. Instead "
+        "received:"
         " int and flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and int.",
 
         "Expected int type on left side of operation. Instead "
         "received: flt.",
-        "Expected int type on left side of operation. Instead received: bool.",
+        "Expected int type on left side of operation. Instead received: "
+        "bool.",
 
         "Expected int type on left side of operation. Instead "
         "received: flt.",
-        "Expected int type on left side of operation. Instead received: bool.",
+        "Expected int type on left side of operation. Instead received: "
+        "bool.",
 
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "bool and int.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and bool.",
 
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "bool and int.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and bool.",
 
-        "Expected boolean type on right side of operation. Instead received: "
+        "Expected boolean type on right side of operation. Instead "
+        "received: "
         "int.",
-        "Expected boolean type on left side of operation. Instead received: "
+        "Expected boolean type on left side of operation. Instead "
+        "received: "
         "int.",
 
-        "Expected boolean type on right side of operation. Instead received: "
+        "Expected boolean type on right side of operation. Instead "
+        "received: "
         "int.",
-        "Expected boolean type on left side of operation. Instead received: "
+        "Expected boolean type on left side of operation. Instead "
+        "received: "
         "int.",
 
         "Expected boolean type following negation. Instead received: int."};
@@ -421,20 +609,27 @@ TEST(SemanticTest, TypeCheckerBinariesAndUnaries)
 TEST(SemanticTest, TypeCheckerUDTDec)
 {
     static const std::string expected[] = {
-        "Declared variable named: bool illegally shares its name with a type "
+        "Declared variable named: bool illegally shares its name with a "
+        "type "
         "or a keyword/reserved word.",
-        "Declared variable named: flt illegally shares its name with a type or "
+        "Declared variable named: flt illegally shares its name with a "
+        "type or "
         "a keyword/reserved word.",
-        "Udt attribute type of:  void for attribute:  and for udt: bool does "
+        "Udt attribute type of:  void for attribute:  and for udt: bool "
+        "does "
         "not exist.",
-        "Udt attribute type of:  udt for attribute: u and for udt: bool does "
+        "Udt attribute type of:  udt for attribute: u and for udt: bool "
+        "does "
         "not exist.",
         "Too few arguments in udt initialization.",
-        "Received unknown attribute name of: a in constructor of udt of type: "
+        "Received unknown attribute name of: a in constructor of udt of "
+        "type: "
         "Foo.",
         "Too few arguments in udt initialization.",
-        "Received intiializer variable of type: flt in constructor of udt of "
-        "type: Foo when a variable for type: int was expected for attribute "
+        "Received intiializer variable of type: flt in constructor of udt "
+        "of "
+        "type: Foo when a variable for type: int was expected for "
+        "attribute "
         "named: i.",
         "Too few arguments in udt initialization.",
     };
@@ -497,7 +692,8 @@ TEST(SemanticTest, TypeCheckerIfElse)
 TEST(SemanticTest, TypeCheckerReturnStatements)
 {
     static const std::string expected[] = {
-        "Actual return type of: flt does not match expected return type of: "
+        "Actual return type of: flt does not match expected return type "
+        "of: "
         "int.",
         "Unexpected return in function returning void.",
     };
@@ -518,11 +714,14 @@ TEST(SemanticTest, TypeCheckerReturnStatements)
 TEST(SemanticTest, TypeCheckerMethodAccess)
 {
     static const std::string expected[] = {
-        "Supplied argument type of: int does not match expected type of: flt.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Supplied argument type of: int does not match expected type of: "
+        "flt.",
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "int and flt.",
         "Method: bar does not exist for udt type: Foo.",
-        "Expected the same types on each side of operation. Instead received: "
+        "Expected the same types on each side of operation. Instead "
+        "received: "
         "flt and unknown.",
     };
 
