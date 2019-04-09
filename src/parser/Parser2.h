@@ -72,28 +72,27 @@ class Parser2
     std::shared_ptr<NodeLexeme> parseFunctionDefinition();
     std::shared_ptr<NodeLexeme> parseFunctionInfo();
     std::shared_ptr<NodeLexeme> parseFunctionInOut();
-    std::shared_ptr<NodeLexeme> parseFunctionInputs();
-    std::shared_ptr<LeafLexeme> parseFunctionOutput();
     std::shared_ptr<NodeLexeme> parseStart();
     std::shared_ptr<NodeLexeme> parseBlock();
-    std::shared_ptr<NodeLexeme> parseStatement();
+    Lexeme parseStatement();
     std::shared_ptr<NodeLexeme> parseTree();
     std::shared_ptr<NodeLexeme> parseBranch();
-    std::shared_ptr<NodeLexeme> parseGrouping();
+    Lexeme parseGrouping();
     std::shared_ptr<NodeLexeme> parseReturn();
     std::shared_ptr<NodeLexeme> parseDeclaration();
-    std::shared_ptr<NodeLexeme> parseE0();
-    std::shared_ptr<NodeLexeme> parseE1(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE2(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE3(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE4(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE5(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE6(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE7(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE8(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE9(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE10(std::shared_ptr<NodeLexeme>);
-    std::shared_ptr<NodeLexeme> parseE11(std::shared_ptr<NodeLexeme>);
+    Lexeme parseE0();
+    Lexeme parseE1(Lexeme);
+    Lexeme parseE2(Lexeme);
+    Lexeme parseE3(Lexeme);
+    Lexeme parseE4(Lexeme);
+    Lexeme parseE5(Lexeme);
+    Lexeme parseE6(Lexeme);
+    Lexeme parseE7(Lexeme);
+    Lexeme parseE8(Lexeme);
+    Lexeme parseE9(Lexeme);
+    Lexeme parseE10(Lexeme);
+    Lexeme parseE11(Lexeme);
+    Lexeme parseE12(Lexeme);
     std::shared_ptr<NodeLexeme> parseMemberAccess();
     std::shared_ptr<NodeLexeme> parseAttributeAccess();
     std::shared_ptr<NodeLexeme> parseMethodAccess();
@@ -101,7 +100,7 @@ class Parser2
     std::shared_ptr<NodeLexeme> parseNew();
     std::shared_ptr<NodeLexeme> parseUDTDec();
     std::shared_ptr<NodeLexeme> parseUDTDecItem();
-    std::shared_ptr<NodeLexeme> parseT();
+    Lexeme parseT();
     std::shared_ptr<LeafLexeme> parsePrimary();
     std::shared_ptr<NodeLexeme> parseVariable();
     std::shared_ptr<LeafLexeme> parseType();
@@ -115,4 +114,32 @@ class Parser2
   public:
     Parser2(const std::string& filename);
     std::shared_ptr<NodeLexeme> parse();
+
+    void
+    lexemeIt(Lexeme l, int indent)
+    {
+        auto i = l.index();
+        if (i == 0)
+            postorder(std::get<std::shared_ptr<NodeLexeme>>(l), indent + 4);
+        else if (i == 1)
+            postorder(std::get<std::shared_ptr<LeafLexeme>>(l), indent + 4);
+    }
+    void
+    postorder(std::shared_ptr<NodeLexeme> n, int indent = 0)
+    {
+        if (n != nullptr && n->op != OP::NULL_VAL)
+        {
+            // root
+            std::cout << std::setw(indent) << disp(n->op) << '\n';
+            // left
+            lexemeIt(n->left, indent);
+            // right
+            lexemeIt(n->right, indent);
+        }
+    }
+    void
+    postorder(std::shared_ptr<LeafLexeme> n, int indent = 0)
+    {
+        std::cout << std::setw(indent) << n->value << '\n';
+    }
 };

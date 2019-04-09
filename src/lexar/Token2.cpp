@@ -75,6 +75,10 @@ displayKind(const TokenKind& k)
         return "ASSIGNMENT";
     case TokenKind::NEGATION:
         return "NEGATION";
+    case TokenKind::UNARYADD:
+        return "UNARYADD";
+    case TokenKind::UNARYMINUS:
+        return "UNARYMINUS";
     case TokenKind::COMMENT:
         return "COMMENT";
     case TokenKind::UNDERSCORE:

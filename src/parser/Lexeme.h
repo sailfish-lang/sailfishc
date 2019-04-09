@@ -60,6 +60,12 @@ enum class OP
     FUNCTION_CALL,
     UDTDEC,
     UDTDECITEM,
+    UNARYADD,
+    UNARYMINUS,
+    ADDTO,
+    SUBFROM,
+    DIVFROM,
+    MULTTO,
 };
 std::string disp(OP o);
 

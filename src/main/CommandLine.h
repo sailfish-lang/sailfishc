@@ -8,7 +8,6 @@
 #include "../lexar/Lexar2.h"
 #include "../parser/Parser.h"
 #include "../parser/Parser2.h"
-#include "../parser/display.h"
 #include "../semantics/SemanticAnalyzer.h"
 #include "../transpiler/Transpiler.h"
 #include <iostream>

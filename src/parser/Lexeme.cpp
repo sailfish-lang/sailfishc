@@ -111,6 +111,18 @@ disp(OP o)
         return "UDT dec";
     case OP::UDTDECITEM:
         return "UDT dec item";
+    case OP::UNARYADD:
+        return "Unary add";
+    case OP::UNARYMINUS:
+        return "Unary minus";
+    case OP::ADDTO:
+        return "Add to";
+    case OP::SUBFROM:
+        return "Sub from";
+    case OP::DIVFROM:
+        return "Div from";
+    case OP::MULTTO:
+        return "Mult to";
     default:
         return "Unknown";
     }

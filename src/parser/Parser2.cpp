@@ -218,21 +218,12 @@ Parser2::parseFunctionInfo()
 
 /**
  * FunctionInOut := FunctionInputs* FunctionOutputs
+ *  FunctionInputs :=  '(' Variable [',' Variable]* ')'
  */
 std::shared_ptr<NodeLexeme>
 Parser2::parseFunctionInOut()
 {
-    auto inputs = parseFunctionInputs();
-    auto output = parseFunctionOutput();
-    return makeNode(OP::FUNCTION_IN_OUT, inputs, output);
-}
-
-/**
- * FunctionInputs :=  '(' Variable [',' Variable]* ')'
- */
-std::shared_ptr<NodeLexeme>
-Parser2::parseFunctionInputs()
-{
+    // inputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
                                              // TODO: check for multiple voids
     auto topinput = getChain(true, TokenKind::RPAREN, OP::FUNCTION_INPUT,
@@ -240,19 +231,12 @@ Parser2::parseFunctionInputs()
                                  return this->parseVariable();
                              });
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-    return makeNode(OP::FUNCTION_INPUT, topinput);
-}
 
-/**
- * FunctionOutput := '(' Type ')'
- */
-std::shared_ptr<LeafLexeme>
-Parser2::parseFunctionOutput()
-{
+    // outputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
-    auto type = parseType();
+    auto output = parseType();
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-    return type;
+    return makeNode(OP::FUNCTION_IN_OUT, topinput, output);
 }
 
 /**
@@ -273,10 +257,9 @@ std::shared_ptr<NodeLexeme>
 Parser2::parseBlock()
 {
     advanceAndCheckToken(TokenKind::LCURLEY); // eat '{'
-    auto topstatement = getChain(true, TokenKind::RCURLEY, OP::STATEMENT,
-                                 [this]() -> std::shared_ptr<NodeLexeme> {
-                                     return this->parseStatement();
-                                 });
+    auto topstatement =
+        getChain(true, TokenKind::RCURLEY, OP::STATEMENT,
+                 [this]() -> Lexeme { return this->parseStatement(); });
     std::shared_ptr<NodeLexeme> parseBlockRecurse();
 
     advanceAndCheckToken(TokenKind::RCURLEY); // eat '}'
@@ -286,7 +269,7 @@ Parser2::parseBlock()
 /**
  * Statement := Tree | Return | Declaration | E0
  */
-std::shared_ptr<NodeLexeme>
+Lexeme
 Parser2::parseStatement()
 {
     switch (currentToken->kind)
@@ -337,7 +320,7 @@ Parser2::parseBranch()
 /**
  * Grouping := '|' E0 '|'
  */
-std::shared_ptr<NodeLexeme>
+Lexeme
 Parser2::parseGrouping()
 {
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
@@ -373,7 +356,7 @@ Parser2::parseDeclaration()
 /**
  * E0 := T0 E1
  */
-std::shared_ptr<NodeLexeme>
+Lexeme
 Parser2::parseE0()
 {
     auto t0 = parseT();
@@ -381,10 +364,10 @@ Parser2::parseE0()
 }
 
 /**
- * E1 := ** T1 E0 | E2
+ * E1 := ** E0 | E2
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE1(std::shared_ptr<NodeLexeme> T0)
+Lexeme
+Parser2::parseE1(Lexeme T0)
 {
     if (currentToken->kind == TokenKind::EXPONENTIATION)
     {
@@ -396,10 +379,10 @@ Parser2::parseE1(std::shared_ptr<NodeLexeme> T0)
 }
 
 /**
- * E2 := * T2 E0 | / T2 E0 | % T2 E0 | E3
+ * E2 := * E0 | / E0 | % E0 | E3
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE2(std::shared_ptr<NodeLexeme> T1)
+Lexeme
+Parser2::parseE2(Lexeme T1)
 {
     if (currentToken->kind == TokenKind::MULTIPLICATION ||
         currentToken->kind == TokenKind::DIVISION ||
@@ -431,10 +414,10 @@ Parser2::parseE2(std::shared_ptr<NodeLexeme> T1)
 }
 
 /**
- * E3 := + T3 E0 | - T3 E0 | E4
+ * E3 := + E0 | - E0 | E4
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE3(std::shared_ptr<NodeLexeme> T2)
+Lexeme
+Parser2::parseE3(Lexeme T2)
 {
     if (currentToken->kind == TokenKind::ADDITION ||
         currentToken->kind == TokenKind::SUBTRACTION)
@@ -460,18 +443,16 @@ Parser2::parseE3(std::shared_ptr<NodeLexeme> T2)
 }
 
 /**
- * E4 := < T4 E0 | > T4 E0 | <= T4 E0 | >= T4 E0 | E5
+ * E4 := < E0 | > E0 | <= E0 | >= E0 | E5
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE4(std::shared_ptr<NodeLexeme> T3)
+Lexeme
+Parser2::parseE4(Lexeme T3)
 {
     if (currentToken->kind == TokenKind::LESS_THAN ||
         currentToken->kind == TokenKind::LESS_THAN_OR_EQUALS ||
         currentToken->kind == TokenKind::GREATER_THAN ||
         currentToken->kind == TokenKind::GREATER_THAN_OR_EQUALS)
     {
-        auto t4 = parseType();
-        auto e0 = parseE0();
         switch (currentToken->kind)
         {
         case TokenKind::LESS_THAN:
@@ -505,10 +486,10 @@ Parser2::parseE4(std::shared_ptr<NodeLexeme> T3)
 }
 
 /**
- * E5 := == T5 E0 | != T5 E0 | E6
+ * E5 := == E0 | != E0 | E6
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE5(std::shared_ptr<NodeLexeme> T4)
+Lexeme
+Parser2::parseE5(Lexeme T4)
 {
     if (currentToken->kind == TokenKind::EQUIVALENCE ||
         currentToken->kind == TokenKind::NONEQUIVALENCE)
@@ -534,10 +515,10 @@ Parser2::parseE5(std::shared_ptr<NodeLexeme> T4)
 }
 
 /**
- * E6 := 'and' T6 E0 | 'or' T6 E0 | E7
+ * E6 := 'and' E0 | 'or' E0 | E7
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE6(std::shared_ptr<NodeLexeme> T5)
+Lexeme
+Parser2::parseE6(Lexeme T5)
 {
     if (currentToken->kind == TokenKind::AND ||
         currentToken->kind == TokenKind::OR)
@@ -562,10 +543,10 @@ Parser2::parseE6(std::shared_ptr<NodeLexeme> T5)
 }
 
 /**
- * E7 := = T7 E0 | E8
+ * E7 := = E0 | E8
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE7(std::shared_ptr<NodeLexeme> T6)
+Lexeme
+Parser2::parseE7(Lexeme T6)
 {
     if (currentToken->kind == TokenKind::ASSIGNMENT)
     {
@@ -577,25 +558,87 @@ Parser2::parseE7(std::shared_ptr<NodeLexeme> T6)
 }
 
 /**
- * E8 := ! T8 E0 | E9
+ * E8 := [!, ++, --] E0 | E9
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE8(std::shared_ptr<NodeLexeme> T7)
+Lexeme
+Parser2::parseE8(Lexeme T7)
 {
-    if (currentToken->kind == TokenKind::NEGATION)
+    if (currentToken->kind == TokenKind::NEGATION ||
+        currentToken->kind == TokenKind::UNARYADD ||
+        currentToken->kind == TokenKind::UNARYMINUS)
     {
-        advanceAndCheckToken(TokenKind::NEGATION); // consume "!"
-        auto e0 = parseE0();
-        return makeNode(OP::NEGATION, T7, e0);
+        switch (currentToken->kind)
+        {
+        case TokenKind::NEGATION:
+        {
+            advanceAndCheckToken(TokenKind::NEGATION); // consume "!"
+            auto e0 = parseE0();
+            return makeNode(OP::NEGATION, T7, e0);
+        }
+        case TokenKind::UNARYADD:
+        {
+            advanceAndCheckToken(TokenKind::UNARYADD); // consume "++"
+            auto e0 = parseE0();
+            return makeNode(OP::UNARYADD, T7, e0);
+        }
+        case TokenKind::UNARYMINUS:
+        {
+            advanceAndCheckToken(TokenKind::UNARYMINUS); // consume "--"
+            auto e0 = parseE0();
+            return makeNode(OP::UNARYMINUS, T7, e0);
+        }
+        }
     }
     return parseE9(T7);
 }
 
 /**
- * E9 := MemberAccess E0 | E10
+ * E9 := [+=, -=, /=, *=] E0 | E10
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE9(std::shared_ptr<NodeLexeme> T8)
+Lexeme
+Parser2::parseE9(Lexeme T8)
+{
+    if (currentToken->kind == TokenKind::ADDTO ||
+        currentToken->kind == TokenKind::SUBFROM ||
+        currentToken->kind == TokenKind::DIVFROM ||
+        currentToken->kind == TokenKind::MULTTO)
+    {
+        switch (currentToken->kind)
+        {
+        case TokenKind::ADDTO:
+        {
+            advanceAndCheckToken(TokenKind::ADDTO); // consume "+="
+            auto e0 = parseE0();
+            return makeNode(OP::ADDTO, T8, e0);
+        }
+        case TokenKind::SUBFROM:
+        {
+            advanceAndCheckToken(TokenKind::SUBFROM); // consume "-="
+            auto e0 = parseE0();
+            return makeNode(OP::SUBFROM, T8, e0);
+        }
+        case TokenKind::DIVFROM:
+        {
+            advanceAndCheckToken(TokenKind::DIVFROM); // consume "/="
+            auto e0 = parseE0();
+            return makeNode(OP::DIVFROM, T8, e0);
+        }
+        case TokenKind::MULTTO:
+        {
+            advanceAndCheckToken(TokenKind::MULTTO); // consume "*="
+            auto e0 = parseE0();
+            return makeNode(OP::MULTTO, T8, e0);
+        }
+        }
+    }
+    return parseE10(T8);
+}
+
+/**
+ * E10 := MemberAccess E0 | E11
+ */
+Lexeme
+Parser2::parseE10(Lexeme T9)
 {
     if (currentToken->kind == TokenKind::DOT ||
         currentToken->kind == TokenKind::TRIPLE_DOT)
@@ -605,30 +648,30 @@ Parser2::parseE9(std::shared_ptr<NodeLexeme> T8)
             parseE1(makeNullNode()); // like calling E0 where T0 does not exist
         return makeNode(OP::MEMBER, memberAccess, e1);
     }
-    return parseE10(T8);
+    return parseE11(T9);
 }
 
 /**
- * E10 := New | E11
+ * E11 := New | E12
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE10(std::shared_ptr<NodeLexeme> T9)
+Lexeme
+Parser2::parseE11(Lexeme T10)
 {
     if (currentToken->kind == TokenKind::NEW)
     {
         auto New = parseNew();
         return makeNode(OP::MEMBER, New);
     }
-    return parseE11(T9);
+    return parseE12(T10);
 }
 
 /**
- * E11 := T11 | ε
+ * E12 := T12 | ε
  */
-std::shared_ptr<NodeLexeme>
-Parser2::parseE11(std::shared_ptr<NodeLexeme> T10)
+Lexeme
+Parser2::parseE12(Lexeme T11)
 {
-    return makeNode(OP::END, T10);
+    return T11;
 }
 
 /**
@@ -699,7 +742,7 @@ Parser2::parseNew()
     advanceAndCheckToken(TokenKind::NEW); // consume new
     switch (currentToken->kind)
     {
-    case TokenKind::LCURLEY:
+    case TokenKind::IDENTIFIER:
         return parseUDTDec();
     default:
         errorhandler->handle(
@@ -713,18 +756,19 @@ Parser2::parseNew()
 }
 
 /**
- * UDTDec := '{' [UDTDecItem [',' UDTDecItem]*] '}'
+ * UDTDec := Identifier '{' [UDTDecItem [',' UDTDecItem]*] '}'
  */
 std::shared_ptr<NodeLexeme>
 Parser2::parseUDTDec()
 {
+    auto name = parseIdentifier();
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
     auto topitem = getChain(true, TokenKind::RCURLEY, OP::UDTDECITEM,
                             [this]() -> std::shared_ptr<NodeLexeme> {
                                 return this->parseUDTDecItem();
                             });
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-    return makeNode(OP::UDTDEC, topitem);
+    return makeNode(OP::UDTDEC, name, topitem);
 }
 
 /**
@@ -742,7 +786,7 @@ Parser2::parseUDTDecItem()
 /**
  * T := Primary | '(' E0 ')'
  */
-std::shared_ptr<NodeLexeme>
+Lexeme
 Parser2::parseT()
 {
     if (currentToken->kind == TokenKind::LPAREN)
@@ -751,6 +795,15 @@ Parser2::parseT()
         auto e0 = parseE0();
         advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
         return e0;
+    }
+
+    else if (currentToken->kind == TokenKind::NEGATION ||
+             currentToken->kind == TokenKind::UNARYADD ||
+             currentToken->kind == TokenKind::UNARYMINUS ||
+             currentToken->kind == TokenKind::NEW)
+    {
+        auto e1 = parseE1(makeNullNode()); // type less
+        return e1;
     }
 
     auto primary = parsePrimary();
@@ -847,7 +900,7 @@ std::shared_ptr<LeafLexeme>
 Parser2::parseBoolean()
 {
     auto v = currentToken->value;
-    advanceAndCheckToken(TokenKind::IDENTIFIER); // eat identifier
+    advanceAndCheckToken(TokenKind::BOOL); // eat identifier
     return makeLeaf(LIT::IDENTIFIER, v);
 }
 

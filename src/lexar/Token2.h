@@ -48,7 +48,11 @@ enum class TokenKind
     EQUIVALENCE,
     NONEQUIVALENCE,
     ASSIGNMENT,
+
+    // unaries
     NEGATION,
+    UNARYADD,
+    UNARYMINUS,
 
     // Structure
     COMMENT,

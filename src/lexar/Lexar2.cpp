@@ -240,13 +240,20 @@ Lexar2::getNextToken()
             break;
 
         case State::SUBTRACTION:
-            return c == '='
-                       ? makeToken(TokenKind::SUBFROM, buffer)
-                       : makeTokenPutback(TokenKind::SUBTRACTION, buffer, c);
+            if (c == '=')
+                return makeToken(TokenKind::SUBFROM, buffer);
+            else if (c == '-')
+                return makeToken(TokenKind::UNARYMINUS, buffer);
+            else
+                return makeTokenPutback(TokenKind::SUBTRACTION, buffer, c);
 
         case State::ADDITION:
-            return c == '=' ? makeToken(TokenKind::ADDTO, buffer)
-                            : makeTokenPutback(TokenKind::ADDITION, buffer, c);
+            if (c == '=')
+                return makeToken(TokenKind::ADDTO, buffer);
+            else if (c == '+')
+                return makeToken(TokenKind::UNARYADD, buffer);
+            else
+                return makeTokenPutback(TokenKind::ADDITION, buffer, c);
 
         case State::ASSIGNMENT:
             return c == '='

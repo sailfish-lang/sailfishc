@@ -19,7 +19,7 @@
 #include <memory>
 
 std::unique_ptr<Token2>
-makeToken(Tokenn::Kind kind, std::string value, int col, int line)
+makeToken(TokenKind kind, std::string value, int col, int line)
 {
     return std::make_unique<Token2>(kind, value, col, line);
 }
@@ -27,53 +27,53 @@ makeToken(Tokenn::Kind kind, std::string value, int col, int line)
 TEST(LexarTest, Lex2)
 {
     std::unique_ptr<Token2> expected[] = {
-        makeToken(Tokenn::Kind::START, "start", 1, 1),
-        makeToken(Tokenn::Kind::LCURLEY, "{", 1, 7),
-        makeToken(Tokenn::Kind::OWN_ACCESSOR, "own", 2, 5),
-        makeToken(Tokenn::Kind::TREE, "Tree", 2, 9),
-        makeToken(Tokenn::Kind::DEC, "dec", 2, 14),
-        makeToken(Tokenn::Kind::LPAREN, "(", 2, 18),
-        makeToken(Tokenn::Kind::UAT, "Ufa", 3, 9),
-        makeToken(Tokenn::Kind::UFN, "Ufn", 3, 13),
-        makeToken(Tokenn::Kind::COMMENT, "# hello", 4, 9),
-        makeToken(Tokenn::Kind::IMPORT, "import", 5, 9),
-        makeToken(Tokenn::Kind::RETURN, "return", 6, 9),
-        makeToken(Tokenn::Kind::NEW, "new", 6, 16),
-        makeToken(Tokenn::Kind::IDENTIFIER, "something", 7, 9),
-        makeToken(Tokenn::Kind::INTEGER, "1", 7, 19),
-        makeToken(Tokenn::Kind::FLOAT, "1.0", 7, 21),
-        makeToken(Tokenn::Kind::BOOL, "true", 7, 25),
-        makeToken(Tokenn::Kind::BOOL, "false", 7, 30),
-        makeToken(Tokenn::Kind::STRING, "\"hello\"", 8, 9),
-        makeToken(Tokenn::Kind::MODULO, "%", 9, 9),
-        makeToken(Tokenn::Kind::ADDITION, "+", 9, 10),
-        makeToken(Tokenn::Kind::ADDTO, "+=", 9, 11),
-        makeToken(Tokenn::Kind::SUBTRACTION, "-", 9, 13),
-        makeToken(Tokenn::Kind::SUBFROM, "-=", 9, 14),
-        makeToken(Tokenn::Kind::EXPONENTIATION, "**", 9, 16),
-        makeToken(Tokenn::Kind::ASSIGNMENT, "=", 9, 18),
-        makeToken(Tokenn::Kind::MULTTO, "*=", 9, 19),
-        makeToken(Tokenn::Kind::MULTIPLICATION, "*", 9, 21),
-        makeToken(Tokenn::Kind::DIVISION, "/", 9, 22),
-        makeToken(Tokenn::Kind::DIVFROM, "/=", 9, 23),
-        makeToken(Tokenn::Kind::GREATER_THAN_OR_EQUALS, ">=", 9, 25),
-        makeToken(Tokenn::Kind::GREATER_THAN, ">", 9, 27),
-        makeToken(Tokenn::Kind::LESS_THAN, "<", 9, 28),
-        makeToken(Tokenn::Kind::LESS_THAN_OR_EQUALS, "<=", 9, 29),
-        makeToken(Tokenn::Kind::EQUIVALENCE, "==", 9, 32),
-        makeToken(Tokenn::Kind::NONEQUIVALENCE, "!=", 9, 33),
-        makeToken(Tokenn::Kind::NEGATION, "!", 9, 35),
-        makeToken(Tokenn::Kind::AND, "and", 9, 36),
-        makeToken(Tokenn::Kind::OR, "or", 9, 40),
-        makeToken(Tokenn::Kind::UNDERSCORE, "_", 10, 9),
-        makeToken(Tokenn::Kind::COLON, ":", 10, 10),
-        makeToken(Tokenn::Kind::COMMA, ",", 10, 11),
-        makeToken(Tokenn::Kind::TRIPLE_DOT, "...", 10, 12),
-        makeToken(Tokenn::Kind::DOT, ".", 10, 15),
-        makeToken(Tokenn::Kind::PIPE, "|", 10, 16),
-        makeToken(Tokenn::Kind::STRING, "\"\"trickystring\"", 10, 17),
-        makeToken(Tokenn::Kind::RPAREN, ")", 11, 5),
-        makeToken(Tokenn::Kind::RCURLEY, "}", 12, 1),
+        makeToken(TokenKind::START, "start", 1, 1),
+        makeToken(TokenKind::LCURLEY, "{", 1, 7),
+        makeToken(TokenKind::OWN_ACCESSOR, "own", 2, 5),
+        makeToken(TokenKind::TREE, "Tree", 2, 9),
+        makeToken(TokenKind::DEC, "dec", 2, 14),
+        makeToken(TokenKind::LPAREN, "(", 2, 18),
+        makeToken(TokenKind::UAT, "Ufa", 3, 9),
+        makeToken(TokenKind::UFN, "Ufn", 3, 13),
+        makeToken(TokenKind::COMMENT, "# hello", 4, 9),
+        makeToken(TokenKind::IMPORT, "import", 5, 9),
+        makeToken(TokenKind::RETURN, "return", 6, 9),
+        makeToken(TokenKind::NEW, "new", 6, 16),
+        makeToken(TokenKind::IDENTIFIER, "something", 7, 9),
+        makeToken(TokenKind::INTEGER, "1", 7, 19),
+        makeToken(TokenKind::FLOAT, "1.0", 7, 21),
+        makeToken(TokenKind::BOOL, "true", 7, 25),
+        makeToken(TokenKind::BOOL, "false", 7, 30),
+        makeToken(TokenKind::STRING, "\"hello\"", 8, 9),
+        makeToken(TokenKind::MODULO, "%", 9, 9),
+        makeToken(TokenKind::ADDITION, "+", 9, 10),
+        makeToken(TokenKind::ADDTO, "+=", 9, 11),
+        makeToken(TokenKind::SUBTRACTION, "-", 9, 13),
+        makeToken(TokenKind::SUBFROM, "-=", 9, 14),
+        makeToken(TokenKind::EXPONENTIATION, "**", 9, 16),
+        makeToken(TokenKind::ASSIGNMENT, "=", 9, 18),
+        makeToken(TokenKind::MULTTO, "*=", 9, 19),
+        makeToken(TokenKind::MULTIPLICATION, "*", 9, 21),
+        makeToken(TokenKind::DIVISION, "/", 9, 22),
+        makeToken(TokenKind::DIVFROM, "/=", 9, 23),
+        makeToken(TokenKind::GREATER_THAN_OR_EQUALS, ">=", 9, 25),
+        makeToken(TokenKind::GREATER_THAN, ">", 9, 27),
+        makeToken(TokenKind::LESS_THAN, "<", 9, 28),
+        makeToken(TokenKind::LESS_THAN_OR_EQUALS, "<=", 9, 29),
+        makeToken(TokenKind::EQUIVALENCE, "==", 9, 32),
+        makeToken(TokenKind::NONEQUIVALENCE, "!=", 9, 33),
+        makeToken(TokenKind::NEGATION, "!", 9, 35),
+        makeToken(TokenKind::AND, "and", 9, 36),
+        makeToken(TokenKind::OR, "or", 9, 40),
+        makeToken(TokenKind::UNDERSCORE, "_", 10, 9),
+        makeToken(TokenKind::COLON, ":", 10, 10),
+        makeToken(TokenKind::COMMA, ",", 10, 11),
+        makeToken(TokenKind::TRIPLE_DOT, "...", 10, 12),
+        makeToken(TokenKind::DOT, ".", 10, 15),
+        makeToken(TokenKind::PIPE, "|", 10, 16),
+        makeToken(TokenKind::STRING, "\"\"trickystring\"", 10, 17),
+        makeToken(TokenKind::RPAREN, ")", 11, 5),
+        makeToken(TokenKind::RCURLEY, "}", 12, 1),
     };
 
     Lexar2* lexar2 = new Lexar2("./examples/Lexar2.fish");
@@ -82,7 +82,7 @@ TEST(LexarTest, Lex2)
 
     auto t = lexar2->getNextToken();
 
-    while (t->kind != Tokenn::Kind::EOF_)
+    while (t->kind != TokenKind::EOF_)
     {
         auto flag = false;
         if (t->kind == expected[i]->kind && t->value == expected[i]->value &&
@@ -197,6 +197,10 @@ TEST(ParserTest, AllTokens)
         ASSERT_EQ(expected[i], a);
         ++i;
     }
+}
+
+TEST(ParserTest, Parser2UDT)
+{
 }
 
 TEST(SymbolTableDataStructure, SymbolTable)
