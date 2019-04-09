@@ -15,6 +15,9 @@ std::unique_ptr<Token2>
 Lexar2::makeToken(const TokenKind& k, const std::string& v)
 {
     auto kd = k; // since kd is constant we copy here
+
+    // instead of a symbol table or a keyword table/data structure, we have this
+    // nice if-else tree
     if (kd == TokenKind::IDENTIFIER)
     {
         if (v == "start")
@@ -61,6 +64,8 @@ Lexar2::makeTokenPutback(const TokenKind& k, std::string& v, char& c)
     // put the char back in the filebuffer
     file.putback(c);
 
+    // edge case where if the last char was a space, even though we want to
+    // putback, the buffer itself won't be off by one
     if (!isspace(c))
         v.pop_back();
 
@@ -71,9 +76,7 @@ char
 Lexar2::getNextChar()
 {
     if (file.peek() == EOF)
-    {
         return -1;
-    }
 
     char c;
     file.get(c);

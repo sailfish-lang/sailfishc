@@ -1,17 +1,5 @@
 #include "Lexeme.h"
 
-std::shared_ptr<NodeLexeme>
-makeNode(OP o, Lexeme l, Lexeme r)
-{
-    return std::make_shared<NodeLexeme>(o, l, r);
-}
-
-std::shared_ptr<NodeLexeme>
-makeNode(OP o, Lexeme l)
-{
-    return std::make_shared<NodeLexeme>(o, l, makeNullNode());
-}
-
 std::string
 disp(OP o)
 {
@@ -152,13 +140,25 @@ disp(LIT o)
     }
 }
 
-std::shared_ptr<LeafLexeme>
+LeafPtr
 makeLeaf(LIT l, std::string v)
 {
-    return std::make_shared<LeafLexeme>(l, v);
+    return std::make_unique<LeafLexeme>(l, v);
 }
 
-std::shared_ptr<NodeLexeme>
+NodePtr
+makeNode(OP o, Lexeme l, Lexeme r)
+{
+    return std::make_unique<NodeLexeme>(o, std::move(l), std::move(r));
+}
+
+NodePtr
+makeNode(OP o, Lexeme l)
+{
+    return std::make_unique<NodeLexeme>(o, std::move(l), makeNullNode());
+}
+
+NodePtr
 makeNullNode()
 {
     return makeNode(OP::NULL_VAL, makeLeaf(LIT::IDENTIFIER, ""),

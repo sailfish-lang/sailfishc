@@ -7,20 +7,20 @@ Parser2::advanceAndCheckToken(const TokenKind& k)
     // first check value and kind
     if (currentToken->kind != k)
     {
-        errorhandler->handle(
-            new Error2(currentToken->col, currentToken->line,
-                       "Expected a token of type: " + displayKind(k),
-                       "Received: ", currentToken->value,
-                       " of type " + displayKind(currentToken->kind) + "."));
+        errorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line,
+                   "Expected a token of type: " + displayKind(k),
+                   "Received: ", currentToken->value,
+                   " of type " + displayKind(currentToken->kind) + ".")));
     }
     currentToken = lexar->getNextToken();
 
     // catch errors from the lexar
     if (currentToken->kind == TokenKind::ERROR)
     {
-        errorhandler->handle(new Error2(currentToken->col, currentToken->line,
-                                        "Lexar Error.",
-                                        "Error: ", currentToken->value, ""));
+        errorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line, "Lexar Error.",
+                   "Error: ", currentToken->value, "")));
     }
 
     while (currentToken->kind == TokenKind::COMMENT ||
@@ -31,9 +31,9 @@ Parser2::advanceAndCheckToken(const TokenKind& k)
         // catch errors from the lexar
         if (currentToken->kind == TokenKind::ERROR)
         {
-            errorhandler->handle(
-                new Error2(currentToken->col, currentToken->line,
-                           "Lexar Error.", "Error: ", currentToken->value, ""));
+            errorhandler->handle(std::make_unique<Error2>(
+                Error2(currentToken->col, currentToken->line, "Lexar Error.",
+                       "Error: ", currentToken->value, "")));
         }
     }
 }
@@ -47,7 +47,7 @@ Parser2::Parser2(const std::string& filename)
 }
 
 // public interface method
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parse()
 {
     return parseProgram();
@@ -57,7 +57,7 @@ Parser2::parse()
 /**
  * Program := Source
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseProgram()
 {
     return parseSource();
@@ -65,34 +65,33 @@ Parser2::parseProgram()
 /**
  * Source := Import Source | SourcePart
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseSource()
 {
-    auto imports = getChain(false, TokenKind::IMPORT, OP::IMPORT,
-                            [this]() -> std::shared_ptr<NodeLexeme> {
-                                return this->parseImportInfo();
-                            });
+    auto imports =
+        getChain(false, TokenKind::IMPORT, OP::IMPORT,
+                 [this]() -> NodePtr { return this->parseImportInfo(); });
     auto sourcepart = parseSourcePart();
-    return makeNode(OP::SOURCE, imports, sourcepart);
+    return makeNode(OP::SOURCE, std::move(imports), std::move(sourcepart));
 }
 
 /**
  * ImportInfo := UDName Location
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseImportInfo()
 {
     advanceAndCheckToken(TokenKind::IMPORT); // eat 'Import'
     auto name = parseUDName();
     advanceAndCheckToken(TokenKind::COLON); // eat colon
     auto loc = parseLocation();
-    return makeNode(OP::IMPORT, name, loc);
+    return makeNode(OP::IMPORT, std::move(name), std::move(loc));
 }
 
 /**
  * UDName := Identifier
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseUDName()
 {
     return parseIdentifier();
@@ -101,16 +100,16 @@ Parser2::parseUDName()
 /**
  * Location := String
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseLocation()
 {
     return parseString();
 }
 
 /**
- * SourcePart := UDT | UDA | Script
+ * SourcePart := UDT | Script
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseSourcePart()
 {
     switch (currentToken->kind)
@@ -125,7 +124,7 @@ Parser2::parseSourcePart()
 /**
  * UDT := UserDefinedType
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseUDT()
 {
     return parseUserDefinedType();
@@ -134,67 +133,66 @@ Parser2::parseUDT()
 /**
  * UserDefinedType := Attributes Methods
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseUserDefinedType()
 {
     auto attributes = parseAttributes();
     auto methods = parseMethods();
-    return makeNode(OP::UDT, attributes, methods);
+    return makeNode(OP::UDT, std::move(attributes), std::move(methods));
 }
 
 /**
- * Attributes := [Identifier Identifier]*
+ * Attributes := 'Uat' [Identifier Identifier]*
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseAttributes()
 {
     advanceAndCheckToken(TokenKind::UAT);     // consume uat
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
-    auto topattribute = getChain(true, TokenKind::RCURLEY, OP::ATTRIBUTE,
-                                 [this]() -> std::shared_ptr<NodeLexeme> {
-                                     return this->parseVariable();
-                                 });
+    auto topattribute =
+        getChain(true, TokenKind::RCURLEY, OP::ATTRIBUTE,
+                 [this]() -> NodePtr { return this->parseVariable(); });
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-    return makeNode(OP::ATTRIBUTE, topattribute);
+    return makeNode(OP::ATTRIBUTE, std::move(topattribute));
 }
 
 /**
- * Methods := [FunctionDefinition]*
+ * Methods := 'Ufn' [FunctionDefinition]*
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseMethods()
 {
     advanceAndCheckToken(TokenKind::UFN);     // consume ufn
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
-    auto topmethod = getChain(true, TokenKind::RCURLEY, OP::METHOD,
-                              [this]() -> std::shared_ptr<NodeLexeme> {
-                                  return this->parseFunctionDefinition();
-                              });
+    auto topmethod =
+        getChain(true, TokenKind::RCURLEY, OP::METHOD, [this]() -> NodePtr {
+            return this->parseFunctionDefinition();
+        });
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-    return makeNode(OP::METHOD, topmethod);
+    return makeNode(OP::METHOD, std::move(topmethod));
 }
 
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseScript()
 {
     return parseScript_();
 }
 
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseScript_()
 {
-    auto func = getChain(true, TokenKind::START, OP::FUNCTION,
-                         [this]() -> std::shared_ptr<NodeLexeme> {
-                             return this->parseFunctionDefinition();
-                         });
+    auto func =
+        getChain(true, TokenKind::START, OP::FUNCTION, [this]() -> NodePtr {
+            return this->parseFunctionDefinition();
+        });
     auto start = parseStart();
-    return makeNode(OP::SCRIPT, func, start);
+    return makeNode(OP::SCRIPT, std::move(func), std::move(start));
 }
 
 /**
  * FunctionDefinition := '(' 'fun' identifier FunctionInfo ')'
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseFunctionDefinition()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
@@ -202,68 +200,69 @@ Parser2::parseFunctionDefinition()
     auto id = parseIdentifier();
     auto info = parseFunctionInfo();
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-    return makeNode(OP::FUNCTION, id, info);
+    return makeNode(OP::FUNCTION, std::move(id), std::move(info));
 }
 
 /**
  * FunctionInfo := FunctionInOut Block
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseFunctionInfo()
 {
     auto inout = parseFunctionInOut();
     auto block = parseBlock();
-    return makeNode(OP::FUNCTION_INFO, inout, block);
+    return makeNode(OP::FUNCTION_INFO, std::move(inout), std::move(block));
 }
 
 /**
  * FunctionInOut := FunctionInputs* FunctionOutputs
  *  FunctionInputs :=  '(' Variable [',' Variable]* ')'
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseFunctionInOut()
 {
     // inputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
                                              // TODO: check for multiple voids
-    auto topinput = getChain(true, TokenKind::RPAREN, OP::FUNCTION_INPUT,
-                             [this]() -> std::shared_ptr<NodeLexeme> {
-                                 return this->parseVariable();
-                             });
+    auto topinput =
+        getChain(true, TokenKind::RPAREN, OP::FUNCTION_INPUT,
+                 [this]() -> NodePtr { return this->parseVariable(); });
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
 
     // outputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
     auto output = parseType();
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-    return makeNode(OP::FUNCTION_IN_OUT, topinput, output);
+    return makeNode(OP::FUNCTION_IN_OUT, std::move(topinput),
+                    std::move(output));
 }
 
 /**
  * Start := 'start' Block
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseStart()
 {
     advanceAndCheckToken(TokenKind::START);
     auto block = parseBlock();
-    return makeNode(OP::START, makeLeaf(LIT::IDENTIFIER, "start"), block);
+    return makeNode(OP::START, makeLeaf(LIT::IDENTIFIER, "start"),
+                    std::move(block));
 }
 
 /**
  * Block = '{' Statement* '}'
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseBlock()
 {
     advanceAndCheckToken(TokenKind::LCURLEY); // eat '{'
     auto topstatement =
         getChain(true, TokenKind::RCURLEY, OP::STATEMENT,
                  [this]() -> Lexeme { return this->parseStatement(); });
-    std::shared_ptr<NodeLexeme> parseBlockRecurse();
+    NodePtr parseBlockRecurse();
 
     advanceAndCheckToken(TokenKind::RCURLEY); // eat '}'
-    return makeNode(OP::BLOCK, topstatement);
+    return makeNode(OP::BLOCK, std::move(topstatement));
 }
 
 /**
@@ -288,33 +287,32 @@ Parser2::parseStatement()
 /**
  * Tree := 'tree' (' Branch* ')'
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseTree()
 {
 
     advanceAndCheckToken(TokenKind::TREE);   // eat 'tree'
     advanceAndCheckToken(TokenKind::LPAREN); // eat '('
-    std::vector<std::shared_ptr<NodeLexeme>> branches;
+    std::vector<NodePtr> branches;
 
-    auto topbranch = getChain(true, TokenKind::RPAREN, OP::BRANCH,
-                              [this]() -> std::shared_ptr<NodeLexeme> {
-                                  return this->parseBranch();
-                              });
+    auto topbranch =
+        getChain(true, TokenKind::RPAREN, OP::BRANCH,
+                 [this]() -> NodePtr { return this->parseBranch(); });
     advanceAndCheckToken(TokenKind::RPAREN); // eat ')'
-    return makeNode(OP::TREE, topbranch);
+    return makeNode(OP::TREE, std::move(topbranch));
 }
 
 /**
  * Branch := '(' Grouping Block')'
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseBranch()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // eat '('
     auto grouping = parseGrouping();
     auto block = parseBlock();
     advanceAndCheckToken(TokenKind::RPAREN); // eat ')'
-    return makeNode(OP::BRANCH, grouping, block);
+    return makeNode(OP::BRANCH, std::move(grouping), std::move(block));
 }
 
 /**
@@ -332,25 +330,25 @@ Parser2::parseGrouping()
 /**
  * Return := 'return' T
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
     auto t = parseT();
-    return makeNode(OP::RETURN, t);
+    return makeNode(OP::RETURN, std::move(t));
 }
 
 /**
  * Declaration :=  'dec' Variable '=' E0
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseDeclaration()
 {
     advanceAndCheckToken(TokenKind::DEC); // consume 'dec'
     auto var = parseVariable();
     advanceAndCheckToken(TokenKind::ASSIGNMENT); // consume '='
     auto e0 = parseE0();
-    return makeNode(OP::DECLARATION, var, e0);
+    return makeNode(OP::DECLARATION, std::move(var), std::move(e0));
 }
 
 /**
@@ -360,7 +358,7 @@ Lexeme
 Parser2::parseE0()
 {
     auto t0 = parseT();
-    return parseE1(t0);
+    return parseE1(std::move(t0));
 }
 
 /**
@@ -373,9 +371,9 @@ Parser2::parseE1(Lexeme T0)
     {
         advanceAndCheckToken(TokenKind::EXPONENTIATION); // consume "**"
         auto e0 = parseE0();
-        return makeNode(OP::EXPONENT, T0, e0);
+        return makeNode(OP::EXPONENT, std::move(T0), std::move(e0));
     }
-    return parseE2(T0);
+    return parseE2(std::move(T0));
 }
 
 /**
@@ -394,23 +392,23 @@ Parser2::parseE2(Lexeme T1)
         {
             advanceAndCheckToken(TokenKind::MULTIPLICATION); // consume "*"
             auto e0 = parseE0();
-            return makeNode(OP::MULTIPLICATION, T1, e0);
+            return makeNode(OP::MULTIPLICATION, std::move(T1), std::move(e0));
         }
         case TokenKind::DIVISION:
         {
             advanceAndCheckToken(TokenKind::DIVISION); // consume "/"
             auto e0 = parseE0();
-            return makeNode(OP::DIVISION, T1, e0);
+            return makeNode(OP::DIVISION, std::move(T1), std::move(e0));
         }
         case TokenKind::MODULO:
         {
             advanceAndCheckToken(TokenKind::MODULO); // consume "%"
             auto e0 = parseE0();
-            return makeNode(OP::MODULO, T1, e0);
+            return makeNode(OP::MODULO, std::move(T1), std::move(e0));
         }
         }
     }
-    return parseE3(T1);
+    return parseE3(std::move(T1));
 }
 
 /**
@@ -429,17 +427,17 @@ Parser2::parseE3(Lexeme T2)
         {
             advanceAndCheckToken(TokenKind::ADDITION); // consume "+"
             auto e0 = parseE0();
-            return makeNode(OP::ADDITION, T2, e0);
+            return makeNode(OP::ADDITION, std::move(T2), std::move(e0));
         }
         case TokenKind::SUBTRACTION:
         {
             advanceAndCheckToken(TokenKind::SUBTRACTION); // consume "-"
             auto e0 = parseE0();
-            return makeNode(OP::SUBTRACTION, T2, e0);
+            return makeNode(OP::SUBTRACTION, std::move(T2), std::move(e0));
         }
         }
     }
-    return parseE4(T2);
+    return parseE4(std::move(T2));
 }
 
 /**
@@ -459,30 +457,32 @@ Parser2::parseE4(Lexeme T3)
         {
             advanceAndCheckToken(TokenKind::LESS_THAN); // consume "<"
             auto e0 = parseE0();
-            return makeNode(OP::LESS_THAN, T3, e0);
+            return makeNode(OP::LESS_THAN, std::move(T3), std::move(e0));
         }
         case TokenKind::LESS_THAN_OR_EQUALS:
         {
             advanceAndCheckToken(TokenKind::LESS_THAN_OR_EQUALS); // consume "<"
             auto e0 = parseE0();
-            return makeNode(OP::LESS_THAN_OR_EQUALS, T3, e0);
+            return makeNode(OP::LESS_THAN_OR_EQUALS, std::move(T3),
+                            std::move(e0));
         }
         case TokenKind::GREATER_THAN:
         {
             advanceAndCheckToken(TokenKind::GREATER_THAN); // consume ">"
             auto e0 = parseE0();
-            return makeNode(OP::GREATER_THAN, T3, e0);
+            return makeNode(OP::GREATER_THAN, std::move(T3), std::move(e0));
         }
         case TokenKind::GREATER_THAN_OR_EQUALS:
         {
             advanceAndCheckToken(
                 TokenKind::GREATER_THAN_OR_EQUALS); // consume ">="
             auto e0 = parseE0();
-            return makeNode(OP::GREATER_THAN_OR_EQUALS, T3, e0);
+            return makeNode(OP::GREATER_THAN_OR_EQUALS, std::move(T3),
+                            std::move(e0));
         }
         }
     }
-    return parseE5(T3);
+    return parseE5(std::move(T3));
 }
 
 /**
@@ -501,17 +501,17 @@ Parser2::parseE5(Lexeme T4)
         {
             advanceAndCheckToken(TokenKind::EQUIVALENCE); // consume "=="
             auto e0 = parseE0();
-            return makeNode(OP::EQUIVALENCE, T4, e0);
+            return makeNode(OP::EQUIVALENCE, std::move(T4), std::move(e0));
         }
         case TokenKind::NONEQUIVALENCE:
         {
             advanceAndCheckToken(TokenKind::NONEQUIVALENCE); // consume "!="
             auto e0 = parseE0();
-            return makeNode(OP::NONEQUIVALENCE, T4, e0);
+            return makeNode(OP::NONEQUIVALENCE, std::move(T4), std::move(e0));
         }
         }
     }
-    return parseE6(T4);
+    return parseE6(std::move(T4));
 }
 
 /**
@@ -529,17 +529,17 @@ Parser2::parseE6(Lexeme T5)
         {
             advanceAndCheckToken(TokenKind::AND); // consume 'and'
             auto e0 = parseE0();
-            return makeNode(OP::AND, T5, e0);
+            return makeNode(OP::AND, std::move(T5), std::move(e0));
         }
         case TokenKind::OR:
         {
             advanceAndCheckToken(TokenKind::OR); // consume 'or'
             auto e0 = parseE0();
-            return makeNode(OP::OR, T5, e0);
+            return makeNode(OP::OR, std::move(T5), std::move(e0));
         }
         }
     }
-    return parseE7(T5);
+    return parseE7(std::move(T5));
 }
 
 /**
@@ -552,9 +552,9 @@ Parser2::parseE7(Lexeme T6)
     {
         advanceAndCheckToken(TokenKind::ASSIGNMENT); // consume "="
         auto e0 = parseE0();
-        return makeNode(OP::ASSIGNMENT, T6, e0);
+        return makeNode(OP::ASSIGNMENT, std::move(T6), std::move(e0));
     }
-    return parseE8(T6);
+    return parseE8(std::move(T6));
 }
 
 /**
@@ -573,23 +573,23 @@ Parser2::parseE8(Lexeme T7)
         {
             advanceAndCheckToken(TokenKind::NEGATION); // consume "!"
             auto e0 = parseE0();
-            return makeNode(OP::NEGATION, T7, e0);
+            return makeNode(OP::NEGATION, std::move(T7), std::move(e0));
         }
         case TokenKind::UNARYADD:
         {
             advanceAndCheckToken(TokenKind::UNARYADD); // consume "++"
             auto e0 = parseE0();
-            return makeNode(OP::UNARYADD, T7, e0);
+            return makeNode(OP::UNARYADD, std::move(T7), std::move(e0));
         }
         case TokenKind::UNARYMINUS:
         {
             advanceAndCheckToken(TokenKind::UNARYMINUS); // consume "--"
             auto e0 = parseE0();
-            return makeNode(OP::UNARYMINUS, T7, e0);
+            return makeNode(OP::UNARYMINUS, std::move(T7), std::move(e0));
         }
         }
     }
-    return parseE9(T7);
+    return parseE9(std::move(T7));
 }
 
 /**
@@ -609,29 +609,29 @@ Parser2::parseE9(Lexeme T8)
         {
             advanceAndCheckToken(TokenKind::ADDTO); // consume "+="
             auto e0 = parseE0();
-            return makeNode(OP::ADDTO, T8, e0);
+            return makeNode(OP::ADDTO, std::move(T8), std::move(e0));
         }
         case TokenKind::SUBFROM:
         {
             advanceAndCheckToken(TokenKind::SUBFROM); // consume "-="
             auto e0 = parseE0();
-            return makeNode(OP::SUBFROM, T8, e0);
+            return makeNode(OP::SUBFROM, std::move(T8), std::move(e0));
         }
         case TokenKind::DIVFROM:
         {
             advanceAndCheckToken(TokenKind::DIVFROM); // consume "/="
             auto e0 = parseE0();
-            return makeNode(OP::DIVFROM, T8, e0);
+            return makeNode(OP::DIVFROM, std::move(T8), std::move(e0));
         }
         case TokenKind::MULTTO:
         {
             advanceAndCheckToken(TokenKind::MULTTO); // consume "*="
             auto e0 = parseE0();
-            return makeNode(OP::MULTTO, T8, e0);
+            return makeNode(OP::MULTTO, std::move(T8), std::move(e0));
         }
         }
     }
-    return parseE10(T8);
+    return parseE10(std::move(T8));
 }
 
 /**
@@ -646,9 +646,9 @@ Parser2::parseE10(Lexeme T9)
         auto memberAccess = parseMemberAccess();
         auto e1 =
             parseE1(makeNullNode()); // like calling E0 where T0 does not exist
-        return makeNode(OP::MEMBER, memberAccess, e1);
+        return makeNode(OP::MEMBER, std::move(memberAccess), std::move(e1));
     }
-    return parseE11(T9);
+    return parseE11(std::move(T9));
 }
 
 /**
@@ -660,9 +660,9 @@ Parser2::parseE11(Lexeme T10)
     if (currentToken->kind == TokenKind::NEW)
     {
         auto New = parseNew();
-        return makeNode(OP::MEMBER, New);
+        return makeNode(OP::MEMBER, std::move(New));
     }
-    return parseE12(T10);
+    return parseE12(std::move(T10));
 }
 
 /**
@@ -677,7 +677,7 @@ Parser2::parseE12(Lexeme T11)
 /**
  * MemberAccess := AttributeAccess | MethodAccess
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseMemberAccess()
 {
     switch (currentToken->kind)
@@ -687,10 +687,10 @@ Parser2::parseMemberAccess()
     case TokenKind::TRIPLE_DOT:
         return parseMethodAccess();
     default:
-        errorhandler->handle(new Error2(
+        errorhandler->handle(std::make_unique<Error2>(Error2(
             currentToken->col, currentToken->line, "Expected a ... or . token.",
             "Received: ", currentToken->value,
-            " of type " + displayKind(currentToken->kind) + "."));
+            " of type " + displayKind(currentToken->kind) + ".")));
         return makeNullNode(); //  unreachable
     }
 }
@@ -698,45 +698,44 @@ Parser2::parseMemberAccess()
 /**
  * AttributeAccess := '.' Identifier
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseAttributeAccess()
 {
     advanceAndCheckToken(TokenKind::DOT); // consume '.'
     auto attribute = parseIdentifier();
-    return makeNode(OP::ATTRIBUTE_ACCESS, attribute);
+    return makeNode(OP::ATTRIBUTE_ACCESS, std::move(attribute));
 }
 
 /**
  * MethodAccess := '...' Identifier FunctionCall
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseMethodAccess()
 {
     advanceAndCheckToken(TokenKind::TRIPLE_DOT); // consume '...'
     auto name = parseIdentifier();
     auto method = parseFunctionCall();
-    return makeNode(OP::METHOD_ACCESS, method, name);
+    return makeNode(OP::METHOD_ACCESS, std::move(method), std::move(name));
 }
 
 /**
  * FunctionCall := '(' [Identifier [',' Identifier]*] ')'
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseFunctionCall()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
-    auto topinput = getChain(true, TokenKind::RPAREN, OP::INPUT,
-                             [this]() -> std::shared_ptr<LeafLexeme> {
-                                 return this->parseIdentifier();
-                             });
+    auto topinput =
+        getChain(true, TokenKind::RPAREN, OP::INPUT,
+                 [this]() -> LeafPtr { return this->parseIdentifier(); });
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-    return makeNode(OP::FUNCTION_CALL, topinput);
+    return makeNode(OP::FUNCTION_CALL, std::move(topinput));
 }
 
 /**
  * New := UDTDec
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseNew()
 {
     advanceAndCheckToken(TokenKind::NEW); // consume new
@@ -745,12 +744,12 @@ Parser2::parseNew()
     case TokenKind::IDENTIFIER:
         return parseUDTDec();
     default:
-        errorhandler->handle(
-            new Error2(currentToken->col, currentToken->line,
-                       "Expected a valid new declaration such as a UDT defined "
-                       "by '{' '}'.",
-                       "Received: ", currentToken->value,
-                       " of type " + displayKind(currentToken->kind) + "."));
+        errorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line,
+                   "Expected a valid new declaration such as a UDT defined "
+                   "by '{' '}'.",
+                   "Received: ", currentToken->value,
+                   " of type " + displayKind(currentToken->kind) + ".")));
         return makeNullNode(); //  unreachable
     }
 }
@@ -758,29 +757,28 @@ Parser2::parseNew()
 /**
  * UDTDec := Identifier '{' [UDTDecItem [',' UDTDecItem]*] '}'
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseUDTDec()
 {
     auto name = parseIdentifier();
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
-    auto topitem = getChain(true, TokenKind::RCURLEY, OP::UDTDECITEM,
-                            [this]() -> std::shared_ptr<NodeLexeme> {
-                                return this->parseUDTDecItem();
-                            });
+    auto topitem =
+        getChain(true, TokenKind::RCURLEY, OP::UDTDECITEM,
+                 [this]() -> NodePtr { return this->parseUDTDecItem(); });
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-    return makeNode(OP::UDTDEC, name, topitem);
+    return makeNode(OP::UDTDEC, std::move(name), std::move(topitem));
 }
 
 /**
  * UDTDecItem := Identifier ':' Primary
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseUDTDecItem()
 {
     auto identifier = parseIdentifier();
     advanceAndCheckToken(TokenKind::COLON); // consume ':'
     auto primary = parsePrimary();
-    return makeNode(OP::UDTDECITEM, identifier, primary);
+    return makeNode(OP::UDTDECITEM, std::move(identifier), std::move(primary));
 }
 
 /**
@@ -807,13 +805,13 @@ Parser2::parseT()
     }
 
     auto primary = parsePrimary();
-    return makeNode(OP::PRIMARY, primary);
+    return makeNode(OP::PRIMARY, std::move(primary));
 }
 
 /**
  * Primary := Bool | Integer |  String | Identifier
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parsePrimary()
 {
     switch (currentToken->kind)
@@ -830,12 +828,12 @@ Parser2::parsePrimary()
     case TokenKind::LIST:
         return parseList();
     default:
-        errorhandler->handle(
-            new Error2(currentToken->col, currentToken->line,
-                       "Expected a valid primary token such as a boolean, "
-                       "integer, float, string, identifier, or list.",
-                       "Received: ", currentToken->value,
-                       " of type " + displayKind(currentToken->kind) + "."));
+        errorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line,
+                   "Expected a valid primary token such as a boolean, "
+                   "integer, float, string, identifier, or list.",
+                   "Received: ", currentToken->value,
+                   " of type " + displayKind(currentToken->kind) + ".")));
         return parseIdentifier(); //  unreachable
     }
 }
@@ -843,7 +841,7 @@ Parser2::parsePrimary()
 /**
  * Type := Identifier
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseType()
 {
     if (currentToken->kind == TokenKind::LISTTYPE)
@@ -854,23 +852,23 @@ Parser2::parseType()
 /**
  * Variable := Type Identifier
  */
-std::shared_ptr<NodeLexeme>
+NodePtr
 Parser2::parseVariable()
 {
     auto type = parseType();
 
     // deal with void types
     if (type.get()->value == "void")
-        return makeNode(OP::VARIABLE, type, type);
+        return makeNode(OP::VARIABLE, std::move(type), std::move(type));
 
     auto name = parseIdentifier();
-    return makeNode(OP::VARIABLE, type, name);
+    return makeNode(OP::VARIABLE, std::move(type), std::move(name));
 }
 
 /**
  * Number := Integer | Float
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseNumber()
 {
     auto v = currentToken->value;
@@ -889,7 +887,7 @@ Parser2::parseNumber()
 /**
  * Identifier := lexvalue
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseIdentifier()
 {
     auto v = currentToken->value;
@@ -900,7 +898,7 @@ Parser2::parseIdentifier()
 /**
  * Bool := lexvalue
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseBoolean()
 {
     auto v = currentToken->value;
@@ -911,7 +909,7 @@ Parser2::parseBoolean()
 /**
  * String := lexvalue
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseString()
 {
     auto v = currentToken->value;
@@ -922,7 +920,7 @@ Parser2::parseString()
 /**
  * List := lexvalue
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseList()
 {
     auto v = currentToken->value;
@@ -933,7 +931,7 @@ Parser2::parseList()
 /**
  * ListType := lexvalue
  */
-std::shared_ptr<LeafLexeme>
+LeafPtr
 Parser2::parseListType()
 {
     auto v = currentToken->value;

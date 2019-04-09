@@ -24,7 +24,7 @@ class Parser2
 
     // helper for simplifying redundancy of recursive loops
     template <typename F>
-    std::shared_ptr<NodeLexeme>
+    NodePtr
     getChain(bool eq, TokenKind k, OP op, const F& f)
     {
         if (((currentToken->kind == k) && (eq)) ||
@@ -34,12 +34,12 @@ class Parser2
         }
         else if (currentToken->kind == TokenKind::EOF_)
         {
-            errorhandler->handle(
-                new Error2(currentToken->col, currentToken->line,
-                           "Unexpected end of file.",
-                           "Expected to receive an end of token delimiter such "
-                           "as '(' or '}'",
-                           "", ""));
+            errorhandler->handle(std::make_unique<Error2>(
+                Error2(currentToken->col, currentToken->line,
+                       "Unexpected end of file.",
+                       "Expected to receive an end of token delimiter such "
+                       "as '(' or '}'",
+                       "", "")));
             return makeNullNode(); // unreachable
         }
         else
@@ -47,7 +47,7 @@ class Parser2
             auto childL = f();
             auto childR =
                 getChain(eq, k, op, f); // call recursively instead of vectorize
-            return makeNode(op, childL, childR);
+            return makeNode(op, std::move(childL), std::move(childR));
         }
     }
 
@@ -56,30 +56,30 @@ class Parser2
     void advanceAndCheckToken(const TokenKind&);
 
     // parse methods
-    std::shared_ptr<NodeLexeme> parseProgram();
-    std::shared_ptr<NodeLexeme> parseSource();
-    std::shared_ptr<NodeLexeme> parseSourcePart();
-    std::shared_ptr<NodeLexeme> parseImportInfo();
-    std::shared_ptr<LeafLexeme> parseUDName();
-    std::shared_ptr<LeafLexeme> parseLocation();
-    std::shared_ptr<NodeLexeme> parseUDT();
-    std::shared_ptr<NodeLexeme> parseUserDefinedType();
-    std::shared_ptr<NodeLexeme> parseAttributes();
-    std::shared_ptr<NodeLexeme> parseMethods();
-    std::shared_ptr<NodeLexeme> parseMethodsRecurse();
-    std::shared_ptr<NodeLexeme> parseScript();
-    std::shared_ptr<NodeLexeme> parseScript_();
-    std::shared_ptr<NodeLexeme> parseFunctionDefinition();
-    std::shared_ptr<NodeLexeme> parseFunctionInfo();
-    std::shared_ptr<NodeLexeme> parseFunctionInOut();
-    std::shared_ptr<NodeLexeme> parseStart();
-    std::shared_ptr<NodeLexeme> parseBlock();
+    NodePtr parseProgram();
+    NodePtr parseSource();
+    NodePtr parseSourcePart();
+    NodePtr parseImportInfo();
+    LeafPtr parseUDName();
+    LeafPtr parseLocation();
+    NodePtr parseUDT();
+    NodePtr parseUserDefinedType();
+    NodePtr parseAttributes();
+    NodePtr parseMethods();
+    NodePtr parseMethodsRecurse();
+    NodePtr parseScript();
+    NodePtr parseScript_();
+    NodePtr parseFunctionDefinition();
+    NodePtr parseFunctionInfo();
+    NodePtr parseFunctionInOut();
+    NodePtr parseStart();
+    NodePtr parseBlock();
     Lexeme parseStatement();
-    std::shared_ptr<NodeLexeme> parseTree();
-    std::shared_ptr<NodeLexeme> parseBranch();
+    NodePtr parseTree();
+    NodePtr parseBranch();
     Lexeme parseGrouping();
-    std::shared_ptr<NodeLexeme> parseReturn();
-    std::shared_ptr<NodeLexeme> parseDeclaration();
+    NodePtr parseReturn();
+    NodePtr parseDeclaration();
     Lexeme parseE0();
     Lexeme parseE1(Lexeme);
     Lexeme parseE2(Lexeme);
@@ -93,59 +93,60 @@ class Parser2
     Lexeme parseE10(Lexeme);
     Lexeme parseE11(Lexeme);
     Lexeme parseE12(Lexeme);
-    std::shared_ptr<NodeLexeme> parseMemberAccess();
-    std::shared_ptr<NodeLexeme> parseAttributeAccess();
-    std::shared_ptr<NodeLexeme> parseMethodAccess();
-    std::shared_ptr<NodeLexeme> parseFunctionCall();
-    std::shared_ptr<NodeLexeme> parseNew();
-    std::shared_ptr<NodeLexeme> parseUDTDec();
-    std::shared_ptr<NodeLexeme> parseUDTDecItem();
+    NodePtr parseMemberAccess();
+    NodePtr parseAttributeAccess();
+    NodePtr parseMethodAccess();
+    NodePtr parseFunctionCall();
+    NodePtr parseNew();
+    NodePtr parseUDTDec();
+    NodePtr parseUDTDecItem();
     Lexeme parseT();
-    std::shared_ptr<LeafLexeme> parsePrimary();
-    std::shared_ptr<NodeLexeme> parseVariable();
-    std::shared_ptr<LeafLexeme> parseType();
-    std::shared_ptr<LeafLexeme> parseBoolean();
-    std::shared_ptr<LeafLexeme> parseNumber();
-    std::shared_ptr<LeafLexeme> parseInteger();
-    std::shared_ptr<LeafLexeme> parseFloat();
-    std::shared_ptr<LeafLexeme> parseString();
-    std::shared_ptr<LeafLexeme> parseIdentifier();
-    std::shared_ptr<LeafLexeme> parseList();
-    std::shared_ptr<LeafLexeme> parseListType();
+    LeafPtr parsePrimary();
+    NodePtr parseVariable();
+    LeafPtr parseType();
+    LeafPtr parseBoolean();
+    LeafPtr parseNumber();
+    LeafPtr parseInteger();
+    LeafPtr parseFloat();
+    LeafPtr parseString();
+    LeafPtr parseIdentifier();
+    LeafPtr parseList();
+    LeafPtr parseListType();
 
-  public:
-    Parser2(const std::string& filename);
-    std::shared_ptr<NodeLexeme> parse();
-
+    // helper method for retreiving the Leaf/Node ptr from a Lexeme variant
     template <typename F>
     void
     lexemeIt(Lexeme l, F f)
     {
         auto i = l.index();
         if (i == 0)
-            postorder(std::get<std::shared_ptr<NodeLexeme>>(l), f);
+            postorder(std::move(std::get<LeafPtr>(l)), f);
         else if (i == 1)
-            postorder(std::get<std::shared_ptr<LeafLexeme>>(l), f);
+            postorder(std::move(std::get<NodePtr>(l)), f);
     }
+
+  public:
+    Parser2(const std::string& filename);
+    NodePtr parse();
 
     template <typename F>
     void
-    postorder(std::shared_ptr<NodeLexeme> n, F f)
+    postorder(NodePtr n, F f)
     {
         if (n != nullptr && n->op != OP::NULL_VAL)
         {
             // root
             f(disp(n->op));
             // left
-            lexemeIt(n->left, f);
+            lexemeIt(std::move(n->left), f);
             // right
-            lexemeIt(n->right, f);
+            lexemeIt(std::move(n->right), f);
         }
     }
 
     template <typename F>
     void
-    postorder(std::shared_ptr<LeafLexeme> n, F f)
+    postorder(LeafPtr n, F f)
     {
         f(n->value);
     }

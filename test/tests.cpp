@@ -307,7 +307,7 @@ TEST(ParserTest, Parser2UDT)
 
     const auto& func = [&out](std::string s) mutable { out.push_back(s); };
 
-    p->postorder(n, func);
+    p->postorder(std::move(n), func);
 
     int i = 0;
     for (auto const& a : out)
@@ -346,7 +346,7 @@ TEST(ParserTest, Parser2Script)
 
     const auto& func = [&out](std::string s) mutable { out.push_back(s); };
 
-    p->postorder(n, func);
+    p->postorder(std::move(n), func);
 
     int i = 0;
     for (auto const& a : out)

@@ -7,7 +7,6 @@
 #include <iostream>
 #include <string>
 
-// data structure describing an error
 class Error2
 {
   private:
@@ -20,8 +19,8 @@ class Error2
     std::string errtype;
 
   public:
-    Error2(const int c, const int l, const std::string m, const std::string le,
-           const std::string mid, const std::string ri)
+    Error2(int c, int l, const std::string& m, const std::string& le,
+           const std::string& mid, const std::string& ri)
     {
         col = c;
         line = l;
@@ -32,7 +31,7 @@ class Error2
     }
     // set method for receiving type to utilize internally
     void
-    setErrorType(const std::string e)
+    setErrorType(const std::string& e)
     {
         errtype = e;
     }
@@ -40,10 +39,11 @@ class Error2
     void
     displayMessage()
     {
-        Color::Modifier red(Color::FG_RED);
-        Color::Modifier def(Color::FG_DEFAULT);
-        Color::Modifier underline(Color::UNDERLINE);
-        Color::Modifier normal(Color::RESET);
+        Prettify::Formatter red(Prettify::FG_RED);
+        Prettify::Formatter def(Prettify::FG_DEFAULT);
+        Prettify::Formatter underline(Prettify::UNDERLINE);
+        Prettify::Formatter normal(Prettify::RESET);
+
         std::cout << red << "[" << errtype << " ERROR at [" << line << ":"
                   << col << "]: " << msg << def << "\n\n\t" << left << underline
                   << middle << normal << right << "\n";

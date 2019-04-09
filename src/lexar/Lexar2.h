@@ -19,7 +19,7 @@ class Lexar2
     std::unique_ptr<Token2> makeToken(const TokenKind&, const std::string&);
     std::unique_ptr<Token2> makeTokenPutback(const TokenKind&, std::string&,
                                              char&);
-
+    // represents dfa states in our pseudo dfa/state machine implementation
     enum State
     {
         START,

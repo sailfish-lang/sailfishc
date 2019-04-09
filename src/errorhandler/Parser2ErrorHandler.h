@@ -4,10 +4,11 @@
  */
 #pragma once
 #include "Error2.h"
+#include <memory>
 
 class Parser2ErrorHandler
 {
   public:
     Parser2ErrorHandler(){};
-    void handle(Error2*);
+    void handle(std::unique_ptr<Error2>);
 };
