@@ -4,6 +4,7 @@
  */
 #pragma once
 #include "SymbolMetaData.h"
+#include <iomanip>
 #include <iostream>
 #include <stack>
 #include <string>
@@ -28,14 +29,6 @@ class SymbolTable
         scopeLevel = 0;
         globalScopeTable.clear();
         localCache.push_back("|");
-
-        // add standard library methods
-        // ensures known even at internal symbol tables such as for udt
-        // attributes and methods
-        addSymbol("display_str", "Fdisplay_str{$str}($void)");
-        addSymbol("display_int", "Fdisplay_int{$int}($void)");
-        addSymbol("display_flt", "Fdisplay_flt{$flt}($void)");
-        addSymbol("display_bool", "Fdisplay_bool{$bool}($void)");
     }
     // destructor
     ~SymbolTable()
@@ -75,5 +68,16 @@ class SymbolTable
     getCurrentScope()
     {
         return scopeLevel;
+    }
+
+    void
+    dump(int indent = 0)
+    {
+        std::cout << "DUMPING Symbol Table: \n";
+        for (auto const& element : globalScopeTable)
+        {
+            std::cout << std::setw(indent) << element.first << ": "
+                      << element.second.top()->getType() << std::endl;
+        }
     }
 };

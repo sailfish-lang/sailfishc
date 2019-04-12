@@ -4,17 +4,18 @@
  */
 #pragma once
 #include "SymbolTable.h"
+#include <memory>
 #include <string>
 
 class UDTMetaData
 {
   private:
-    SymbolTable* attributes;
-    SymbolTable* methods;
+    std::shared_ptr<SymbolTable> attributes;
+    std::shared_ptr<SymbolTable> methods;
 
   public:
     // constructor
-    UDTMetaData(SymbolTable* a, SymbolTable* m)
+    UDTMetaData(std::shared_ptr<SymbolTable> a, std::shared_ptr<SymbolTable> m)
     {
         attributes = a;
         methods = m;
@@ -22,24 +23,24 @@ class UDTMetaData
     // destructor
     ~UDTMetaData(){};
     // get methods
-    SymbolTable*
+    std::shared_ptr<SymbolTable>
     getAttributeSymbolTable()
     {
         return attributes;
     }
-    SymbolTable*
+    std::shared_ptr<SymbolTable>
     getMethodSymbolTable()
     {
         return methods;
     }
     // set methods
     void
-    setAttributeSymbolTable(SymbolTable* a)
+    setAttributeSymbolTable(std::shared_ptr<SymbolTable> a)
     {
         attributes = a;
     }
     void
-    setMethodSymbolTable(SymbolTable* m)
+    setMethodSymbolTable(std::shared_ptr<SymbolTable> m)
     {
         methods = m;
     }

@@ -135,6 +135,8 @@ disp(LIT o)
         return "List";
     case LIT::LISTTYPE:
         return "List type";
+    case LIT::TYPE:
+        return "Type";
     default:
         return "Unknown";
     }
@@ -156,6 +158,13 @@ NodePtr
 makeNode(OP o, Lexeme l)
 {
     return std::make_unique<NodeLexeme>(o, std::move(l), makeNullNode());
+}
+
+NodePtr
+makeNode(OP o, const std::string& t, Lexeme l)
+{
+    return std::make_unique<NodeLexeme>(o, makeLeaf(LIT::TYPE, t),
+                                        std::move(l));
 }
 
 NodePtr

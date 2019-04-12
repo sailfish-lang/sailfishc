@@ -1,5 +1,48 @@
 #include "Parser2.h"
 
+UdtAndFlag
+parseFile(const std::string& filename)
+{
+    try
+    {
+        Parser2* p = new Parser2(filename);
+        auto n = p->parse();
+        return std::make_tuple(std::move(p->getUDTTable()), p->getIsUDTFlag());
+    }
+    catch (const std::string msg)
+    {
+        std::cerr << msg;
+    }
+    catch (char const* msg)
+    {
+        std::cerr << msg;
+    }
+}
+
+std::string
+extractUDTName(const std::string& s)
+{
+    auto front = s.find_last_of('/') + 1;
+    auto back = s.find_last_of('.') - front;
+    return s.substr(front, back);
+}
+
+LandS
+Parser2::extractType(Lexeme l)
+{
+    if (l.index() == 0)
+    {
+        auto leaf = std::get<LeafPtr>(std::move(l));
+        return std::make_tuple(std::move(leaf), disp(leaf->lit));
+    }
+
+    if (l.index() == 1)
+    {
+        auto node = std::get<NodePtr>(std::move(l));
+        return std::make_tuple(std::move(node), disp(node->op));
+    }
+}
+
 // -------- Parser Helper Code --------- //
 void
 Parser2::advanceAndCheckToken(const TokenKind& k)
@@ -38,19 +81,49 @@ Parser2::advanceAndCheckToken(const TokenKind& k)
     }
 }
 
-// constructor
-Parser2::Parser2(const std::string& filename)
+// -------- Semantic Analysis Helper Code --------- //
+void
+Parser2::checkType(const std::string& t0, const std::string& t1)
 {
-    lexar = std::make_unique<Lexar2>(filename);
+    if (t0 == "num")
+    {
+        if ("int" != t1 && "flt" != t1)
+        {
+            semanticerrorhandler->handle(std::make_unique<Error2>(
+                Error2(currentToken->col, currentToken->line,
+                       "Mismatched types. Expected/LeftHand is: int or flt.",
+                       "Received/Right Hand is: ", t1, ".")));
+        }
+    }
+    else if (t0 != t1)
+    {
+        semanticerrorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line,
+                   "Mismatched types. Expected/LeftHand is: " + t0 + ".",
+                   "Received/Right Hand is: ", t1, ".")));
+    }
+}
+
+// constructor
+Parser2::Parser2(const std::string& file)
+{
+    filename = file;
+    lexar = std::make_unique<Lexar2>(file);
     currentToken = lexar->getNextToken();
     errorhandler = std::make_unique<Parser2ErrorHandler>(Parser2ErrorHandler());
+    semanticerrorhandler = std::make_unique<SemanticAnalyzerErrorHandler>(
+        SemanticAnalyzerErrorHandler());
+    symboltable = std::make_unique<SymbolTable>(SymbolTable());
+    udttable = std::make_unique<UDTTable>(UDTTable());
+    isUdt = false;
 }
 
 // public interface method
 NodePtr
 Parser2::parse()
 {
-    return parseProgram();
+    auto program = parseProgram();
+    return program;
 }
 
 // -------- Parser Parse Methods --------- //
@@ -85,6 +158,37 @@ Parser2::parseImportInfo()
     auto name = parseUDName();
     advanceAndCheckToken(TokenKind::COLON); // eat colon
     auto loc = parseLocation();
+
+    auto file = loc->value.substr(1, loc->value.size() - 2);
+
+    try
+    {
+        auto udtAndFlag = parseFile(file);
+
+        auto table = std::move(std::get<0>(udtAndFlag));
+        auto flag = std::get<1>(udtAndFlag);
+
+        if (!flag)
+            errorhandler->handle(std::make_unique<Error2>(
+                Error2(currentToken->col, currentToken->line,
+                       "Expected imported file of type UDT",
+                       "Received: ", "\"" + file + "\"", " of type script")));
+
+        // add to own udt table under imported name, throwing an error if the
+        // name already exists
+        if (!udttable->hasUDT(name->value))
+            udttable->addUDT(
+                name->value,
+                table->getAttributeSymbolTable(extractUDTName(file)),
+                table->getMethodSymbolTable(extractUDTName(file)));
+
+        symboltable->addSymbol(name->value, "U");
+    }
+    catch (char const* msg)
+    {
+        throw msg;
+    }
+
     return makeNode(OP::IMPORT, std::move(name), std::move(loc));
 }
 
@@ -115,6 +219,7 @@ Parser2::parseSourcePart()
     switch (currentToken->kind)
     {
     case TokenKind::UAT:
+        isUdt = true;
         return parseUDT();
     default:
         return parseScript();
@@ -136,40 +241,76 @@ Parser2::parseUDT()
 NodePtr
 Parser2::parseUserDefinedType()
 {
-    auto attributes = parseAttributes();
-    auto methods = parseMethods();
-    return makeNode(OP::UDT, std::move(attributes), std::move(methods));
+    auto atlandst = this->parseAttributes();
+    auto topattribute = std::move(std::get<0>(atlandst));
+    std::shared_ptr<SymbolTable> attributest = std::move(std::get<1>(atlandst));
+
+    auto mlandst = this->parseMethods();
+    auto topmethod = std::move(std::get<0>(mlandst));
+    std::shared_ptr<SymbolTable> methodst = std::move(std::get<1>(mlandst));
+
+    auto udtname = extractUDTName(filename);
+
+    udttable->addUDT(udtname, attributest, methodst);
+
+    return makeNode(OP::UDT, std::move(topattribute), std::move(topmethod));
 }
 
 /**
  * Attributes := 'Uat' [Identifier Identifier]*
  */
-NodePtr
+LandSt
 Parser2::parseAttributes()
 {
     advanceAndCheckToken(TokenKind::UAT);     // consume uat
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
-    auto topattribute =
-        getChain(true, TokenKind::RCURLEY, OP::ATTRIBUTE,
-                 [this]() -> NodePtr { return this->parseVariable(); });
+
+    std::unique_ptr<SymbolTable> st =
+        std::make_unique<SymbolTable>(SymbolTable());
+
+    auto topattribute = getChain(
+        true, TokenKind::RCURLEY, OP::ATTRIBUTE, [&st, this]() -> Lexeme {
+            auto lands = this->parseVariable();
+
+            auto attribute = std::move(std::get<0>(lands));
+            auto name = std::get<1>(lands);
+            auto type = std::get<2>(lands);
+
+            st->addSymbol(name, type);
+
+            return attribute;
+        });
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-    return makeNode(OP::ATTRIBUTE, std::move(topattribute));
+    return std::make_tuple(makeNode(OP::ATTRIBUTE, std::move(topattribute)),
+                           std::move(st));
 }
 
 /**
  * Methods := 'Ufn' [FunctionDefinition]*
  */
-NodePtr
+LandSt
 Parser2::parseMethods()
 {
     advanceAndCheckToken(TokenKind::UFN);     // consume ufn
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
+
+    // temporarily capture methods into symbol table for udt
+    std::unique_ptr<SymbolTable> st;
+    std::unique_ptr<SymbolTable> temp = std::move(symboltable);
+    symboltable = std::make_unique<SymbolTable>(SymbolTable());
+
     auto topmethod =
         getChain(true, TokenKind::RCURLEY, OP::METHOD, [this]() -> NodePtr {
             return this->parseFunctionDefinition();
         });
+
+    // set back the normal symbol table and capture temp table
+    st = std::move(symboltable);
+    symboltable = std::move(temp);
+
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-    return makeNode(OP::METHOD, std::move(topmethod));
+    return std::make_tuple(makeNode(OP::METHOD, std::move(topmethod)),
+                           std::move(st));
 }
 
 NodePtr
@@ -196,45 +337,78 @@ NodePtr
 Parser2::parseFunctionDefinition()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
-    advanceAndCheckToken(TokenKind::FUN);    // consume fun
+    advanceAndCheckToken(TokenKind::FUN);    // consume funenterScope
+
+    // parse left child
     auto id = parseIdentifier();
-    auto info = parseFunctionInfo();
+
+    // parse right child
+    auto lands = parseFunctionInfo();
+    auto lexeme = std::move(std::get<0>(lands));
+    auto type = std::get<1>(lands);
+    type = "F" + type;
+
+    // add to symbol table
+    auto ok = symboltable->addSymbol(id->value, type);
+    if (!ok)
+        errorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line,
+                   "Unexpected redeclaration of " + id->value +
+                       ", originally defined as type " +
+                       symboltable->getSymbolType(id->value) + ".",
+                   "Received second declaration of type: ", type, ".")));
+
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-    return makeNode(OP::FUNCTION, std::move(id), std::move(info));
+    return makeNode(OP::FUNCTION, std::move(id), std::move(lexeme));
 }
 
 /**
  * FunctionInfo := FunctionInOut Block
  */
-NodePtr
+LandS
 Parser2::parseFunctionInfo()
 {
-    auto inout = parseFunctionInOut();
+    auto lands = parseFunctionInOut();
+    auto fintout = std::move(std::get<0>(lands));
+    auto type = std::get<1>(lands);
+
     auto block = parseBlock();
-    return makeNode(OP::FUNCTION_INFO, std::move(inout), std::move(block));
+
+    return std::make_tuple(
+        makeNode(OP::FUNCTION_INFO, std::move(fintout), std::move(block)),
+        type);
 }
 
 /**
  * FunctionInOut := FunctionInputs* FunctionOutputs
  *  FunctionInputs :=  '(' Variable [',' Variable]* ')'
  */
-NodePtr
+LandS
 Parser2::parseFunctionInOut()
 {
     // inputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
                                              // TODO: check for multiple voids
-    auto topinput =
-        getChain(true, TokenKind::RPAREN, OP::FUNCTION_INPUT,
-                 [this]() -> NodePtr { return this->parseVariable(); });
+
+    std::string types = "(";
+    auto topinput = getChain(true, TokenKind::RPAREN, OP::FUNCTION_INPUT,
+                             [&types, this]() -> Lexeme {
+                                 auto lands = this->parseVariable();
+                                 auto inp = std::move(std::get<0>(lands));
+                                 auto type = std::get<2>(lands);
+                                 types += "_" + type;
+                                 return inp;
+                             });
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
 
     // outputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
     auto output = parseType();
+    types += ")" + output.get()->value;
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-    return makeNode(OP::FUNCTION_IN_OUT, std::move(topinput),
-                    std::move(output));
+    return std::make_tuple(
+        makeNode(OP::FUNCTION_IN_OUT, std::move(topinput), std::move(output)),
+        types);
 }
 
 /**
@@ -256,10 +430,12 @@ NodePtr
 Parser2::parseBlock()
 {
     advanceAndCheckToken(TokenKind::LCURLEY); // eat '{'
+
+    symboltable->enterScope();
     auto topstatement =
         getChain(true, TokenKind::RCURLEY, OP::STATEMENT,
                  [this]() -> Lexeme { return this->parseStatement(); });
-    NodePtr parseBlockRecurse();
+    symboltable->exitScope();
 
     advanceAndCheckToken(TokenKind::RCURLEY); // eat '}'
     return makeNode(OP::BLOCK, std::move(topstatement));
@@ -280,7 +456,10 @@ Parser2::parseStatement()
     case TokenKind::DEC:
         return parseDeclaration();
     default:
-        return parseE0();
+        auto a = parseE0();
+        auto e0 = std::move(std::get<0>(a));
+        auto type = std::get<1>(a);
+        return e0;
     }
 }
 
@@ -322,9 +501,15 @@ Lexeme
 Parser2::parseGrouping()
 {
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
-    auto condition = parseE0();
+
+    auto a = parseE0();
+    auto e0 = std::move(std::get<0>(a));
+    auto type = std::get<1>(a);
+
+    // checkType("bool", type);
+
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
-    return condition;
+    return e0;
 }
 
 /**
@@ -334,7 +519,9 @@ NodePtr
 Parser2::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
-    auto t = parseT();
+    auto a = parseT();
+    auto t = std::move(std::get<0>(a));
+    auto type = std::get<1>(a);
     return makeNode(OP::RETURN, std::move(t));
 }
 
@@ -345,333 +532,280 @@ NodePtr
 Parser2::parseDeclaration()
 {
     advanceAndCheckToken(TokenKind::DEC); // consume 'dec'
-    auto var = parseVariable();
+
+    auto lsands = parseVariable();
+    auto var = std::move(std::get<0>(lsands));
+    auto name = std::get<1>(lsands);
+    auto type = std::get<2>(lsands);
+
+    symboltable->addSymbol(name, type);
+
     advanceAndCheckToken(TokenKind::ASSIGNMENT); // consume '='
-    auto e0 = parseE0();
+    auto a = parseE0();
+    auto e0 = std::move(std::get<0>(a));
+    auto ta = std::get<1>(a);
+
+    checkType(type, ta);
+
     return makeNode(OP::DECLARATION, std::move(var), std::move(e0));
 }
 
 /**
  * E0 := T0 E1
  */
-Lexeme
+LandS
 Parser2::parseE0()
 {
-    auto t0 = parseT();
-    return parseE1(std::move(t0));
+    auto a = parseT();
+    auto t0 = std::move(std::get<0>(a));
+    auto typea = std::get<1>(a);
+
+    auto b = parseE1(typea);
+    auto e1 = std::move(std::get<0>(b));
+    auto typeb = std::get<1>(b);
+
+    return std::make_tuple(std::move(e1), typeb);
 }
 
 /**
  * E1 := ** E0 | E2
  */
-Lexeme
-Parser2::parseE1(Lexeme T0)
+LandS
+Parser2::parseE1(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::EXPONENTIATION)
-    {
-        advanceAndCheckToken(TokenKind::EXPONENTIATION); // consume "**"
-        auto e0 = parseE0();
-        return makeNode(OP::EXPONENT, std::move(T0), std::move(e0));
-    }
-    return parseE2(std::move(T0));
+
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE2(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are int
+            this->checkType(T0, T1);
+            this->checkType("int", T0);
+            this->checkType("int", T1);
+            return T1;
+        },
+        std::make_tuple(TokenKind::EXPONENTIATION, OP::EXPONENT));
 }
 
 /**
  * E2 := * E0 | / E0 | % E0 | E3
  */
-Lexeme
-Parser2::parseE2(Lexeme T1)
+LandS
+Parser2::parseE2(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::MULTIPLICATION ||
-        currentToken->kind == TokenKind::DIVISION ||
-        currentToken->kind == TokenKind::MODULO)
-    {
-        switch (currentToken->kind)
-        {
-        case TokenKind::MULTIPLICATION:
-        {
-            advanceAndCheckToken(TokenKind::MULTIPLICATION); // consume "*"
-            auto e0 = parseE0();
-            return makeNode(OP::MULTIPLICATION, std::move(T1), std::move(e0));
-        }
-        case TokenKind::DIVISION:
-        {
-            advanceAndCheckToken(TokenKind::DIVISION); // consume "/"
-            auto e0 = parseE0();
-            return makeNode(OP::DIVISION, std::move(T1), std::move(e0));
-        }
-        case TokenKind::MODULO:
-        {
-            advanceAndCheckToken(TokenKind::MODULO); // consume "%"
-            auto e0 = parseE0();
-            return makeNode(OP::MODULO, std::move(T1), std::move(e0));
-        }
-        }
-    }
-    return parseE3(std::move(T1));
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE3(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are same
+            this->checkType(T0, T1);
+            this->checkType("num", T0);
+            this->checkType("num", T1);
+            return T1;
+        },
+        std::make_tuple(TokenKind::MULTIPLICATION, OP::MULTIPLICATION),
+        std::make_tuple(TokenKind::DIVISION, OP::DIVISION),
+        std::make_tuple(TokenKind::MODULO, OP::MODULO));
 }
 
 /**
  * E3 := + E0 | - E0 | E4
  */
-Lexeme
-Parser2::parseE3(Lexeme T2)
+LandS
+Parser2::parseE3(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::ADDITION ||
-        currentToken->kind == TokenKind::SUBTRACTION)
-    {
-
-        switch (currentToken->kind)
-        {
-        case TokenKind::ADDITION:
-        {
-            advanceAndCheckToken(TokenKind::ADDITION); // consume "+"
-            auto e0 = parseE0();
-            return makeNode(OP::ADDITION, std::move(T2), std::move(e0));
-        }
-        case TokenKind::SUBTRACTION:
-        {
-            advanceAndCheckToken(TokenKind::SUBTRACTION); // consume "-"
-            auto e0 = parseE0();
-            return makeNode(OP::SUBTRACTION, std::move(T2), std::move(e0));
-        }
-        }
-    }
-    return parseE4(std::move(T2));
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE4(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are same
+            this->checkType(T0, T1);
+            this->checkType("num", T0);
+            this->checkType("num", T1);
+            return T1;
+        },
+        std::make_tuple(TokenKind::ADDITION, OP::ADDITION),
+        std::make_tuple(TokenKind::SUBTRACTION, OP::SUBTRACTION));
 }
 
 /**
  * E4 := < E0 | > E0 | <= E0 | >= E0 | E5
  */
-Lexeme
-Parser2::parseE4(Lexeme T3)
+LandS
+Parser2::parseE4(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::LESS_THAN ||
-        currentToken->kind == TokenKind::LESS_THAN_OR_EQUALS ||
-        currentToken->kind == TokenKind::GREATER_THAN ||
-        currentToken->kind == TokenKind::GREATER_THAN_OR_EQUALS)
-    {
-        switch (currentToken->kind)
-        {
-        case TokenKind::LESS_THAN:
-        {
-            advanceAndCheckToken(TokenKind::LESS_THAN); // consume "<"
-            auto e0 = parseE0();
-            return makeNode(OP::LESS_THAN, std::move(T3), std::move(e0));
-        }
-        case TokenKind::LESS_THAN_OR_EQUALS:
-        {
-            advanceAndCheckToken(TokenKind::LESS_THAN_OR_EQUALS); // consume "<"
-            auto e0 = parseE0();
-            return makeNode(OP::LESS_THAN_OR_EQUALS, std::move(T3),
-                            std::move(e0));
-        }
-        case TokenKind::GREATER_THAN:
-        {
-            advanceAndCheckToken(TokenKind::GREATER_THAN); // consume ">"
-            auto e0 = parseE0();
-            return makeNode(OP::GREATER_THAN, std::move(T3), std::move(e0));
-        }
-        case TokenKind::GREATER_THAN_OR_EQUALS:
-        {
-            advanceAndCheckToken(
-                TokenKind::GREATER_THAN_OR_EQUALS); // consume ">="
-            auto e0 = parseE0();
-            return makeNode(OP::GREATER_THAN_OR_EQUALS, std::move(T3),
-                            std::move(e0));
-        }
-        }
-    }
-    return parseE5(std::move(T3));
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE5(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are bool
+            this->checkType(T0, T1);
+            this->checkType("num", T0);
+            this->checkType("num", T1);
+            return "bool";
+        },
+        std::make_tuple(TokenKind::LESS_THAN, OP::LESS_THAN),
+        std::make_tuple(TokenKind::LESS_THAN_OR_EQUALS,
+                        OP::LESS_THAN_OR_EQUALS),
+        std::make_tuple(TokenKind::GREATER_THAN, OP::GREATER_THAN),
+        std::make_tuple(TokenKind::GREATER_THAN_OR_EQUALS,
+                        OP::GREATER_THAN_OR_EQUALS));
 }
 
 /**
  * E5 := == E0 | != E0 | E6
  */
-Lexeme
-Parser2::parseE5(Lexeme T4)
+LandS
+Parser2::parseE5(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::EQUIVALENCE ||
-        currentToken->kind == TokenKind::NONEQUIVALENCE)
-    {
-
-        switch (currentToken->kind)
-        {
-        case TokenKind::EQUIVALENCE:
-        {
-            advanceAndCheckToken(TokenKind::EQUIVALENCE); // consume "=="
-            auto e0 = parseE0();
-            return makeNode(OP::EQUIVALENCE, std::move(T4), std::move(e0));
-        }
-        case TokenKind::NONEQUIVALENCE:
-        {
-            advanceAndCheckToken(TokenKind::NONEQUIVALENCE); // consume "!="
-            auto e0 = parseE0();
-            return makeNode(OP::NONEQUIVALENCE, std::move(T4), std::move(e0));
-        }
-        }
-    }
-    return parseE6(std::move(T4));
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE6(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are bool
+            this->checkType(T0, T1);
+            return "bool";
+        },
+        std::make_tuple(TokenKind::EQUIVALENCE, OP::EQUIVALENCE),
+        std::make_tuple(TokenKind::NONEQUIVALENCE, OP::NONEQUIVALENCE));
 }
 
 /**
  * E6 := 'and' E0 | 'or' E0 | E7
  */
-Lexeme
-Parser2::parseE6(Lexeme T5)
+LandS
+Parser2::parseE6(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::AND ||
-        currentToken->kind == TokenKind::OR)
-    {
-        switch (currentToken->kind)
-        {
-        case TokenKind::AND:
-        {
-            advanceAndCheckToken(TokenKind::AND); // consume 'and'
-            auto e0 = parseE0();
-            return makeNode(OP::AND, std::move(T5), std::move(e0));
-        }
-        case TokenKind::OR:
-        {
-            advanceAndCheckToken(TokenKind::OR); // consume 'or'
-            auto e0 = parseE0();
-            return makeNode(OP::OR, std::move(T5), std::move(e0));
-        }
-        }
-    }
-    return parseE7(std::move(T5));
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE7(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are bool
+            this->checkType(T0, T1);
+            this->checkType("bool", T0);
+            this->checkType("bool", T1);
+            return "bool";
+        },
+        std::make_tuple(TokenKind::OR, OP::OR),
+        std::make_tuple(TokenKind::AND, OP::AND));
 }
 
 /**
  * E7 := = E0 | E8
  */
-Lexeme
-Parser2::parseE7(Lexeme T6)
+LandS
+Parser2::parseE7(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::ASSIGNMENT)
-    {
-        advanceAndCheckToken(TokenKind::ASSIGNMENT); // consume "="
-        auto e0 = parseE0();
-        return makeNode(OP::ASSIGNMENT, std::move(T6), std::move(e0));
-    }
-    return parseE8(std::move(T6));
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE8(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are the same
+            this->checkType(T0, T1);
+            return T1;
+        },
+
+        std::make_tuple(TokenKind::ASSIGNMENT, OP::ASSIGNMENT));
 }
 
 /**
  * E8 := [!, ++, --] E0 | E9
  */
-Lexeme
-Parser2::parseE8(Lexeme T7)
+LandS
+Parser2::parseE8(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::NEGATION ||
-        currentToken->kind == TokenKind::UNARYADD ||
-        currentToken->kind == TokenKind::UNARYMINUS)
-    {
-        switch (currentToken->kind)
-        {
-        case TokenKind::NEGATION:
-        {
-            advanceAndCheckToken(TokenKind::NEGATION); // consume "!"
-            auto e0 = parseE0();
-            return makeNode(OP::NEGATION, std::move(T7), std::move(e0));
-        }
-        case TokenKind::UNARYADD:
-        {
-            advanceAndCheckToken(TokenKind::UNARYADD); // consume "++"
-            auto e0 = parseE0();
-            return makeNode(OP::UNARYADD, std::move(T7), std::move(e0));
-        }
-        case TokenKind::UNARYMINUS:
-        {
-            advanceAndCheckToken(TokenKind::UNARYMINUS); // consume "--"
-            auto e0 = parseE0();
-            return makeNode(OP::UNARYMINUS, std::move(T7), std::move(e0));
-        }
-        }
-    }
-    return parseE9(std::move(T7));
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE9(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are the same
+            // this->checkType(T0, T1);
+            // TODO: check this
+            return T1;
+        },
+        std::make_tuple(TokenKind::NEGATION, OP::NEGATION),
+        std::make_tuple(TokenKind::UNARYADD, OP::UNARYADD),
+        std::make_tuple(TokenKind::UNARYMINUS, OP::UNARYMINUS));
 }
 
 /**
  * E9 := [+=, -=, /=, *=] E0 | E10
  */
-Lexeme
-Parser2::parseE9(Lexeme T8)
+LandS
+Parser2::parseE9(const std::string& T0)
 {
-    if (currentToken->kind == TokenKind::ADDTO ||
-        currentToken->kind == TokenKind::SUBFROM ||
-        currentToken->kind == TokenKind::DIVFROM ||
-        currentToken->kind == TokenKind::MULTTO)
-    {
-        switch (currentToken->kind)
-        {
-        case TokenKind::ADDTO:
-        {
-            advanceAndCheckToken(TokenKind::ADDTO); // consume "+="
-            auto e0 = parseE0();
-            return makeNode(OP::ADDTO, std::move(T8), std::move(e0));
-        }
-        case TokenKind::SUBFROM:
-        {
-            advanceAndCheckToken(TokenKind::SUBFROM); // consume "-="
-            auto e0 = parseE0();
-            return makeNode(OP::SUBFROM, std::move(T8), std::move(e0));
-        }
-        case TokenKind::DIVFROM:
-        {
-            advanceAndCheckToken(TokenKind::DIVFROM); // consume "/="
-            auto e0 = parseE0();
-            return makeNode(OP::DIVFROM, std::move(T8), std::move(e0));
-        }
-        case TokenKind::MULTTO:
-        {
-            advanceAndCheckToken(TokenKind::MULTTO); // consume "*="
-            auto e0 = parseE0();
-            return makeNode(OP::MULTTO, std::move(T8), std::move(e0));
-        }
-        }
-    }
-    return parseE10(std::move(T8));
+    return parseExpr(
+        T0,
+        [this](const std::string& T0) -> LandS { return this->parseE10(T0); },
+        [this](const std::string& T0, const std::string& T1) -> std::string {
+            // checking that both are the same
+            this->checkType(T0, T1);
+            this->checkType("num", T0);
+            this->checkType("num", T1);
+            return T1;
+        },
+        std::make_tuple(TokenKind::ADDTO, OP::ADDTO),
+        std::make_tuple(TokenKind::SUBFROM, OP::SUBFROM),
+        std::make_tuple(TokenKind::DIVFROM, OP::DIVFROM),
+        std::make_tuple(TokenKind::MULTTO, OP::MULTTO));
 }
 
 /**
  * E10 := MemberAccess E0 | E11
  */
-Lexeme
-Parser2::parseE10(Lexeme T9)
+LandS
+Parser2::parseE10(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::DOT ||
         currentToken->kind == TokenKind::TRIPLE_DOT)
     {
         auto memberAccess = parseMemberAccess();
-        auto e1 =
-            parseE1(makeNullNode()); // like calling E0 where T0 does not exist
-        return makeNode(OP::MEMBER, std::move(memberAccess), std::move(e1));
+        auto a = parseE1(""); // like calling E0 where T0 does not exist
+        auto e1 = std::move(std::get<0>(a));
+        auto type = std::get<1>(a);
+        return std::make_tuple(
+            makeNode(OP::MEMBER, std::move(memberAccess), std::move(e1)), type);
     }
-    return parseE11(std::move(T9));
+
+    auto b = parseE11(std::move(T0));
+    auto t10 = std::move(std::get<0>(b));
+    auto type = std::get<1>(b);
+
+    return std::make_tuple(std::move(t10), type);
 }
 
 /**
  * E11 := New | E12
  */
-Lexeme
-Parser2::parseE11(Lexeme T10)
+LandS
+Parser2::parseE11(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::NEW)
     {
-        auto New = parseNew();
-        return makeNode(OP::MEMBER, std::move(New));
+        auto a = parseNew();
+        auto New = std::move(std::get<0>(a));
+        auto type = std::get<1>(a);
+        return std::make_tuple(makeNode(OP::MEMBER, std::move(New)), type);
     }
-    return parseE12(std::move(T10));
+
+    auto b = parseE12(std::move(T0));
+    auto t11 = std::move(std::get<0>(b));
+    auto type = std::get<1>(b);
+
+    return std::make_tuple(std::move(t11), type);
 }
 
 /**
  * E12 := T12 | ε
  */
-Lexeme
-Parser2::parseE12(Lexeme T11)
+LandS
+Parser2::parseE12(const std::string& T11)
 {
-    return T11;
+    auto landv = T11;
+    // auto t11 = std::move(std::get<0>(landv));
+    // auto type = std::get<1>(landv);
+
+    return std::make_tuple(makeNullNode(), T11);
 }
 
 /**
@@ -735,14 +869,19 @@ Parser2::parseFunctionCall()
 /**
  * New := UDTDec
  */
-NodePtr
+LandS
 Parser2::parseNew()
 {
     advanceAndCheckToken(TokenKind::NEW); // consume new
     switch (currentToken->kind)
     {
     case TokenKind::IDENTIFIER:
-        return parseUDTDec();
+    {
+        auto a = parseUDTDec();
+        auto udtdec = std::move(std::get<0>(a));
+        auto type = std::get<1>(a);
+        return std::make_tuple(std::move(udtdec), type);
+    }
     default:
         errorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line,
@@ -750,14 +889,14 @@ Parser2::parseNew()
                    "by '{' '}'.",
                    "Received: ", currentToken->value,
                    " of type " + displayKind(currentToken->kind) + ".")));
-        return makeNullNode(); //  unreachable
+        return std::make_tuple(makeNullNode(), ""); //  unreachable
     }
 }
 
 /**
  * UDTDec := Identifier '{' [UDTDecItem [',' UDTDecItem]*] '}'
  */
-NodePtr
+LandS
 Parser2::parseUDTDec()
 {
     auto name = parseIdentifier();
@@ -766,7 +905,8 @@ Parser2::parseUDTDec()
         getChain(true, TokenKind::RCURLEY, OP::UDTDECITEM,
                  [this]() -> NodePtr { return this->parseUDTDecItem(); });
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-    return makeNode(OP::UDTDEC, std::move(name), std::move(topitem));
+    return std::make_tuple(
+        makeNode(OP::UDTDEC, std::move(name), std::move(topitem)), name->value);
 }
 
 /**
@@ -778,21 +918,25 @@ Parser2::parseUDTDecItem()
     auto identifier = parseIdentifier();
     advanceAndCheckToken(TokenKind::COLON); // consume ':'
     auto primary = parsePrimary();
-    return makeNode(OP::UDTDECITEM, std::move(identifier), std::move(primary));
+    auto prim = std::move(std::get<0>(primary));
+    auto type = std::get<1>(primary);
+    return makeNode(OP::UDTDECITEM, std::move(identifier), std::move(prim));
 }
 
 /**
  * T := Primary | '(' E0 ')'
  */
-Lexeme
+LandS
 Parser2::parseT()
 {
     if (currentToken->kind == TokenKind::LPAREN)
     {
         advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
-        auto e0 = parseE0();
+        auto a = parseE0();
+        auto e0 = std::move(std::get<0>(a));
+        auto type = std::get<1>(a);
         advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-        return e0;
+        return std::make_tuple(std::move(e0), type);
     }
 
     else if (currentToken->kind == TokenKind::NEGATION ||
@@ -800,33 +944,39 @@ Parser2::parseT()
              currentToken->kind == TokenKind::UNARYMINUS ||
              currentToken->kind == TokenKind::NEW)
     {
-        auto e1 = parseE1(makeNullNode()); // type less
-        return e1;
+        auto a = parseE1(""); // type less
+        auto e1 = std::move(std::get<0>(a));
+        auto type = std::get<1>(a);
+        return std::make_tuple(std::move(e1), type);
     }
 
     auto primary = parsePrimary();
-    return makeNode(OP::PRIMARY, std::move(primary));
+    auto prim = std::move(std::get<0>(primary));
+    auto type = std::get<1>(primary);
+
+    return std::make_tuple(makeNode(OP::PRIMARY, std::move(prim)), type);
 }
 
 /**
  * Primary := Bool | Integer |  String | Identifier
  */
-LeafPtr
+LandS
 Parser2::parsePrimary()
 {
     switch (currentToken->kind)
     {
     case TokenKind::BOOL:
-        return parseBoolean();
+        return std::make_tuple(parseBoolean(), "bool");
     case TokenKind::INTEGER:
+        return std::make_tuple(parseNumber(), "int");
     case TokenKind::FLOAT:
-        return parseNumber();
+        return std::make_tuple(parseNumber(), "flt");
     case TokenKind::STRING:
-        return parseString();
+        return std::make_tuple(parseString(), "str");
     case TokenKind::IDENTIFIER:
-        return parseIdentifier();
+        return std::make_tuple(parseIdentifier(), "id");
     case TokenKind::LIST:
-        return parseList();
+        return std::make_tuple(parseList(), currentToken->value);
     default:
         errorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line,
@@ -834,7 +984,7 @@ Parser2::parsePrimary()
                    "integer, float, string, identifier, or list.",
                    "Received: ", currentToken->value,
                    " of type " + displayKind(currentToken->kind) + ".")));
-        return parseIdentifier(); //  unreachable
+        return std::make_tuple(parseIdentifier(), "bool"); //  unreachable
     }
 }
 
@@ -852,17 +1002,21 @@ Parser2::parseType()
 /**
  * Variable := Type Identifier
  */
-NodePtr
+LSandS
 Parser2::parseVariable()
 {
     auto type = parseType();
 
     // deal with void types
     if (type.get()->value == "void")
-        return makeNode(OP::VARIABLE, std::move(type), std::move(type));
+        return std::make_tuple(
+            makeNode(OP::VARIABLE, std::move(type), std::move(type)),
+            type.get()->value, type.get()->value);
 
     auto name = parseIdentifier();
-    return makeNode(OP::VARIABLE, std::move(type), std::move(name));
+    return std::make_tuple(
+        makeNode(OP::VARIABLE, std::move(type), std::move(name)),
+        name.get()->value, type.get()->value);
 }
 
 /**

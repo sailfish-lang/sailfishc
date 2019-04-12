@@ -86,6 +86,8 @@ Lexar2::getNextChar()
 Lexar2::Lexar2(const std::string& filename)
 {
     file.open(filename, std::fstream::in);
+    if (!file.good())
+        throw "File: " + filename + " not found.\n";
     line = 1;
     col = 1;
     prevCol = 0;

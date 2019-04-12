@@ -13,73 +13,14 @@ helpMessage()
                  "\n\tsailfishc [filename]\n"
                  "\n\tsailfishc --help\n"
                  "\n\tsailfishc --version\n"
-                 "\n\tsailfishc --lex_only [filename]\n"
-                 "\n\tsailfishc --parse_only [filename]\n"
-                 "\n\tsailfishc --semantic_analysis_only [filename]\n"
-                 "\n\tsailfishc --compile_c [filename]\n"
-                 "\n\tsailfishc --compile_and_execute [filename]\n\n";
+                 "\n\tsailfishc --lex [filename]\n"
+                 "\n\tsailfishc --parse [filename]\n";
 }
 
 void
 versionInfo()
 {
-    std::cout << "sailfishc 0.2.0 (dorsalfin)\n";
-}
-
-bool
-compileC()
-{
-    // check to see if we can use system
-    if (!system(NULL))
-    {
-        std::cout << "System command processor doesn't exist. Please compile "
-                     "sailfishc generated C code yourself.\n";
-        return false;
-    }
-
-    std::cout << "EXECUTING: gcc out.c\n";
-    system("gcc out.c");
-
-    std::cout << "gcc compiled out.c to: a.out\n";
-
-    return true;
-}
-
-void
-executeBinary()
-{
-    std::cout << "EXECUTING: ./a.out.\n";
-    system("./a.out");
-}
-
-bool
-fullCompilation(const std::string filename)
-{
-    try
-    {
-        std::cout << "Compiling " << filename << ".\n";
-
-        Parser* p = new Parser();
-        ast::Start* root = p->parse(filename);
-
-        SemanticAnalyzer* s = new SemanticAnalyzer(root);
-        s->analyze();
-
-        std::string cFilename = "out.c";
-
-        Transpiler* t = new Transpiler(root, cFilename, s->getUDTTable(),
-                                       s->getSymbolTable());
-        t->transpile();
-
-        std::cout << "Success. sailfishc compiled " + filename + " to: out.c\n";
-
-        return true;
-    }
-    catch (const std::string msg)
-    {
-        std::cerr << msg;
-        return false;
-    }
+    std::cout << "sailfishc 0.2.0 (marlin)\n";
 }
 
 int
@@ -101,30 +42,12 @@ handleCommandLine(int argc, char* const* argv)
         {
             versionInfo();
         }
-        else
-        {
-            fullCompilation(argv[1]);
-        }
 
         return 0;
     }
 
     case 3:
-        if (std::string("--lex_only").compare(argv[1]) == 0)
-        {
-            std::string filename = argv[2];
-            std::cout << "Lexing " << filename << ".\n\n";
-
-            Lexar* l = new Lexar(filename);
-            Token* t = l->getNextToken();
-
-            while (!t->isEOF())
-            {
-                t->display();
-                t = l->getNextToken();
-            }
-        }
-        else if (std::string("--test_lex").compare(argv[1]) == 0)
+        if (std::string("--lex").compare(argv[1]) == 0)
         {
             std::string filename = argv[2];
             std::cout << "Lexing " << filename << ".\n\n";
@@ -138,22 +61,6 @@ handleCommandLine(int argc, char* const* argv)
                 t = l->getNextToken();
             }
         }
-        else if (std::string("--parse_only").compare(argv[1]) == 0)
-        {
-
-            try
-            {
-                std::string filename = argv[2];
-                std::cout << "Parsing " << filename << ".\n\n";
-
-                Parser* p = new Parser();
-                ast::Start* root = p->parse(filename);
-            }
-            catch (const std::string msg)
-            {
-                std::cerr << msg;
-            }
-        }
         else if (std::string("--parse").compare(argv[1]) == 0)
         {
 
@@ -164,9 +71,13 @@ handleCommandLine(int argc, char* const* argv)
 
                 Parser2* p = new Parser2(filename);
                 auto n = p->parse();
-                p->postorder(std::move(n), [](std::string s) -> void {
-                    std::cout << s << '\n';
-                });
+                // p->getUDTTable()->dump();
+                // p->getSymbolTable()->dump();
+                // std::cout << '\n';
+                // p->postorder(std::move(n), [](std::string s) -> void {
+                //     std::cout << s << '\n';
+                // });
+                // p->display(std::move(n));
             }
             catch (const std::string msg)
             {
@@ -175,46 +86,6 @@ handleCommandLine(int argc, char* const* argv)
             catch (char const* msg)
             {
                 std::cerr << msg;
-            }
-        }
-        else if (std::string("--semantic_analysis_only").compare(argv[1]) == 0)
-        {
-            try
-            {
-                std::string filename = argv[2];
-                std::cout << "Analyzing " << filename << ".\n\n";
-
-                Parser* p = new Parser();
-                ast::Start* root = p->parse(filename);
-
-                SemanticAnalyzer* s = new SemanticAnalyzer(root);
-                s->analyze();
-            }
-            catch (const std::string msg)
-            {
-                std::cerr << msg;
-            }
-        }
-        else if (std::string("--compile_c").compare(argv[1]) == 0)
-        {
-            // compile sailfish
-            if (fullCompilation(argv[2]))
-            {
-                // compile c
-                compileC();
-            }
-        }
-        else if (std::string("--compile_and_execute").compare(argv[1]) == 0)
-        {
-            // compile sailfish
-            if (fullCompilation(argv[2]))
-            {
-                // compile c
-                if (compileC())
-                {
-                    // execute gcc generated binary
-                    executeBinary();
-                }
             }
         }
         else

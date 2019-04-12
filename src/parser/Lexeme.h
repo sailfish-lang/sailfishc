@@ -80,6 +80,7 @@ enum class LIT
     LIST,
     LISTTYPE,
     STRING,
+    TYPE,
 };
 std::string disp(LIT l);
 
@@ -117,5 +118,6 @@ struct NodeLexeme
 // overloaded since nonterminal may have only a single child, in that case we
 // utilize the null node constructor
 NodePtr makeNode(OP o, Lexeme, Lexeme);
+NodePtr makeNode(OP o, const std::string&, Lexeme);
 NodePtr makeNode(OP o, Lexeme);
 NodePtr makeNullNode();

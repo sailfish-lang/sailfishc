@@ -1,6 +1,3 @@
-import foo : "foo.fish"
-import bar : "bar.fish"
-
 (fun foo (int i, flt f)(void){ return i })
 
 start {
