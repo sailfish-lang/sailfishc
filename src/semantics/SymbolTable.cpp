@@ -170,15 +170,15 @@ SymbolTable::clear()
 void
 SymbolTable::addBuiltins()
 {
-    addSymbol("appendListInt", "F(_[int]_[int])[int]");
-    addSymbol("appendListStr", "F(_[str]_[str])[str]");
-    addSymbol("appendListBool", "F(_[bool]_[bool])[bool]");
-    addSymbol("appendListFlt", "F(_[flt]_[flt])[flt]");
+    addSymbol("appendListInt", "F(_[int]_[int]_int_int)[int]");
+    addSymbol("appendListStr", "F(_[str]_[str]_int_int)[str]");
+    addSymbol("appendListBool", "F(_[bool]_[bool]_int_int)[bool]");
+    addSymbol("appendListFlt", "F(_[flt]_[flt]_int_int)[flt]");
 
-    addSymbol("deleteAtIndexInt", "F(_[int]_int)[int]");
-    addSymbol("deleteAtIndexStr", "F(_[str]_int)[str]");
-    addSymbol("deleteAtIndexBool", "F(_[bool]_int)[bool]");
-    addSymbol("deleteAtIndexFlt", "F(_[flt]_int)[flt]");
+    addSymbol("deleteAtIndexInt", "F(_[int]_int_int)[int]");
+    addSymbol("deleteAtIndexStr", "F(_[str]_int_int)[str]");
+    addSymbol("deleteAtIndexBool", "F(_[bool]_int_int)[bool]");
+    addSymbol("deleteAtIndexFlt", "F(_[flt]_int_int)[flt]");
 
     addSymbol("getAtIndexInt", "F(_[int]_int)int");
     addSymbol("getAtIndexStr", "F(_[str]_int)str");

@@ -13,6 +13,8 @@ ADD_LIBRARY(SailfishcLibs
     ./src/errorhandler/SemanticAnalyzerErrorHandler.cpp 
     ./src/main/CommandLine.cpp
     ./src/semantics/SymbolTable.cpp
+    ./src/stdlib_c/stdlib_c.cpp
+    ./src/stdlib_c/Lists.cpp
 )
 
 add_executable(sailfishc ./src/main/main.cpp ${DirSOURCES})

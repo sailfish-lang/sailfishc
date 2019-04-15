@@ -506,7 +506,7 @@ Parser2::parseSourcePart()
         output.open("out.c");
 
         // set the file header here
-        output << OUTPUT_HEADER;
+        output << OUTPUT_HEADER << getStdLibC();
 
         // add the buffers from parsed udt files
         output << udtBuffer;

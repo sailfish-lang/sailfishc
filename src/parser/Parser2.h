@@ -10,6 +10,7 @@
 #include "../lexar/Token2.h"
 #include "../semantics/SymbolTable.h"
 #include "../semantics/UDTTable.h"
+#include "../stdlib_c/stdlib_c.h"
 #include "Lexeme.h"
 #include <cstdarg>
 #include <deque>
@@ -70,6 +71,7 @@ class Parser2
         "\n"
         "\n#include <stdio.h>"
         "\n#include <stdlib.h>"
+        "\n#include <string.h>"
         "\n";
     std::ofstream output;
     // some transpiler helpers
