@@ -52,7 +52,7 @@ handleCommandLine(int argc, char* const* argv)
             std::string filename = argv[2];
             std::cout << "Lexing " << filename << ".\n\n";
 
-            Lexar2* l = new Lexar2(filename);
+            Lexar2* l = new Lexar2(filename, true);
             std::unique_ptr<Token2> t = l->getNextToken();
 
             while (t->kind != TokenKind::EOF_)

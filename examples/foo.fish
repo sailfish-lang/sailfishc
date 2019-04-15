@@ -1,10 +1,10 @@
 Uat {
-    flt f
-    int i 
-    str s 
-    bool b
+    [int] lisy
+    int size
 }
 
 Ufn {
-    (fun foo (int i) (void) {})
+    (fun getSize()(int) {
+        return own.sze
+    })
 }

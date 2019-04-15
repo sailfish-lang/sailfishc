@@ -75,19 +75,38 @@ Lexar2::makeTokenPutback(const TokenKind& k, std::string& v, char& c)
 char
 Lexar2::getNextChar()
 {
-    if (file.peek() == EOF)
+    if (isFile)
+    {
+        if (file.peek() == EOF)
+            return -1;
+
+        char c;
+        file.get(c);
+        return c;
+    }
+
+    if (rawString.size() == 0)
         return -1;
 
-    char c;
-    file.get(c);
+    char c = rawString.at(0);
+    rawString.erase(0, 1);
     return c;
 }
 
-Lexar2::Lexar2(const std::string& filename)
+Lexar2::Lexar2(const std::string& fileString, bool isAFile)
 {
-    file.open(filename, std::fstream::in);
-    if (!file.good())
-        throw "File: " + filename + " not found.\n";
+    if (isAFile)
+    {
+        file.open(fileString, std::fstream::in);
+        if (!file.good())
+            throw "File: " + fileString + " not found.\n";
+    }
+    else
+    {
+        rawString = fileString;
+    }
+
+    isFile = isAFile;
     line = 1;
     col = 1;
     prevCol = 0;
@@ -117,8 +136,8 @@ Lexar2::getNextToken()
 
         // ignore whitespaces if not in a string, adding current char to the
         // buffer
-        if (state == State::STRING || (state == State::COMMENT && c != '\n') ||
-            !isspace(c))
+        if (state == State::STRING || state == State::LIST ||
+            (state == State::COMMENT && c != '\n') || !isspace(c))
             buffer += c;
 
         // catch EOF

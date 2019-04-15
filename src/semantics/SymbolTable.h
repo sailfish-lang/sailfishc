@@ -70,6 +70,18 @@ class SymbolTable
         return scopeLevel;
     }
 
+    std::vector<std::string>
+    getSymbols()
+    {
+        std::vector<std::string> symbols;
+        for (auto const& element : globalScopeTable)
+        {
+            symbols.push_back(element.first);
+        }
+
+        return symbols;
+    }
+
     void
     dump(int indent = 0)
     {

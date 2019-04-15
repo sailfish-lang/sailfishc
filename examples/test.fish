@@ -1,5 +1,9 @@
+import foo : "../examples/foo.fish"
+
+(fun bar (int i, flt f) (flt) {return 10.0})
+
 start {
-    Tree (
-        ( | (100 ** 11) < (10 + 11) | {} )
-    )
+  dec flt f = 10.0
+  dec [int] is = []
+  is = [1,2]
 }

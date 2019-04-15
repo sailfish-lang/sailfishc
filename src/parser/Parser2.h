@@ -20,10 +20,11 @@
 #include <variant>
 #include <vector>
 
+using LSandFlag = std::tuple<Lexeme, std::string, std::string>;
 using SandS = std::tuple<std::string, std::string>;
 using LandS = std::tuple<Lexeme, std::string>;
 using LandV = std::tuple<Lexeme, std::variant<LIT, OP>>;
-using LandSt = std::tuple<Lexeme, std::unique_ptr<SymbolTable>>;
+using LandSt = std::tuple<Lexeme, std::shared_ptr<SymbolTable>>;
 using LSandS = std::tuple<Lexeme, std::string, std::string>;
 using UdtAndFlag = std::tuple<std::unique_ptr<UDTTable>, bool>;
 
@@ -34,7 +35,7 @@ class Parser2
     std::unique_ptr<Token2> currentToken;
     std::unique_ptr<Parser2ErrorHandler> errorhandler;
     std::unique_ptr<SemanticAnalyzerErrorHandler> semanticerrorhandler;
-    std::unique_ptr<SymbolTable> symboltable;
+    std::shared_ptr<SymbolTable> symboltable;
     std::unique_ptr<UDTTable> udttable;
     std::string filename;
     bool isUdt;
@@ -71,13 +72,15 @@ class Parser2
     // helper method for easy token advancement and
     // catching errors
     void advanceAndCheckToken(const TokenKind&);
+    LIT kindToLIT(TokenKind);
+    std::string tokenToType(const TokenKind&, const std::string&);
 
     // some work to simplify all the expression parsing
     template <typename G>
     LandS
     simpleExpr(TokenKind tk, OP op, const std::string& T0, const G& g)
     {
-        advanceAndCheckToken(tk); // consume "**"
+        advanceAndCheckToken(tk); // consume token
         auto a = parseE0();
         auto e0 = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
@@ -117,6 +120,14 @@ class Parser2
 
     // semantic checker methods
     void checkType(const std::string&, const std::string&);
+    void checkUnique(const std::string&);
+    void checkUnique(const std::string&, std::shared_ptr<SymbolTable>);
+    void checkExists(const std::string&);
+    void checkExists(const std::string&, std::shared_ptr<SymbolTable>);
+    void checkUDTExists(const std::string&);
+    LandS checkFunctionCall(const std::string&, std::shared_ptr<SymbolTable>);
+    std::string parseFunctionReturnType(const std::string& s);
+    std::vector<std::string> parseFunctionInputTypes(const std::string&);
 
     // parse methods
     NodePtr parseProgram();
@@ -136,13 +147,13 @@ class Parser2
     LandS parseFunctionInfo();
     LandS parseFunctionInOut();
     NodePtr parseStart();
-    NodePtr parseBlock();
-    Lexeme parseStatement();
+    LandS parseBlock();
+    LSandFlag parseStatement();
     NodePtr parseTree();
     NodePtr parseBranch();
     Lexeme parseGrouping();
-    NodePtr parseReturn();
-    NodePtr parseDeclaration();
+    LandS parseReturn();
+    LandS parseDeclaration();
     LandS parseE0();
     LandS parseE1(const std::string&);
     LandS parseE2(const std::string&);
@@ -156,13 +167,13 @@ class Parser2
     LandS parseE10(const std::string&);
     LandS parseE11(const std::string&);
     LandS parseE12(const std::string&);
-    NodePtr parseMemberAccess();
-    NodePtr parseAttributeAccess();
-    NodePtr parseMethodAccess();
-    NodePtr parseFunctionCall();
+    LandS parseE13(const std::string&);
+    LandS parseMemberAccess(const std::string&);
+    LandS parseAttributeAccess(const std::string&);
+    LandS parseMethodAccess(const std::string&);
+    LandS parseFunctionCall();
     LandS parseNew();
     LandS parseUDTDec();
-    NodePtr parseUDTDecItem();
     LandS parseT();
     LandS parsePrimary();
     LSandS parseVariable();
@@ -173,8 +184,8 @@ class Parser2
     LeafPtr parseFloat();
     LeafPtr parseString();
     LeafPtr parseIdentifier();
-    LeafPtr parseList();
-    LeafPtr parseListType();
+    LandS parseList();
+    std::tuple<LeafPtr, std::string> parseListType();
 
     // helper method for retreiving the Leaf/Node ptr from a Lexeme variant
     template <typename F>
@@ -244,10 +255,10 @@ class Parser2
         f(n->value);
     }
 
-    std::unique_ptr<SymbolTable>
+    std::shared_ptr<SymbolTable>
     getSymbolTable()
     {
-        return std::move(symboltable);
+        return symboltable;
     }
 
     std::unique_ptr<UDTTable>

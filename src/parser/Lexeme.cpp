@@ -111,6 +111,10 @@ disp(OP o)
         return "Div from";
     case OP::MULTTO:
         return "Mult to";
+    case OP::LISTITEM:
+        return "List item";
+    case OP::LIST:
+        return "List";
     default:
         return "Unknown";
     }
@@ -131,8 +135,6 @@ disp(LIT o)
         return "Integer";
     case LIT::FLOAT:
         return "Float";
-    case LIT::LIST:
-        return "List";
     case LIT::LISTTYPE:
         return "List type";
     case LIT::TYPE:
