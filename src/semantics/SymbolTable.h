@@ -56,6 +56,10 @@ class SymbolTable
     // either push to the variables scope if exists or add variable
     bool addSymbol(const std::string, const std::string);
 
+    // for removing symbols which should basically never happen except for the
+    // class name from the attributes
+    void removeSymbol(const std::string&);
+
     // same as above, but used for attributes where we use scope level to mean
     // ordering
     bool addSymbolIterative(const std::string, const std::string);

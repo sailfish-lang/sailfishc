@@ -11,6 +11,7 @@ enum class TokenKind
     // Keywords
     START,
     OWN_ACCESSOR,
+    EMPTY,
     TREE,
     UAT,
     UFN,

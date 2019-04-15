@@ -83,6 +83,7 @@ enum class LIT
     STRING,
     TYPE,
     OWN,
+    EMPTY,
 };
 std::string disp(LIT l);
 

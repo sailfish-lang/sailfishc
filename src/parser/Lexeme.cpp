@@ -141,6 +141,8 @@ disp(LIT o)
         return "Type";
     case LIT::OWN:
         return "Own";
+    case LIT::EMPTY:
+        return "Empty";
     default:
         return "Unknown";
     }

@@ -118,6 +118,15 @@ SymbolTable::addSymbol(const std::string varName, const std::string type)
     }
 }
 
+void
+SymbolTable::removeSymbol(const std::string& varName)
+{
+    if (hasVariable(varName))
+    {
+        globalScopeTable.erase(varName);
+    }
+}
+
 bool
 SymbolTable::addSymbolIterative(const std::string varName,
                                 const std::string type)

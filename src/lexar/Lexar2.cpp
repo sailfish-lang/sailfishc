@@ -34,6 +34,8 @@ Lexar2::makeToken(const TokenKind& k, const std::string& v)
             kd = TokenKind::IFE;
         else if (v == "fun")
             kd = TokenKind::FUN;
+        else if (v == "empty")
+            kd = TokenKind::EMPTY;
         else if (v == "dec")
             kd = TokenKind::DEC;
         else if (v == "import")

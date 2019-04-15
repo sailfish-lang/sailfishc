@@ -1,13 +1,54 @@
 #include "Parser2.h"
 
-UdtAndFlag
+std::string
+Parser2::getTabs()
+{
+    std::string s = "";
+    for (int i = 0; i < currentTabs; i++)
+        s += "    ";
+    return s;
+}
+
+std::string
+builtinTypesTranslator(std::string type)
+{
+    if (type == "int")
+        return "int";
+
+    if (type == "flt")
+        return "float";
+
+    if (type == "str")
+        return "char*";
+
+    if (type == "bool")
+        return "int";
+
+    if (type == "[int]")
+        return "int*";
+
+    if (type == "[flt]")
+        return "float*";
+
+    if (type == "[str]")
+        return "char**";
+
+    if (type == "[bool]")
+        return "int*";
+
+    else
+        return type;
+}
+
+UdtFlagAndBufer
 parseFile(const std::string& filename)
 {
     try
     {
         Parser2* p = new Parser2(filename);
         auto n = p->parse();
-        return std::make_tuple(std::move(p->getUDTTable()), p->getIsUDTFlag());
+        return std::make_tuple(std::move(p->getUDTTable()), p->getIsUDTFlag(),
+                               p->getUDTBuffer());
     }
     catch (const std::string msg)
     {
@@ -104,14 +145,14 @@ Parser2::checkType(const std::string& t0, const std::string& t1)
     // should actually check types here
     if (left.at(0) == '[')
     {
-        auto type = extractListType(t0);
+        left = extractListType(left);
 
         if (right.at(0) == '[')
         {
             right = extractListType(right);
         }
 
-        if (t1 != "none" && type != right)
+        if (t1 != "none" && left != right)
         {
             semanticerrorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line,
@@ -121,19 +162,19 @@ Parser2::checkType(const std::string& t0, const std::string& t1)
     }
     else if (right.at(0) == '[')
     {
-        auto type = extractListType(right);
+        right = extractListType(right);
 
         if (left.at(0) == '[')
         {
             left = extractListType(left);
         }
 
-        if (t1 != "none" && type != left)
+        if (t1 != "none" && right != left)
         {
             semanticerrorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line,
                        "Mismatched list types. Expected is: " + left + ".",
-                       "Received is: ", "[" + type + "]", ".")));
+                       "Received is: ", "[" + right + "]", ".")));
         }
     }
     else if (left == "num")
@@ -147,7 +188,7 @@ Parser2::checkType(const std::string& t0, const std::string& t1)
         }
     }
 
-    else if (left != right)
+    else if (left != right && right != "empty")
     {
         semanticerrorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line,
@@ -393,10 +434,11 @@ Parser2::parseImportInfo()
 
     try
     {
-        auto udtAndFlag = parseFile(file);
+        auto udtFlagAndBufer = parseFile(file);
 
-        auto table = std::move(std::get<0>(udtAndFlag));
-        auto flag = std::get<1>(udtAndFlag);
+        auto table = std::move(std::get<0>(udtFlagAndBufer));
+        auto flag = std::get<1>(udtFlagAndBufer);
+        auto buf = std::get<2>(udtFlagAndBufer);
 
         if (!flag)
             errorhandler->handle(std::make_unique<Error2>(
@@ -413,6 +455,9 @@ Parser2::parseImportInfo()
                 table->getMethodSymbolTable(extractUDTName(file)));
 
         symboltable->addSymbol(name->value, "U");
+
+        // aggregate udt buffers
+        udtBuffer += buf;
     }
     catch (char const* msg)
     {
@@ -437,7 +482,9 @@ Parser2::parseUDName()
 LeafPtr
 Parser2::parseLocation()
 {
-    return parseString();
+    auto v = currentToken->value;
+    advanceAndCheckToken(TokenKind::STRING); // true eat string
+    return makeLeaf(LIT::STRING, v);
 }
 
 /**
@@ -452,7 +499,19 @@ Parser2::parseSourcePart()
         isUdt = true;
         return parseUDT();
     default:
+    {
+        // capture and open file only if not a udt so that imports do not
+        // override
+        output.clear();
+        output.open("out.c");
+
+        // set the file header here
+        output << OUTPUT_HEADER;
+
+        // add the buffers from parsed udt files
+        output << udtBuffer;
         return parseScript();
+    }
     }
 }
 
@@ -474,9 +533,14 @@ Parser2::parseUserDefinedType()
     auto udtname = extractUDTName(filename);
     udttable->addUDT(udtname);
 
+    udtBuffer +=
+        "\n//___________BEGIN_" + udtname + "_UDT_DEFINITION__________/_//\n\n";
+
+    udtBuffer += "struct " + udtname + "\n{\n";
     auto atlandst = this->parseAttributes();
     auto topattribute = std::move(std::get<0>(atlandst));
     std::shared_ptr<SymbolTable> attributest = std::move(std::get<1>(atlandst));
+    udtBuffer += "};\n";
 
     udttable->updateUDT(udtname, attributest,
                         std::make_shared<SymbolTable>(SymbolTable()));
@@ -485,6 +549,9 @@ Parser2::parseUserDefinedType()
     auto topmethod = std::move(std::get<0>(mlandst));
     std::shared_ptr<SymbolTable> methodst = std::move(std::get<1>(mlandst));
     udttable->updateUDT(udtname, attributest, methodst);
+
+    udtBuffer +=
+        "//___________END_" + udtname + "_UDT_DEFINITION__________/_//\n\n";
 
     return makeNode(OP::UDT, std::move(topattribute), std::move(topmethod));
 }
@@ -506,6 +573,7 @@ Parser2::parseAttributes()
         std::make_shared<SymbolTable>(SymbolTable());
 
     st->clear();
+    st->addSymbol(extractUDTName(filename), "U");
 
     auto topattribute = getChain(
         true, TokenKind::RCURLEY, OP::ATTRIBUTE, [&st, this]() -> Lexeme {
@@ -514,6 +582,14 @@ Parser2::parseAttributes()
             auto attribute = std::move(std::get<0>(lands));
             auto name = std::get<1>(lands);
             auto type = std::get<2>(lands);
+
+            auto outtype = type;
+            if (st->hasVariable(outtype) && st->getSymbolType(outtype) == "U")
+                outtype = "struct " + outtype + "*";
+            else
+                outtype = builtinTypesTranslator(outtype);
+
+            udtBuffer += "\t" + outtype + " " + name + ";\n";
 
             // check if unique name
             if (st->hasVariable(name))
@@ -539,7 +615,7 @@ Parser2::parseAttributes()
                                "", "")));
             }
 
-            if (!symboltable->hasVariable(type) && !isPrimitive(type))
+            if (!st->hasVariable(type) && !isPrimitive(type))
             {
                 semanticerrorhandler->handle(std::make_unique<Error2>(
                     Error2(currentToken->col, currentToken->line,
@@ -553,11 +629,13 @@ Parser2::parseAttributes()
                     currentToken->col, currentToken->line,
                     "Unexpected redeclaration of " + name +
                         ", originally defined as type " +
-                        symboltable->getSymbolType(name) + ".",
+                        st->getSymbolType(name) + ".",
                     "Received second declaration of type: ", type, ".")));
 
             return attribute;
         });
+
+    st->removeSymbol(extractUDTName(filename));
 
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
     return std::make_tuple(makeNode(OP::ATTRIBUTE, std::move(topattribute)),
@@ -623,8 +701,6 @@ Parser2::parseFunctionDefinition()
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
     advanceAndCheckToken(TokenKind::FUN);    // consume funenterScope
 
-    symboltable->enterScope();
-
     // parse left child
     auto id = parseIdentifier();
 
@@ -632,8 +708,6 @@ Parser2::parseFunctionDefinition()
     auto lands = parseFunctionInfo(id->value);
     auto lexeme = std::move(std::get<0>(lands));
     // auto type = std::get<1>(lands);
-
-    symboltable->exitScope();
 
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
     return makeNode(OP::FUNCTION, std::move(id), std::move(lexeme));
@@ -648,7 +722,7 @@ Parser2::parseFunctionDefinition()
 LandS
 Parser2::parseFunctionInfo(const std::string& name)
 {
-    auto lands = parseFunctionInOut();
+    auto lands = parseFunctionInOut(name);
     auto fintout = std::move(std::get<0>(lands));
     auto type = std::get<1>(lands);
 
@@ -656,7 +730,6 @@ Parser2::parseFunctionInfo(const std::string& name)
 
     // add to symbol table
     auto ok = symboltable->addSymbol(name, type);
-
     if (!ok)
         semanticerrorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line,
@@ -665,9 +738,13 @@ Parser2::parseFunctionInfo(const std::string& name)
                        symboltable->getSymbolType(name) + ".",
                    "Received second declaration of type: ", type, ".")));
 
+    output << "{";
+    udtBuffer += "{";
     auto a = parseBlock();
     auto block = std::move(std::get<0>(a));
     auto returnType = std::get<1>(a);
+    output << "\n}\n\n";
+    udtBuffer += "\n}\n\n";
 
     checkType(returnType, parseFunctionReturnType(type));
 
@@ -685,7 +762,7 @@ Parser2::parseFunctionInfo(const std::string& name)
  * is first declaration as part of formals
  */
 LandS
-Parser2::parseFunctionInOut()
+Parser2::parseFunctionInOut(const std::string& name)
 {
     // inputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
@@ -694,32 +771,55 @@ Parser2::parseFunctionInOut()
     std::string types = "(";
     bool seenVoid = false;
     int argCount = 0;
-    auto topinput =
-        getChain(true, TokenKind::RPAREN, OP::FUNCTION_INPUT,
-                 [&types, &seenVoid, &argCount, this]() -> Lexeme {
-                     ++argCount;
+    std::string outputBuffer = "";
+    auto topinput = getChain(
+        true, TokenKind::RPAREN, OP::FUNCTION_INPUT,
+        [&outputBuffer, &types, &seenVoid, &argCount, this]() -> Lexeme {
+            ++argCount;
 
-                     auto lands = this->parseVariable();
-                     auto inp = std::move(std::get<0>(lands));
-                     auto type = std::get<2>(lands);
+            auto lands = this->parseVariable();
+            auto inp = std::move(std::get<0>(lands));
+            auto name = std::get<1>(lands);
+            auto type = std::get<2>(lands);
 
-                     if (type == "void")
-                         seenVoid = true;
+            if (type != "void")
+                if (outputBuffer != "")
+                    outputBuffer +=
+                        ", " + builtinTypesTranslator(type) + " " + name;
+                else
+                    outputBuffer += type + " " + name;
+            else if (!isUdt)
+            {
+                if (outputBuffer != "")
+                    outputBuffer += ", " + builtinTypesTranslator(type);
+                else
+                    outputBuffer += type;
+            }
 
-                     if (argCount > 1 && seenVoid)
-                     {
-                         semanticerrorhandler->handle(std::make_unique<Error2>(
-                             Error2(currentToken->col, currentToken->line,
-                                    "Illegal multi-void definition of formals "
-                                    "in function signature",
-                                    "", "", "")));
-                     }
+            if (type == "void")
+                seenVoid = true;
 
-                     symboltable->addSymbol(std::get<1>(lands), type);
+            if (argCount > 1 && seenVoid)
+            {
+                semanticerrorhandler->handle(std::make_unique<Error2>(
+                    Error2(currentToken->col, currentToken->line,
+                           "Illegal multi-void definition of formals "
+                           "in function signature",
+                           "", "", "")));
+            }
 
-                     types += "_" + type;
-                     return inp;
-                 });
+            auto ok = symboltable->addSymbol(std::get<1>(lands), type);
+            if (!ok)
+                semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+                    currentToken->col, currentToken->line,
+                    "Unexpected redeclaration of " + name +
+                        ", originally defined as type " +
+                        symboltable->getSymbolType(name) + ".",
+                    "Received second declaration of type: ", type, ".")));
+
+            types += "_" + type;
+            return inp;
+        });
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
 
     // outputs
@@ -727,6 +827,16 @@ Parser2::parseFunctionInOut()
     auto output = parseType();
     types += ")" + output.get()->value;
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
+
+    if (isUdt)
+        if (outputBuffer != "")
+            outputBuffer += ", struct " + extractUDTName(filename) + "* this";
+        else
+            outputBuffer = "struct " + extractUDTName(filename) + "* this";
+    outputBuffer = output->value + "\n" + name + "(" + outputBuffer + ")\n";
+    udtBuffer += outputBuffer;
+    this->output << outputBuffer;
+
     return std::make_tuple(
         makeNode(OP::FUNCTION_IN_OUT, std::move(topinput), std::move(output)),
         types);
@@ -740,9 +850,11 @@ Parser2::parseStart()
 {
     advanceAndCheckToken(TokenKind::START);
 
+    output << "int\nmain()\n{";
+
     auto a = parseBlock();
 
-    symboltable->dump();
+    output << "\n    return 1;\n}";
 
     auto block = std::move(std::get<0>(a));
     // auto type = std::get<1>(a); -- ignore type
@@ -762,6 +874,7 @@ Parser2::parseStart()
 LandS
 Parser2::parseBlock()
 {
+    ++currentTabs;
     std::string type = "void";
     bool hasSeenReturn = false;
     advanceAndCheckToken(TokenKind::LCURLEY); // eat '{'
@@ -797,6 +910,7 @@ Parser2::parseBlock()
     symboltable->exitScope();
 
     advanceAndCheckToken(TokenKind::RCURLEY); // eat '}'
+    --currentTabs;
     return std::make_tuple(makeNode(OP::BLOCK, std::move(topstatement)), type);
 }
 
@@ -806,6 +920,8 @@ Parser2::parseBlock()
 LSandS
 Parser2::parseStatement()
 {
+    output << "\n" + getTabs();
+    udtBuffer += "\n" + getTabs();
     switch (currentToken->kind)
     {
     case TokenKind::TREE:
@@ -844,9 +960,24 @@ Parser2::parseTree()
     advanceAndCheckToken(TokenKind::TREE);   // eat 'tree'
     advanceAndCheckToken(TokenKind::LPAREN); // eat '('
 
-    auto topbranch =
-        getChain(true, TokenKind::RPAREN, OP::BRANCH,
-                 [this]() -> NodePtr { return this->parseBranch(); });
+    bool isFirstBranch = true;
+
+    auto topbranch = getChain(true, TokenKind::RPAREN, OP::BRANCH,
+                              [&isFirstBranch, this]() -> NodePtr {
+                                  if (isFirstBranch)
+                                  {
+                                      output << "if";
+                                      udtBuffer += "if";
+                                      isFirstBranch = false;
+                                  }
+                                  else
+                                  {
+                                      output << "\n" + getTabs() + "else if";
+                                      udtBuffer +=
+                                          "\n " + getTabs() + " else if ";
+                                  }
+                                  return this->parseBranch();
+                              });
 
     advanceAndCheckToken(TokenKind::RPAREN); // eat ')'
     return makeNode(OP::TREE, std::move(topbranch));
@@ -862,7 +993,12 @@ Parser2::parseBranch()
 
     auto grouping = parseGrouping();
 
+    output << "\n" + getTabs() + "{";
+    udtBuffer += "\n" + getTabs() + "{";
     auto a = parseBlock();
+    output << "\n" + getTabs() + "}";
+    udtBuffer += "\n" + getTabs() + "}";
+
     auto block = std::move(std::get<0>(a));
     // auto type = std::get<1>(a); -- ignore type
 
@@ -879,6 +1015,9 @@ Parser2::parseBranch()
 Lexeme
 Parser2::parseGrouping()
 {
+    inGrouping = true;
+    output << " (";
+    udtBuffer += " (";
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
 
     auto a = parseE0();
@@ -887,7 +1026,11 @@ Parser2::parseGrouping()
 
     checkType("bool", type);
 
+    output << ") ";
+    udtBuffer += ") ";
+
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
+    inGrouping = false;
     return e0;
 }
 
@@ -898,6 +1041,9 @@ LandS
 Parser2::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
+    output << "return ";
+    udtBuffer += "return ";
+
     auto a = parseE0();
     auto e0 = std::move(std::get<0>(a));
     auto type = std::get<1>(a);
@@ -920,10 +1066,29 @@ Parser2::parseDeclaration()
     auto name = std::get<1>(lsands);
     auto type = std::get<2>(lsands);
 
-    checkUnique(name);
+    auto outtype = type;
+
+    // check to see if it is a udt name first
+    if (udttable->hasUDT(outtype))
+        outtype = "struct " + outtype + "*";
+    else
+        outtype = builtinTypesTranslator(outtype);
+
+    output << outtype + " " + name + " = ";
+    udtBuffer += outtype + " " + name + " = ";
+
     checkExists(type);
 
-    symboltable->addSymbol(name, type);
+    decName = name;
+
+    auto ok = symboltable->addSymbol(name, type);
+    if (!ok)
+        semanticerrorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line,
+                   "Unexpected redeclaration of " + name +
+                       ", originally defined as type " +
+                       symboltable->getSymbolType(name) + ".",
+                   "Received second declaration of type: ", type, ".")));
 
     advanceAndCheckToken(TokenKind::ASSIGNMENT); // consume '='
     auto a = parseE0();
@@ -975,7 +1140,7 @@ Parser2::parseE1(const std::string& T0)
             this->checkType("int", T1);
             return T1;
         },
-        std::make_tuple(TokenKind::EXPONENTIATION, OP::EXPONENT));
+        std::make_tuple(TokenKind::EXPONENTIATION, OP::EXPONENT, "**"));
 }
 
 /**
@@ -997,9 +1162,9 @@ Parser2::parseE2(const std::string& T0)
             this->checkType("num", T1);
             return T1;
         },
-        std::make_tuple(TokenKind::MULTIPLICATION, OP::MULTIPLICATION),
-        std::make_tuple(TokenKind::DIVISION, OP::DIVISION),
-        std::make_tuple(TokenKind::MODULO, OP::MODULO));
+        std::make_tuple(TokenKind::MULTIPLICATION, OP::MULTIPLICATION, "*"),
+        std::make_tuple(TokenKind::DIVISION, OP::DIVISION, "/"),
+        std::make_tuple(TokenKind::MODULO, OP::MODULO, "%"));
 }
 
 /**
@@ -1021,8 +1186,8 @@ Parser2::parseE3(const std::string& T0)
             this->checkType("num", T1);
             return T1;
         },
-        std::make_tuple(TokenKind::ADDITION, OP::ADDITION),
-        std::make_tuple(TokenKind::SUBTRACTION, OP::SUBTRACTION));
+        std::make_tuple(TokenKind::ADDITION, OP::ADDITION, "+"),
+        std::make_tuple(TokenKind::SUBTRACTION, OP::SUBTRACTION, "-"));
 }
 
 /**
@@ -1044,12 +1209,12 @@ Parser2::parseE4(const std::string& T0)
             this->checkType("num", T1);
             return "bool";
         },
-        std::make_tuple(TokenKind::LESS_THAN, OP::LESS_THAN),
-        std::make_tuple(TokenKind::LESS_THAN_OR_EQUALS,
-                        OP::LESS_THAN_OR_EQUALS),
-        std::make_tuple(TokenKind::GREATER_THAN, OP::GREATER_THAN),
+        std::make_tuple(TokenKind::LESS_THAN, OP::LESS_THAN, "<"),
+        std::make_tuple(TokenKind::LESS_THAN_OR_EQUALS, OP::LESS_THAN_OR_EQUALS,
+                        "<="),
+        std::make_tuple(TokenKind::GREATER_THAN, OP::GREATER_THAN, ">"),
         std::make_tuple(TokenKind::GREATER_THAN_OR_EQUALS,
-                        OP::GREATER_THAN_OR_EQUALS));
+                        OP::GREATER_THAN_OR_EQUALS, ">="));
 }
 
 /**
@@ -1069,8 +1234,8 @@ Parser2::parseE5(const std::string& T0)
             this->checkType(T0, T1);
             return "bool";
         },
-        std::make_tuple(TokenKind::EQUIVALENCE, OP::EQUIVALENCE),
-        std::make_tuple(TokenKind::NONEQUIVALENCE, OP::NONEQUIVALENCE));
+        std::make_tuple(TokenKind::EQUIVALENCE, OP::EQUIVALENCE, "=="),
+        std::make_tuple(TokenKind::NONEQUIVALENCE, OP::NONEQUIVALENCE, "!="));
 }
 
 /**
@@ -1092,8 +1257,8 @@ Parser2::parseE6(const std::string& T0)
             this->checkType("bool", T1);
             return "bool";
         },
-        std::make_tuple(TokenKind::OR, OP::OR),
-        std::make_tuple(TokenKind::AND, OP::AND));
+        std::make_tuple(TokenKind::OR, OP::OR, "||"),
+        std::make_tuple(TokenKind::AND, OP::AND, "&&"));
 }
 
 /**
@@ -1121,7 +1286,7 @@ Parser2::parseE7(const std::string& T0)
             return T1;
         },
 
-        std::make_tuple(TokenKind::ASSIGNMENT, OP::ASSIGNMENT));
+        std::make_tuple(TokenKind::ASSIGNMENT, OP::ASSIGNMENT, "="));
 }
 
 /**
@@ -1137,6 +1302,8 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::NEGATION)
     {
         advanceAndCheckToken(TokenKind::NEGATION); // consume '!'
+        output << "!";
+        udtBuffer += "!";
         auto a = parseE0();
         auto e0 = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
@@ -1150,6 +1317,8 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::UNARYADD)
     {
         advanceAndCheckToken(TokenKind::UNARYADD); // consume '++'
+        output << "++";
+        udtBuffer += "++";
         auto a = parseE0();
         auto e0 = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
@@ -1162,6 +1331,8 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::UNARYMINUS)
     {
         advanceAndCheckToken(TokenKind::UNARYMINUS); // consume '--'
+        output << "--";
+        udtBuffer += "--";
         auto a = parseE0();
         auto e0 = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
@@ -1198,10 +1369,10 @@ Parser2::parseE9(const std::string& T0)
             this->checkType("num", T1);
             return T1;
         },
-        std::make_tuple(TokenKind::ADDTO, OP::ADDTO),
-        std::make_tuple(TokenKind::SUBFROM, OP::SUBFROM),
-        std::make_tuple(TokenKind::DIVFROM, OP::DIVFROM),
-        std::make_tuple(TokenKind::MULTTO, OP::MULTTO));
+        std::make_tuple(TokenKind::ADDTO, OP::ADDTO, "+="),
+        std::make_tuple(TokenKind::SUBFROM, OP::SUBFROM, "-="),
+        std::make_tuple(TokenKind::DIVFROM, OP::DIVFROM, "/="),
+        std::make_tuple(TokenKind::MULTTO, OP::MULTTO, "*="));
 }
 
 /**
@@ -1261,6 +1432,8 @@ Parser2::parseE12(const std::string& T0)
     if (currentToken->kind == TokenKind::LPAREN)
     {
 
+        this->output << "(";
+        inGrouping = true;
         checkExists(T0);
 
         auto name = T0;
@@ -1268,6 +1441,9 @@ Parser2::parseE12(const std::string& T0)
         auto a = checkFunctionCall(name, symboltable);
         auto fc = std::move(std::get<0>(a));
         auto output = std::get<1>(a);
+
+        this->output << ");";
+        inGrouping = false;
 
         // return std::make_tuple(
         //     makeNode(OP::METHOD_ACCESS, std::move(fc), std::move(name)),
@@ -1290,7 +1466,11 @@ Parser2::parseE12(const std::string& T0)
 LandS
 Parser2::parseE13(const std::string& T11)
 {
-
+    if (!inGrouping)
+    {
+        output << ";";
+        udtBuffer += ";";
+    }
     return std::make_tuple(makeNullNode(), T11);
 }
 
@@ -1343,6 +1523,8 @@ Parser2::parseAttributeAccess(const std::string& udtType)
 
     advanceAndCheckToken(TokenKind::DOT); // consume '.'
     auto attribute = parseIdentifier();
+    output << "->" + builtinTypesTranslator(attribute->value);
+    udtBuffer += "->" + builtinTypesTranslator(attribute->value);
 
     // check if type exists
     if (!st->hasVariable(attribute->value))
@@ -1443,14 +1625,20 @@ Parser2::parseNew()
 LandS
 Parser2::parseUDTDec()
 {
+
     auto udtType = parseIdentifier();
     auto udtName = udtType->value;
+    output << "(struct " + udtName + "*)malloc(sizeof(struct " + udtName +
+                  "));\n";
+    udtBuffer +=
+        "(struct " + udtName + "*)malloc(sizeof(struct " + udtName + "));\n";
 
     checkExists(udtName);
     checkUDTExists(udtName);
 
     auto st = udttable->getAttributeSymbolTable(udtName);
     auto attributes = st->getSymbols();
+
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
     auto topitem = getChain(
         true, TokenKind::RCURLEY, OP::UDTDECITEM,
@@ -1458,12 +1646,23 @@ Parser2::parseUDTDec()
             // capture key
             auto attributeName = parseIdentifier();
 
+            this->udtBuffer +=
+                getTabs() + decName + "->" + attributeName->value + " = ";
+            this->output << getTabs() + decName + "->" + attributeName->value +
+                                " = ";
+
             advanceAndCheckToken(TokenKind::COLON); // consume ':'
 
             // capture value
             auto primary = parsePrimary();
             auto prim = std::move(std::get<0>(primary));
             auto type = std::get<1>(primary);
+
+            if (attributes.size() != 1)
+            {
+                this->udtBuffer += ";\n";
+                this->output << ";\n";
+            }
 
             // determine if key exists for udt
             std::vector<std::string>::iterator it = std::find(
@@ -1473,7 +1672,7 @@ Parser2::parseUDTDec()
             {
                 int index = std::distance(attributes.begin(), it);
                 checkType(st->getSymbolType(attributeName->value), type);
-                attributes.erase(attributes.begin() + 1);
+                attributes.erase(attributes.begin() + index);
             }
             else
                 semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
@@ -1508,10 +1707,14 @@ Parser2::parseT()
     if (currentToken->kind == TokenKind::LPAREN)
     {
         advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
+        output << "(";
+        udtBuffer += "(";
         auto a = parseE0();
         auto e0 = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
         advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
+        output << ")";
+        udtBuffer += ")";
         return std::make_tuple(std::move(e0), type);
     }
 
@@ -1551,6 +1754,8 @@ Parser2::parsePrimary()
         return std::make_tuple(parseString(), "str");
     case TokenKind::OWN_ACCESSOR:
         return std::make_tuple(parseOwnAccessor(), "own");
+    case TokenKind::EMPTY:
+        return std::make_tuple(parseEmpty(), "empty");
     case TokenKind::IDENTIFIER:
     {
         if (currentToken->value.at(0) == '[')
@@ -1558,6 +1763,8 @@ Parser2::parsePrimary()
 
         auto id = parseIdentifier();
         auto type = id->value;
+        output << builtinTypesTranslator(id->value);
+        udtBuffer += builtinTypesTranslator(id->value);
         return std::make_tuple(std::move(id), type);
     }
     case TokenKind::LIST:
@@ -1625,10 +1832,14 @@ Parser2::parseNumber()
     if (k == TokenKind::INTEGER)
     {
         advanceAndCheckToken(TokenKind::INTEGER); // eat integer
+        output << v;
+        udtBuffer += v;
         return makeLeaf(LIT::INTEGER, v);
     }
 
     advanceAndCheckToken(TokenKind::FLOAT); // eat float
+    output << v;
+    udtBuffer += v;
     return makeLeaf(LIT::FLOAT, v);
 }
 
@@ -1639,7 +1850,6 @@ LeafPtr
 Parser2::parseIdentifier()
 {
     auto v = currentToken->value;
-
     advanceAndCheckToken(TokenKind::IDENTIFIER); // eat identifier
     return makeLeaf(LIT::IDENTIFIER, v);
 }
@@ -1652,6 +1862,9 @@ Parser2::parseBoolean()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::BOOL); // eat identifier
+    output << (v == "true" ? "1" : "0");
+    udtBuffer += (v == "true" ? "1" : "0");
+
     return makeLeaf(LIT::IDENTIFIER, v);
 }
 
@@ -1662,7 +1875,9 @@ LeafPtr
 Parser2::parseString()
 {
     auto v = currentToken->value;
-    advanceAndCheckToken(TokenKind::STRING); // eat string
+    advanceAndCheckToken(TokenKind::STRING); // true eat string
+    output << v;
+    udtBuffer += v;
     return makeLeaf(LIT::STRING, v);
 }
 
@@ -1675,6 +1890,8 @@ Parser2::parseOwnAccessor()
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::OWN_ACCESSOR); // eat own accessor
 
+    udtBuffer += "this";
+
     if (isUdt)
         return makeLeaf(LIT::IDENTIFIER, extractUDTName(filename));
     else
@@ -1685,6 +1902,21 @@ Parser2::parseOwnAccessor()
 }
 
 /**
+ * Empty:= lexvalue
+ */
+LeafPtr
+Parser2::parseEmpty()
+{
+    auto v = currentToken->value;
+    advanceAndCheckToken(TokenKind::EMPTY); // eat own accessor
+
+    output << "NULL";
+    udtBuffer += "NULL";
+
+    return makeLeaf(LIT::EMPTY, v); // will not ever reach here
+}
+
+/**
  * ListType := lexvalue
  */
 std::tuple<LeafPtr, std::string>
@@ -1692,6 +1924,8 @@ Parser2::parseListType()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::LISTTYPE); // eat list type
+    // output << v;
+    // udtBuffer += v;
     return std::make_tuple(makeLeaf(LIT::LISTTYPE, v), "[list]");
 }
 
@@ -1744,7 +1978,7 @@ Parser2::tokenToType(const TokenKind& tk, const std::string& val)
     case TokenKind::INTEGER:
         return "int";
     case TokenKind::FLOAT:
-        return " flt ";
+        return "flt";
     case TokenKind::STRING:
         return "str";
     case TokenKind::BOOL:
@@ -1769,6 +2003,7 @@ Parser2::parseList()
     std::string type = "none";
 
     auto prev = makeNullNode();
+    std::deque<std::string> vals;
     if (listVals.size() == 0)
     {
     }
@@ -1778,6 +2013,8 @@ Parser2::parseList()
         {
             auto v = std::move(listVals.at(i));
             auto ty = tokenToType(v->kind, v->value);
+
+            vals.emplace_front(v->value);
 
             if (i == listVals.size() - 1)
                 type = ty;
@@ -1792,5 +2029,27 @@ Parser2::parseList()
         }
     }
 
+    std::string buf = "(" + builtinTypesTranslator(type) + "*)malloc(sizeof(" +
+                      builtinTypesTranslator(type) + ") * " +
+                      std::to_string(listVals.size()) + ");\n";
+
+    for (int i = 0; i < vals.size(); i++)
+    {
+        auto v = vals.at(i);
+        buf +=
+            getTabs() + decName + "[" + std::to_string(i) + "] = " + v + ";\n";
+    }
+
+    buf = buf.substr(0, buf.size() - 2);
+
+    udtBuffer += buf;
+    output << buf;
+
     return std::make_tuple(makeNode(OP::LIST, std::move(prev)), type);
+}
+
+void
+Parser2::transpile()
+{
+    output.close();
 }
