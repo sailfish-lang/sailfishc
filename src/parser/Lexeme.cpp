@@ -139,6 +139,8 @@ disp(LIT o)
         return "List type";
     case LIT::TYPE:
         return "Type";
+    case LIT::OWN:
+        return "Own";
     default:
         return "Unknown";
     }

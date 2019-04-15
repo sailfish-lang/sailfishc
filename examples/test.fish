@@ -1,9 +1,18 @@
 import foo : "../examples/foo.fish"
 
-(fun bar (int i, flt f) (flt) {return 10.0})
+(fun displayFoo(foo is, int s)(void) {
+    Tree (
+         ( | s == 0 | { 
+            printStr("The End!")
+        })
+        ( | s !=0 | { 
+            --s
+            printInt(is...get(s))
+            displayFoo(is, s)
+        })
+    )
+})
 
 start {
-  dec flt f = 10.0
-  dec [int] is = []
-  is = [1,2]
+    dec foo s = new foo { list: [1,2,3], size: 3 }    
 }

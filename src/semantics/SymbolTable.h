@@ -29,6 +29,8 @@ class SymbolTable
         scopeLevel = 0;
         globalScopeTable.clear();
         localCache.push_back("|");
+
+        addBuiltins();
     }
     // destructor
     ~SymbolTable()
@@ -81,6 +83,9 @@ class SymbolTable
 
         return symbols;
     }
+
+    void addBuiltins();
+    void clear();
 
     void
     dump(int indent = 0)

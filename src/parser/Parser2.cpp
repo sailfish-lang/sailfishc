@@ -92,35 +92,67 @@ Parser2::advanceAndCheckToken(const TokenKind& k)
 void
 Parser2::checkType(const std::string& t0, const std::string& t1)
 {
+    auto left = t0;
+    auto right = t1;
+
+    if (symboltable->hasVariable(left))
+        left = symboltable->getSymbolType(left);
+
+    if (symboltable->hasVariable(right))
+        right = symboltable->getSymbolType(right);
+
     // should actually check types here
-    if (t0.at(0) == '[')
+    if (left.at(0) == '[')
     {
         auto type = extractListType(t0);
 
-        if (t1 != "none" && type != t1)
+        if (right.at(0) == '[')
+        {
+            right = extractListType(right);
+        }
+
+        if (t1 != "none" && type != right)
         {
             semanticerrorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line,
-                       "Mismatched list types. Expected is: " + t0 + ".",
-                       "Received is: ", "[" + t1 + "]", ".")));
+                       "Mismatched list types. Expected is: " + left + ".",
+                       "Received is: ", "[" + right + "]", ".")));
         }
     }
-    else if (t0 == "num")
+    else if (right.at(0) == '[')
     {
-        if ("int" != t1 && "flt" != t1)
+        auto type = extractListType(right);
+
+        if (left.at(0) == '[')
+        {
+            left = extractListType(left);
+        }
+
+        if (t1 != "none" && type != left)
+        {
+            semanticerrorhandler->handle(std::make_unique<Error2>(
+                Error2(currentToken->col, currentToken->line,
+                       "Mismatched list types. Expected is: " + left + ".",
+                       "Received is: ", "[" + type + "]", ".")));
+        }
+    }
+    else if (left == "num")
+    {
+        if ("int" != right && "flt" != right)
         {
             semanticerrorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line,
                        "Mismatched types. Expected/LeftHand is: int or flt.",
-                       "Received/Right Hand is: ", t1, ".")));
+                       "Received/Right Hand is: ", right, ".")));
         }
     }
-    else if (t0 != t1)
+
+    else if (left != right)
     {
         semanticerrorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line,
                    "Mismatched types. Expected/LeftHand is: " + t0 + ".",
-                   "Received/Right Hand is: ", t1, ".")));
+                   "Received/Right Hand is: ", right, ".")));
     }
 }
 
@@ -141,11 +173,21 @@ Parser2::checkUnique(const std::string& s)
     }
 }
 
-
 void
 Parser2::checkExists(const std::string& s)
 {
+
     auto type = s;
+    if (type == "own")
+    {
+        if (isUdt)
+            type = extractUDTName(filename);
+        else
+            errorhandler->handle(std::make_unique<Error2>(Error2(
+                currentToken->col, currentToken->line,
+                "illegal usage of own in a non udt method.", "", "", "")));
+    }
+
     if (s.at(0) == '[')
         type = extractListType(type);
 
@@ -153,33 +195,31 @@ Parser2::checkExists(const std::string& s)
     {
         semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
             currentToken->col, currentToken->line, "Unknown variable or type.",
-            "Unknown variable/type named: ", s, ".")));
-    }
-}
-
-void
-Parser2::checkExists(const std::string& s, std::shared_ptr<SymbolTable> st)
-{
-    auto type = s;
-    if (s.at(0) == '[')
-        type = extractListType(type);
-
-    if (!st->hasVariable(type) && !isPrimitive(type))
-    {
-        semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
-            currentToken->col, currentToken->line, "Unknown variable or type.",
-            "Unknown variable/type named: ", s, ".")));
+            "Unknown variable/type named: ", type, ".")));
     }
 }
 
 void
 Parser2::checkUDTExists(const std::string& s)
 {
-    if (!udttable->hasUDT(s))
+    auto udtname = s;
+    if (udtname == "own")
+    {
+        if (isUdt)
+            udtname = extractUDTName(filename);
+        else
+            errorhandler->handle(std::make_unique<Error2>(Error2(
+                currentToken->col, currentToken->line,
+                "illegal usage of own in a non udt method.", "", "", "")));
+    }
+
+    if (!udttable->hasUDT(udtname) &&
+        (!symboltable->hasVariable(udtname) &&
+         !udttable->hasUDT(symboltable->getSymbolType(udtname))))
     {
         semanticerrorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line, "Unknown udt type.",
-                   "Unknown type named: ", s, ".")));
+                   "Unknown type named: ", udtname, ".")));
     }
 }
 
@@ -220,6 +260,12 @@ Parser2::checkFunctionCall(const std::string& name,
         bool flag = false;
         for (int i = 0; i < inputs.size(); i++)
         {
+            if (inputs[i].at(0) == '[')
+                inputs[i] = extractListType(inputs[i]);
+
+            if (fcInputs[i].at(0) == '[')
+                fcInputs[i] = extractListType(fcInputs[i]);
+
             if (inputs[i] != fcInputs[i])
                 semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
                     currentToken->col, currentToken->line,
@@ -425,17 +471,20 @@ Parser2::parseUDT()
 NodePtr
 Parser2::parseUserDefinedType()
 {
+    auto udtname = extractUDTName(filename);
+    udttable->addUDT(udtname);
+
     auto atlandst = this->parseAttributes();
     auto topattribute = std::move(std::get<0>(atlandst));
     std::shared_ptr<SymbolTable> attributest = std::move(std::get<1>(atlandst));
 
+    udttable->updateUDT(udtname, attributest,
+                        std::make_shared<SymbolTable>(SymbolTable()));
+
     auto mlandst = this->parseMethods();
     auto topmethod = std::move(std::get<0>(mlandst));
     std::shared_ptr<SymbolTable> methodst = std::move(std::get<1>(mlandst));
-
-    auto udtname = extractUDTName(filename);
-
-    udttable->addUDT(udtname, attributest, methodst);
+    udttable->updateUDT(udtname, attributest, methodst);
 
     return makeNode(OP::UDT, std::move(topattribute), std::move(topmethod));
 }
@@ -456,6 +505,8 @@ Parser2::parseAttributes()
     std::shared_ptr<SymbolTable> st =
         std::make_shared<SymbolTable>(SymbolTable());
 
+    st->clear();
+
     auto topattribute = getChain(
         true, TokenKind::RCURLEY, OP::ATTRIBUTE, [&st, this]() -> Lexeme {
             auto lands = this->parseVariable();
@@ -474,6 +525,20 @@ Parser2::parseAttributes()
             }
 
             // check if type exists
+            if (type.at(0) == '[')
+                type = extractListType(type);
+
+            if (type == "own")
+            {
+                if (isUdt)
+                    type = extractUDTName(filename);
+                else
+                    errorhandler->handle(std::make_unique<Error2>(
+                        Error2(currentToken->col, currentToken->line,
+                               "illegal usage of own in a non udt method.", "",
+                               "", "")));
+            }
+
             if (!symboltable->hasVariable(type) && !isPrimitive(type))
             {
                 semanticerrorhandler->handle(std::make_unique<Error2>(
@@ -512,6 +577,9 @@ Parser2::parseMethods()
     std::shared_ptr<SymbolTable> st;
     std::shared_ptr<SymbolTable> temp = symboltable;
     symboltable = std::make_shared<SymbolTable>(SymbolTable());
+
+    // add udt so it can reference self (or own in Sailfish lingo)
+    symboltable->addSymbol(extractUDTName(filename), "U");
 
     auto topmethod =
         getChain(true, TokenKind::RCURLEY, OP::METHOD, [this]() -> NodePtr {
@@ -555,24 +623,17 @@ Parser2::parseFunctionDefinition()
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
     advanceAndCheckToken(TokenKind::FUN);    // consume funenterScope
 
+    symboltable->enterScope();
+
     // parse left child
     auto id = parseIdentifier();
 
     // parse right child
-    auto lands = parseFunctionInfo();
+    auto lands = parseFunctionInfo(id->value);
     auto lexeme = std::move(std::get<0>(lands));
-    auto type = std::get<1>(lands);
-    type = "F" + type;
+    // auto type = std::get<1>(lands);
 
-    // add to symbol table
-    auto ok = symboltable->addSymbol(id->value, type);
-    if (!ok)
-        semanticerrorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "Unexpected redeclaration of " + id->value +
-                       ", originally defined as type " +
-                       symboltable->getSymbolType(id->value) + ".",
-                   "Received second declaration of type: ", type, ".")));
+    symboltable->exitScope();
 
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
     return makeNode(OP::FUNCTION, std::move(id), std::move(lexeme));
@@ -585,11 +646,24 @@ Parser2::parseFunctionDefinition()
  *  - actual return type matches expected return type
  */
 LandS
-Parser2::parseFunctionInfo()
+Parser2::parseFunctionInfo(const std::string& name)
 {
     auto lands = parseFunctionInOut();
     auto fintout = std::move(std::get<0>(lands));
     auto type = std::get<1>(lands);
+
+    type = "F" + type;
+
+    // add to symbol table
+    auto ok = symboltable->addSymbol(name, type);
+
+    if (!ok)
+        semanticerrorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line,
+                   "Unexpected redeclaration of " + name +
+                       ", originally defined as type " +
+                       symboltable->getSymbolType(name) + ".",
+                   "Received second declaration of type: ", type, ".")));
 
     auto a = parseBlock();
     auto block = std::move(std::get<0>(a));
@@ -641,6 +715,8 @@ Parser2::parseFunctionInOut()
                                     "", "", "")));
                      }
 
+                     symboltable->addSymbol(std::get<1>(lands), type);
+
                      types += "_" + type;
                      return inp;
                  });
@@ -665,6 +741,9 @@ Parser2::parseStart()
     advanceAndCheckToken(TokenKind::START);
 
     auto a = parseBlock();
+
+    symboltable->dump();
+
     auto block = std::move(std::get<0>(a));
     // auto type = std::get<1>(a); -- ignore type
 
@@ -688,6 +767,7 @@ Parser2::parseBlock()
     advanceAndCheckToken(TokenKind::LCURLEY); // eat '{'
 
     symboltable->enterScope();
+
     auto topstatement = getChain(
         true, TokenKind::RCURLEY, OP::STATEMENT,
         [&type, &hasSeenReturn, this]() -> Lexeme {
@@ -706,6 +786,8 @@ Parser2::parseBlock()
                 else
                 {
                     type = std::get<1>(a);
+                    if (symboltable->hasVariable(type))
+                        type = symboltable->getSymbolType(type);
                     hasSeenReturn = true;
                 }
             }
@@ -816,10 +898,10 @@ LandS
 Parser2::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
-    auto a = parseT();
-    auto t = std::move(std::get<0>(a));
+    auto a = parseE0();
+    auto e0 = std::move(std::get<0>(a));
     auto type = std::get<1>(a);
-    return std::make_tuple(makeNode(OP::RETURN, std::move(t)), type);
+    return std::make_tuple(makeNode(OP::RETURN, std::move(e0)), type);
 }
 
 /**
@@ -1032,7 +1114,10 @@ Parser2::parseE7(const std::string& T0)
             // initialized)
             this->checkExists(T0);
             // check that the two types are the same
-            this->checkType(this->symboltable->getSymbolType(T0), T1);
+            auto type = T0;
+            if (!isPrimitive(T0))
+                type = this->symboltable->getSymbolType(T0);
+            this->checkType(type, T1);
             return T1;
         },
 
@@ -1130,8 +1215,13 @@ Parser2::parseE10(const std::string& T0)
     {
         auto a = parseMemberAccess(T0);
         auto member = std::move(std::get<0>(a));
-        auto type = std::get<1>(a);
-        return std::make_tuple(std::move(member), type);
+        auto typea = std::get<1>(a);
+
+        auto b = parseE1(typea);
+        auto e0 = std::move(std::get<0>(b));
+        auto typeb = std::get<1>(b);
+
+        return std::make_tuple(std::move(e0), typeb);
     }
 
     auto b = parseE11(std::move(T0));
@@ -1200,6 +1290,7 @@ Parser2::parseE12(const std::string& T0)
 LandS
 Parser2::parseE13(const std::string& T11)
 {
+
     return std::make_tuple(makeNullNode(), T11);
 }
 
@@ -1209,12 +1300,27 @@ Parser2::parseE13(const std::string& T11)
 LandS
 Parser2::parseMemberAccess(const std::string& T0)
 {
+    auto type = T0;
+    if (type == "own")
+    {
+        if (isUdt)
+            type = extractUDTName(filename);
+        else
+            errorhandler->handle(std::make_unique<Error2>(Error2(
+                currentToken->col, currentToken->line,
+                "illegal usage of own in a non udt method.", "", "", "")));
+    }
+    if (!udttable->hasUDT(type))
+    {
+        type = symboltable->getSymbolType(type);
+        checkUDTExists(type);
+    }
     switch (currentToken->kind)
     {
     case TokenKind::DOT:
-        return parseAttributeAccess(T0);
+        return parseAttributeAccess(type);
     case TokenKind::TRIPLE_DOT:
-        return parseMethodAccess(T0);
+        return parseMethodAccess(type);
     default:
         errorhandler->handle(std::make_unique<Error2>(Error2(
             currentToken->col, currentToken->line, "Expected a ... or . token.",
@@ -1232,7 +1338,6 @@ Parser2::parseAttributeAccess(const std::string& udtType)
 {
     checkExists(udtType);
     checkUDTExists(udtType);
-
     // get udt's attribute symbol table
     auto st = udttable->getAttributeSymbolTable(udtType);
 
@@ -1444,6 +1549,8 @@ Parser2::parsePrimary()
         return std::make_tuple(parseNumber(), "flt");
     case TokenKind::STRING:
         return std::make_tuple(parseString(), "str");
+    case TokenKind::OWN_ACCESSOR:
+        return std::make_tuple(parseOwnAccessor(), "own");
     case TokenKind::IDENTIFIER:
     {
         if (currentToken->value.at(0) == '[')
@@ -1560,6 +1667,24 @@ Parser2::parseString()
 }
 
 /**
+ * Own Accessor:= lexvalue
+ */
+LeafPtr
+Parser2::parseOwnAccessor()
+{
+    auto v = currentToken->value;
+    advanceAndCheckToken(TokenKind::OWN_ACCESSOR); // eat own accessor
+
+    if (isUdt)
+        return makeLeaf(LIT::IDENTIFIER, extractUDTName(filename));
+    else
+        errorhandler->handle(std::make_unique<Error2>(
+            Error2(currentToken->col, currentToken->line,
+                   "illegal usage of own in a non udt method.", "", "", "")));
+    return makeLeaf(LIT::OWN, v); // will not ever reach here
+}
+
+/**
  * ListType := lexvalue
  */
 std::tuple<LeafPtr, std::string>
@@ -1667,6 +1792,5 @@ Parser2::parseList()
         }
     }
 
-    std::cout << std::endl;
     return std::make_tuple(makeNode(OP::LIST, std::move(prev)), type);
 }

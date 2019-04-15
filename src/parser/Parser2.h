@@ -121,9 +121,7 @@ class Parser2
     // semantic checker methods
     void checkType(const std::string&, const std::string&);
     void checkUnique(const std::string&);
-    void checkUnique(const std::string&, std::shared_ptr<SymbolTable>);
     void checkExists(const std::string&);
-    void checkExists(const std::string&, std::shared_ptr<SymbolTable>);
     void checkUDTExists(const std::string&);
     LandS checkFunctionCall(const std::string&, std::shared_ptr<SymbolTable>);
     std::string parseFunctionReturnType(const std::string& s);
@@ -144,7 +142,7 @@ class Parser2
     NodePtr parseScript();
     NodePtr parseScript_();
     NodePtr parseFunctionDefinition();
-    LandS parseFunctionInfo();
+    LandS parseFunctionInfo(const std::string&);
     LandS parseFunctionInOut();
     NodePtr parseStart();
     LandS parseBlock();
@@ -183,6 +181,7 @@ class Parser2
     LeafPtr parseInteger();
     LeafPtr parseFloat();
     LeafPtr parseString();
+    LeafPtr parseOwnAccessor();
     LeafPtr parseIdentifier();
     LandS parseList();
     std::tuple<LeafPtr, std::string> parseListType();

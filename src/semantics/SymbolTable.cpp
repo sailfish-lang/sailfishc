@@ -14,7 +14,7 @@ addToLocalCache(std::string varName, std::vector<std::string> localCache)
 
 // helper method to get only this scope's local cache
 std::vector<std::string>
-getLastScopeCache(std::vector<std::string> cache)
+getLastScopeCache(std::vector<std::string>& cache)
 {
     std::vector<std::string> localCache;
     while (cache.size() > 0)
@@ -150,4 +150,39 @@ SymbolTable::addStdlib(const std::string varName, const std::string type)
     ss.push(smd);
     globalScopeTable.insert({varName, ss});
     localCache = addToLocalCache(varName, localCache);
+}
+
+void
+SymbolTable::clear()
+{
+    globalScopeTable.clear();
+}
+
+void
+SymbolTable::addBuiltins()
+{
+    addSymbol("appendListInt", "F(_[int]_[int])[int]");
+    addSymbol("appendListStr", "F(_[str]_[str])[str]");
+    addSymbol("appendListBool", "F(_[bool]_[bool])[bool]");
+    addSymbol("appendListFlt", "F(_[flt]_[flt])[flt]");
+
+    addSymbol("deleteAtIndexInt", "F(_[int]_int)[int]");
+    addSymbol("deleteAtIndexStr", "F(_[str]_int)[str]");
+    addSymbol("deleteAtIndexBool", "F(_[bool]_int)[bool]");
+    addSymbol("deleteAtIndexFlt", "F(_[flt]_int)[flt]");
+
+    addSymbol("getAtIndexInt", "F(_[int]_int)int");
+    addSymbol("getAtIndexStr", "F(_[str]_int)str");
+    addSymbol("getAtIndexBool", "F(_[bool]_int)bool");
+    addSymbol("getAtIndexFlt", "F(_[flt]_int)flt");
+
+    addSymbol("setAtIndexInt", "F(_[int]_int_int)[int]");
+    addSymbol("setAtIndexStr", "F(_[str]_int_str)[str]");
+    addSymbol("setAtIndexBool", "F(_[bool]_int_bool)[bool]");
+    addSymbol("setAtIndexFlt", "F(_[flt]_int_flt)[flt]");
+
+    addSymbol("printInt", "F(_int)void");
+    addSymbol("printStr", "F(_str)void");
+    addSymbol("printBool", "F(_bool)void");
+    addSymbol("printFlt", "F(_flt)void");
 }

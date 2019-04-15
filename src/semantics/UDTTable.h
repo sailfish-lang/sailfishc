@@ -63,6 +63,20 @@ class UDTTable
         return true;
     }
 
+    // returns true if added or false if already exists
+    bool
+    addUDT(const std::string name)
+    {
+        if (hasUDT(name))
+            return false;
+
+        UDTMetaData* udtmd =
+            new UDTMetaData(std::make_shared<SymbolTable>(SymbolTable()),
+                            std::make_shared<SymbolTable>(SymbolTable()));
+        udtTable.insert({name, udtmd});
+        return true;
+    }
+
     // allow us to update the table after udt key aleady added
     bool
     updateUDT(const std::string name, std::shared_ptr<SymbolTable> attributes,

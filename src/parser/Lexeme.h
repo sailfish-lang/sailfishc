@@ -82,6 +82,7 @@ enum class LIT
     LISTTYPE,
     STRING,
     TYPE,
+    OWN,
 };
 std::string disp(LIT l);
 
