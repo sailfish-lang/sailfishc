@@ -67,6 +67,8 @@ enum class OP
     UNARYADD,
     UNARYMINUS,
     VARIABLE,
+    LISTITEM,
+    LIST,
 };
 std::string disp(OP o);
 
@@ -77,10 +79,11 @@ enum class LIT
     FLOAT,
     IDENTIFIER,
     INTEGER,
-    LIST,
     LISTTYPE,
     STRING,
     TYPE,
+    OWN,
+    EMPTY,
 };
 std::string disp(LIT l);
 

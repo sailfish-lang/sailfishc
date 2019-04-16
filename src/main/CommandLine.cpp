@@ -23,6 +23,27 @@ versionInfo()
     std::cout << "sailfishc 0.2.0 (marlin)\n";
 }
 
+void
+fullCompilation(const std::string& filename)
+{
+    try
+    {
+        std::cout << "Compiling " << filename << ".\n\n";
+
+        Parser2* p = new Parser2(filename);
+        auto n = p->parse();
+        p->transpile();
+    }
+    catch (const std::string msg)
+    {
+        std::cerr << msg;
+    }
+    catch (char const* msg)
+    {
+        std::cerr << msg;
+    }
+}
+
 int
 handleCommandLine(int argc, char* const* argv)
 {
@@ -42,6 +63,10 @@ handleCommandLine(int argc, char* const* argv)
         {
             versionInfo();
         }
+        else
+        {
+            fullCompilation(argv[1]);
+        }
 
         return 0;
     }
@@ -52,7 +77,7 @@ handleCommandLine(int argc, char* const* argv)
             std::string filename = argv[2];
             std::cout << "Lexing " << filename << ".\n\n";
 
-            Lexar2* l = new Lexar2(filename);
+            Lexar2* l = new Lexar2(filename, true);
             std::unique_ptr<Token2> t = l->getNextToken();
 
             while (t->kind != TokenKind::EOF_)
@@ -71,13 +96,6 @@ handleCommandLine(int argc, char* const* argv)
 
                 Parser2* p = new Parser2(filename);
                 auto n = p->parse();
-                // p->getUDTTable()->dump();
-                // p->getSymbolTable()->dump();
-                // std::cout << '\n';
-                // p->postorder(std::move(n), [](std::string s) -> void {
-                //     std::cout << s << '\n';
-                // });
-                // p->display(std::move(n));
             }
             catch (const std::string msg)
             {

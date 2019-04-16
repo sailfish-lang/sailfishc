@@ -9,6 +9,8 @@ displayKind(const TokenKind& k)
         return "START";
     case TokenKind::OWN_ACCESSOR:
         return "OWN";
+    case TokenKind::EMPTY:
+        return "EMPTY";
     case TokenKind::TREE:
         return "TREE";
     case TokenKind::UAT:

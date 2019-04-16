@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-class Error2
+class Warning
 {
   private:
     int col;
@@ -20,8 +20,8 @@ class Error2
     std::string filename;
 
   public:
-    Error2(int c, int l, const std::string& m, const std::string& le,
-           const std::string& mid, const std::string& ri)
+    Warning(int c, int l, const std::string& m, const std::string& le,
+            const std::string& mid, const std::string& ri)
     {
         col = c;
         line = l;
@@ -32,7 +32,7 @@ class Error2
     }
     // set method for receiving type to utilize internally
     void
-    setErrorType(const std::string& e)
+    setWarningType(const std::string& e)
     {
         errtype = e;
     }
@@ -45,17 +45,19 @@ class Error2
     void
     displayMessage()
     {
-        Prettify::Formatter red(Prettify::FG_RED);
+        Prettify::Formatter yellow(Prettify::FG_YELLOW);
         Prettify::Formatter def(Prettify::FG_DEFAULT);
         Prettify::Formatter underline(Prettify::UNDERLINE);
         Prettify::Formatter normal(Prettify::RESET);
 
         if (left == "" && middle == "" && right == "")
-            std::cout << red << "[" << errtype << " ERROR at " + filename + " ["
-                      << line << ":" << col << "]: " << msg << def << "\n";
+            std::cout << yellow << "[" << errtype
+                      << " WARNING at " + filename + " [" << line << ":" << col
+                      << "]: " << msg << def << "\n";
         else
-            std::cout << red << "[" << errtype << " ERROR at " + filename + " ["
-                      << line << ":" << col << "]: " << msg << def << "\n\n\t"
-                      << left << underline << middle << normal << right << "\n";
+            std::cout << yellow << "[" << errtype
+                      << " WARNING at " + filename + " [" << line << ":" << col
+                      << "]: " << msg << def << "\n\n\t" << left << underline
+                      << middle << normal << right << "\n";
     }
 };

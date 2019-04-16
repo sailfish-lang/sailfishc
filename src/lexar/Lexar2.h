@@ -15,6 +15,8 @@ class Lexar2
     int col;
     int prevCol; // for when we need to jump back a line and remember where the
                  // end of that line was
+    bool isFile; // may have a raw string instead of a file
+    std::string rawString;
     char getNextChar();
     std::unique_ptr<Token2> makeToken(const TokenKind&, const std::string&);
     std::unique_ptr<Token2> makeTokenPutback(const TokenKind&, std::string&,
@@ -44,6 +46,6 @@ class Lexar2
     };
 
   public:
-    Lexar2(const std::string& filename);
+    Lexar2(const std::string&, bool);
     std::unique_ptr<Token2> getNextToken();
 };
