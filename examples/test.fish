@@ -1,34 +1,23 @@
 import foo : "../examples/foo.fish"
 
-(fun bar(int z)(int){
-    z = 10
-    return z
+(fun money(int i)(int){
+    return i
 })
 
 start {
-    dec int i = 10
-    dec str s = "Hello World"
 
     Tree (
-        (| i == 10 | {
-            Tree (
-                (| true | { i = 11 } )
-                (| "watermelon" == "tasty" | { i = 11 } )
-            )
-        })
-
-        (| i != 10 | {
-            i = 2
-        })
-
-        (| (10 < i) and (10 < (i + 1)) | {
-            i = 2
-        })
+        ( | true | { dec flt f = 10.0 } )
+        ( | false | { dec bool b = false } )
     )
 
-    i = bar(i)
+    dec foo fluf = new foo { i: 10 }
+    
+    dec int size = money(money(money(money(20))))
+    printInt(size)
 
-    dec foo fuh = new foo { i:10, fl:10.0, s: empty }
+    size = fluf.i
+    printInt(size)
 
-    dec [flt] is = [1.0, 2.0, 2020.0]
+    printInt( fluf...baz(size))
 }

@@ -46,6 +46,7 @@ class Parser2
     std::string decName = "";
     int currentTabs = 0;
     std::string udtBuffer = "";
+    std::string methodAccessName = "";
 
     // ------- Transpiler -------- //
     const std::string OUTPUT_HEADER =
@@ -207,8 +208,8 @@ class Parser2
     LandS parseE12(const std::string&);
     LandS parseE13(const std::string&);
     LandS parseMemberAccess(const std::string&);
-    LandS parseAttributeAccess(const std::string&);
-    LandS parseMethodAccess(const std::string&);
+    LandS parseAttributeAccess(const std::string&, const std::string&);
+    LandS parseMethodAccess(const std::string&, const std::string&);
     LandS parseFunctionCall();
     LandS parseNew();
     LandS parseUDTDec();

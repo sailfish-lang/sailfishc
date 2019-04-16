@@ -931,6 +931,8 @@ Parser2::parseStatement()
         auto a = parseReturn();
         auto ret = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
+        output << ";";
+        udtBuffer += ";";
         return std::make_tuple(std::move(ret), type, "RETURN");
     }
     case TokenKind::DEC:
@@ -938,6 +940,8 @@ Parser2::parseStatement()
         auto a = parseDeclaration();
         auto dec = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
+        output << ";";
+        udtBuffer += ";";
         return std::make_tuple(std::move(dec), type, "DEC");
     }
     default:
@@ -945,6 +949,8 @@ Parser2::parseStatement()
         auto a = parseE0();
         auto e0 = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
+        output << ";";
+        udtBuffer += ";";
         return std::make_tuple(std::move(e0), type, "E0");
     }
     }
@@ -1442,7 +1448,7 @@ Parser2::parseE12(const std::string& T0)
         auto fc = std::move(std::get<0>(a));
         auto output = std::get<1>(a);
 
-        this->output << ");";
+        this->output << ")";
         inGrouping = false;
 
         // return std::make_tuple(
@@ -1468,8 +1474,8 @@ Parser2::parseE13(const std::string& T11)
 {
     if (!inGrouping)
     {
-        output << ";";
-        udtBuffer += ";";
+        // output << ";";
+        // udtBuffer += ";";
     }
     return std::make_tuple(makeNullNode(), T11);
 }
@@ -1498,9 +1504,9 @@ Parser2::parseMemberAccess(const std::string& T0)
     switch (currentToken->kind)
     {
     case TokenKind::DOT:
-        return parseAttributeAccess(type);
+        return parseAttributeAccess(T0, type);
     case TokenKind::TRIPLE_DOT:
-        return parseMethodAccess(type);
+        return parseMethodAccess(T0, type);
     default:
         errorhandler->handle(std::make_unique<Error2>(Error2(
             currentToken->col, currentToken->line, "Expected a ... or . token.",
@@ -1514,8 +1520,10 @@ Parser2::parseMemberAccess(const std::string& T0)
  * AttributeAccess := '.' Identifier
  */
 LandS
-Parser2::parseAttributeAccess(const std::string& udtType)
+Parser2::parseAttributeAccess(const std::string& udtname,
+                              const std::string& udtType)
 {
+
     checkExists(udtType);
     checkUDTExists(udtType);
     // get udt's attribute symbol table
@@ -1523,6 +1531,13 @@ Parser2::parseAttributeAccess(const std::string& udtType)
 
     advanceAndCheckToken(TokenKind::DOT); // consume '.'
     auto attribute = parseIdentifier();
+
+    // ignore own
+    if (udtname != "own")
+    {
+        output << udtname;
+        udtBuffer += udtname;
+    }
     output << "->" + builtinTypesTranslator(attribute->value);
     udtBuffer += "->" + builtinTypesTranslator(attribute->value);
 
@@ -1542,8 +1557,11 @@ Parser2::parseAttributeAccess(const std::string& udtType)
  * MethodAccess := '...' Identifier FunctionCall
  */
 LandS
-Parser2::parseMethodAccess(const std::string& udtType)
+Parser2::parseMethodAccess(const std::string& udtname,
+                           const std::string& udtType)
 {
+    methodAccessName = udtname;
+
     checkExists(udtType);
     checkUDTExists(udtType);
 
@@ -1552,14 +1570,27 @@ Parser2::parseMethodAccess(const std::string& udtType)
 
     advanceAndCheckToken(TokenKind::TRIPLE_DOT); // consume '...'
 
-    auto name = parseIdentifier();
+    auto methodName = parseIdentifier();
 
-    auto a = checkFunctionCall(name->value, st);
+    output << methodName->value + "(";
+    udtBuffer += methodName->value + "(";
+
+    inGrouping = true;
+
+    auto a = checkFunctionCall(methodName->value, st);
     auto fc = std::move(std::get<0>(a));
     auto output = std::move(std::get<1>(a));
 
+    this->output << ")";
+    this->udtBuffer += ")";
+
+    inGrouping = false;
+
+    methodAccessName = "";
+
     return std::make_tuple(
-        makeNode(OP::METHOD_ACCESS, std::move(fc), std::move(name)), output);
+        makeNode(OP::METHOD_ACCESS, std::move(fc), std::move(methodName)),
+        output);
 }
 
 /**
@@ -1571,8 +1602,9 @@ Parser2::parseFunctionCall()
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
 
     std::string types = "(";
+    int nonVoidInputs = 0;
     auto topinput = getChain(true, TokenKind::RPAREN, OP::INPUT,
-                             [&types, this]() -> Lexeme {
+                             [&nonVoidInputs, &types, this]() -> Lexeme {
                                  auto a = parseE0();
                                  auto input = std::move(std::get<0>(a));
                                  auto type = std::get<1>(a);
@@ -1580,10 +1612,18 @@ Parser2::parseFunctionCall()
                                  if (symboltable->hasVariable(type))
                                      type = symboltable->getSymbolType(type);
 
+                                 if (type != "void")
+                                     ++nonVoidInputs;
+
                                  types += "_" + type;
                                  return input;
                              });
 
+    if (methodAccessName != "")
+        if (nonVoidInputs == 0)
+            output << methodAccessName;
+        else
+            output << ", " + methodAccessName;
     types += ")";
 
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
@@ -1763,8 +1803,14 @@ Parser2::parsePrimary()
 
         auto id = parseIdentifier();
         auto type = id->value;
-        output << builtinTypesTranslator(id->value);
-        udtBuffer += builtinTypesTranslator(id->value);
+
+        if (!udttable->hasUDT(symboltable->getSymbolType(type)) ||
+            (methodAccessName == "" && type == "void"))
+        {
+            output << builtinTypesTranslator(type);
+            udtBuffer += builtinTypesTranslator(type);
+        }
+
         return std::make_tuple(std::move(id), type);
     }
     case TokenKind::LIST:

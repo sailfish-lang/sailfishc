@@ -1,11 +1,9 @@
 Uat {
     int i
-    flt fl
-    foo s
 }
 
 Ufn {
-    (fun baz(void)(int){
+    (fun baz(int i)(int){
         return own.i
     })
 }
