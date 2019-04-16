@@ -808,15 +808,18 @@ Parser2::parseFunctionInOut(const std::string& name)
                            "", "", "")));
             }
 
-            auto ok = symboltable->addSymbol(std::get<1>(lands), type);
-            if (!ok)
-                semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
-                    currentToken->col, currentToken->line,
-                    "Unexpected redeclaration of " + name +
-                        ", originally defined as type " +
-                        symboltable->getSymbolType(name) + ".",
-                    "Received second declaration of type: ", type, ".")));
-
+            if (type != "void")
+            {
+                auto ok = symboltable->addSymbol(std::get<1>(lands), type);
+                if (!ok)
+                    semanticerrorhandler->handle(std::make_unique<Error2>(
+                        Error2(currentToken->col, currentToken->line,
+                               "Unexpected redeclaration of " + name +
+                                   ", originally defined as type " +
+                                   symboltable->getSymbolType(name) + ".",
+                               "Received second declaration of type: ", type,
+                               ".")));
+            }
             types += "_" + type;
             return inp;
         });
@@ -1439,6 +1442,7 @@ Parser2::parseE12(const std::string& T0)
     {
 
         this->output << "(";
+        udtBuffer += "(";
         inGrouping = true;
         checkExists(T0);
 
@@ -1449,6 +1453,7 @@ Parser2::parseE12(const std::string& T0)
         auto output = std::get<1>(a);
 
         this->output << ")";
+        udtBuffer += ")";
         inGrouping = false;
 
         // return std::make_tuple(
@@ -1804,11 +1809,14 @@ Parser2::parsePrimary()
         auto id = parseIdentifier();
         auto type = id->value;
 
-        if (!udttable->hasUDT(symboltable->getSymbolType(type)) ||
-            (methodAccessName == "" && type == "void"))
+        if (methodAccessName == "" ||
+            (methodAccessName != "" && type != "void"))
         {
-            output << builtinTypesTranslator(type);
-            udtBuffer += builtinTypesTranslator(type);
+            if (!udttable->hasUDT(symboltable->getSymbolType(type)))
+            {
+                output << builtinTypesTranslator(type);
+                udtBuffer += builtinTypesTranslator(type);
+            }
         }
 
         return std::make_tuple(std::move(id), type);

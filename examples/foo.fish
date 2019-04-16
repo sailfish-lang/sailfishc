@@ -1,9 +1,18 @@
 Uat {
-    int i
+    [int] list
+    int size
 }
 
 Ufn {
-    (fun baz(int i)(int){
-        return own.i
+    (fun dispSize(void)(void){
+        printInt(own.size)
+    })
+
+    (fun incrementSize(void)(void){
+        ++own.size
+    })
+
+    (fun decrementSize(void)(void){
+        --own.size
     })
 }
