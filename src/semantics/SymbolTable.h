@@ -55,6 +55,7 @@ class SymbolTable
 
     // either push to the variables scope if exists or add variable
     bool addSymbol(const std::string, const std::string);
+    bool addSymbolHack(const std::string, const std::string);
 
     // for removing symbols which should basically never happen except for the
     // class name from the attributes
@@ -94,11 +95,12 @@ class SymbolTable
     void
     dump(int indent = 0)
     {
-        std::cout << "DUMPING Symbol Table: \n";
+        std::cout << "\n\nDUMPING Symbol Table: \n";
         for (auto const& element : globalScopeTable)
         {
             std::cout << std::setw(indent) << element.first << ": "
                       << element.second.top()->getType() << std::endl;
         }
+        std::cout << "\n\n";
     }
 };

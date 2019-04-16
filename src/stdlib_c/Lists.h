@@ -12,6 +12,8 @@ const static std::string APPEND_LIST_INT =
     "\n    int* combined = malloc((a_size + b_size) * sizeof(int));"
     "\n    memcpy(combined,     a, a_size * sizeof(int));"
     "\n    memcpy(combined + a_size, b, b_size * sizeof(int));"
+    "\n    free(a);"
+    "\n    free(b);"
     "\n    return combined;"
     "\n}\n";
 
@@ -22,6 +24,8 @@ const static std::string APPEND_LIST_STR =
     "\n    char** combined = malloc((a_size + b_size) * sizeof(char*));"
     "\n    memcpy(combined,     a, a_size * sizeof(char*));"
     "\n    memcpy(combined + a_size, b, b_size * sizeof(char*));"
+    "\n    free(a);"
+    "\n    free(b);"
     "\n    return combined;"
     "\n}\n";
 
@@ -32,6 +36,8 @@ const static std::string APPEND_LIST_BOOL =
     "\n    int* combined = malloc((a_size + b_size) * sizeof(int));"
     "\n    memcpy(combined,     a, a_size * sizeof(int));"
     "\n    memcpy(combined + a_size, b, b_size * sizeof(int));"
+    "\n    free(a);"
+    "\n    free(b);"
     "\n    return combined;"
     "\n}\n";
 
@@ -42,6 +48,8 @@ const static std::string APPEND_LIST_FLT =
     "\n    float* combined = malloc((a_size + b_size) * sizeof(float));"
     "\n    memcpy(combined,     a, a_size * sizeof(float));"
     "\n    memcpy(combined + a_size, b, b_size * sizeof(float));"
+    "\n    free(a);"
+    "\n    free(b);"
     "\n    return combined;"
     "\n}\n";
 

@@ -121,6 +121,7 @@ class Parser2
     {
         advanceAndCheckToken(tk); // consume token
         output << " " + symbol + " ";
+        udtBuffer += " " + symbol + " ";
         auto a = parseE0();
         auto e0 = std::move(std::get<0>(a));
         auto type = std::get<1>(a);
@@ -177,8 +178,8 @@ class Parser2
     LeafPtr parseLocation();
     NodePtr parseUDT();
     NodePtr parseUserDefinedType();
-    LandSt parseAttributes();
-    LandSt parseMethods();
+    LandSt parseAttributes(std::shared_ptr<SymbolTable>);
+    LandSt parseMethods(std::shared_ptr<SymbolTable>);
     NodePtr parseMethodsRecurse();
     NodePtr parseScript();
     NodePtr parseScript_();
