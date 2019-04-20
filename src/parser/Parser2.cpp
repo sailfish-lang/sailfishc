@@ -48,7 +48,7 @@ parseFile(const std::string& filename)
         Parser2* p = new Parser2(filename);
         p->parse();
         return std::make_tuple(std::move(p->getUDTTable()), p->getIsUDTFlag(),
-                               p->getUDTBuffer());
+                               p->getTargetBuffer());
     }
     catch (const std::string msg)
     {
@@ -198,11 +198,9 @@ void
 Parser2::checkUnique(const std::string& s)
 {
     if (symboltable->hasVariable(s))
-    {
         semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
             currentToken->col, currentToken->line, "Illegal redeclaration.",
             "Redeclared variable named: ", s, ".")));
-    }
 }
 
 void
@@ -224,11 +222,9 @@ Parser2::checkExists(const std::string& s)
         type = extractListType(type);
 
     if (!symboltable->hasVariable(type) && !isPrimitive(type))
-    {
         semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
             currentToken->col, currentToken->line, "Unknown variable or type.",
             "Unknown variable/type named: ", type, ".")));
-    }
 }
 
 void
@@ -248,11 +244,9 @@ Parser2::checkUDTExists(const std::string& s)
     if (!udttable->hasUDT(udtname) &&
         (!symboltable->hasVariable(udtname) &&
          !udttable->hasUDT(symboltable->getSymbolType(udtname))))
-    {
         semanticerrorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line, "Unknown udt type.",
                    "Unknown type named: ", udtname, ".")));
-    }
 }
 
 std::string
@@ -334,10 +328,9 @@ Parser2::parseFunctionInputTypes(const std::string& s)
 
     std::stringstream test(inputsOnly);
     std::string segment;
+
     while (std::getline(test, segment, '_'))
-    {
         inputs.push_back(segment);
-    }
 
     return inputs;
 }
@@ -352,10 +345,9 @@ parseListValues(const std::string& s)
 
     std::stringstream test(inputsOnly);
     std::string segment;
+
     while (std::getline(test, segment, ','))
-    {
         inputs += " " + segment;
-    }
 
     return inputs + " "; // so that we don't get EOF before done parsing
 }
@@ -396,7 +388,7 @@ Parser2::parseProgram()
 void
 Parser2::parseSource()
 {
-    getVoidChain(false, TokenKind::IMPORT, [this]() { parseImportInfo(); });
+    recursiveParse(false, TokenKind::IMPORT, [this]() { parseImportInfo(); });
     parseSourcePart();
 }
 
@@ -450,7 +442,7 @@ Parser2::parseImportInfo()
         symboltable->addSymbol(name, "U");
 
         // aggregate udt buffers
-        udtBuffer += buf;
+        targetBuffer += buf;
 
         std::cout << "Successfully compiled import: " + file + "\n";
     }
@@ -503,10 +495,10 @@ Parser2::parseSourcePart()
         output << OUTPUT_HEADER << getStdLibC();
 
         // add the buffers from parsed udt files
-        output << udtBuffer;
-        udtBuffer = "";
+        output << targetBuffer;
+        targetBuffer = "";
         parseScript();
-        output << udtBuffer;
+        output << targetBuffer;
     }
     }
 }
@@ -533,16 +525,16 @@ Parser2::parseUserDefinedType()
 
     udttable->addUDT(udtname, a_st, m_st);
 
-    udtBuffer +=
+    targetBuffer +=
         "\n//___________BEGIN_" + udtname + "_UDT_DEFINITION__________/_//\n\n";
 
-    udtBuffer += "struct " + udtname + "\n{\n";
+    targetBuffer += "struct " + udtname + "\n{\n";
     a_st = this->parseAttributes(a_st);
-    udtBuffer += "};\n";
+    targetBuffer += "};\n";
 
     std::shared_ptr<SymbolTable> methodst = this->parseMethods(m_st);
 
-    udtBuffer +=
+    targetBuffer +=
         "//___________END_" + udtname + "_UDT_DEFINITION__________/_//\n\n";
 }
 
@@ -562,7 +554,7 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
     st->clear();
     st->addSymbol(extractUDTName(filename), "U");
 
-    getVoidChain(true, TokenKind::RCURLEY, [&st, this]() {
+    recursiveParse(true, TokenKind::RCURLEY, [&st, this]() {
         auto sands = this->parseVariable();
         auto name = std::get<0>(sands);
         auto type = std::get<1>(sands);
@@ -573,7 +565,7 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
         else
             outtype = builtinTypesTranslator(outtype);
 
-        udtBuffer += "\t" + outtype + " " + name + ";\n";
+        targetBuffer += "\t" + outtype + " " + name + ";\n";
 
         // check if unique name
         if (st->hasVariable(name))
@@ -638,8 +630,8 @@ Parser2::parseMethods(std::shared_ptr<SymbolTable> st)
     // add udt so it can reference self (or own in Sailfish lingo)
     symboltable->addSymbol(extractUDTName(filename), "U");
 
-    getVoidChain(true, TokenKind::RCURLEY,
-                 [this]() { this->parseFunctionDefinition(); });
+    recursiveParse(true, TokenKind::RCURLEY,
+                   [this]() { this->parseFunctionDefinition(); });
 
     // set back the normal symbol table and capture temp table
     st = symboltable;
@@ -652,8 +644,8 @@ Parser2::parseMethods(std::shared_ptr<SymbolTable> st)
 void
 Parser2::parseScript()
 {
-    getVoidChain(true, TokenKind::START,
-                 [this]() { this->parseFunctionDefinition(); });
+    recursiveParse(true, TokenKind::START,
+                   [this]() { this->parseFunctionDefinition(); });
     parseStart();
 }
 
@@ -702,14 +694,14 @@ Parser2::parseFunctionInfo(const std::string& name)
                        symboltable->getSymbolType(name) + ".",
                    "Received second declaration of type: ", type, ".")));
 
-    udtBuffer += "{";
+    targetBuffer += "{";
 
     symboltable->enterScope();
     auto returnType = parseBlock();
 
     symboltable->exitScope();
 
-    udtBuffer += "\n}\n\n";
+    targetBuffer += "\n}\n\n";
 
     checkType(returnType, parseFunctionReturnType(type));
 }
@@ -732,7 +724,7 @@ Parser2::parseFunctionInOut(const std::string& name)
     bool seenVoid = false;
     int argCount = 0;
     std::string outputBuffer = "";
-    getVoidChain(
+    recursiveParse(
         true, TokenKind::RPAREN,
         [&outputBuffer, &types, &seenVoid, &argCount, this]() {
             ++argCount;
@@ -796,7 +788,7 @@ Parser2::parseFunctionInOut(const std::string& name)
             outputBuffer = "struct " + extractUDTName(filename) + "* this";
     outputBuffer = output + "\n" + name + "(" + outputBuffer + ")\n";
 
-    udtBuffer += outputBuffer;
+    targetBuffer += outputBuffer;
 
     return types;
 }
@@ -809,13 +801,13 @@ Parser2::parseStart()
 {
     advanceAndCheckToken(TokenKind::START);
 
-    udtBuffer += "int\nmain()\n{";
+    targetBuffer += "int\nmain()\n{";
 
     symboltable->enterScope();
     parseBlock();
     symboltable->exitScope();
 
-    udtBuffer += "\n    return 1;\n}";
+    targetBuffer += "\n    return 1;\n}";
 }
 
 /**
@@ -834,7 +826,7 @@ Parser2::parseBlock()
     bool hasSeenReturn = false;
     advanceAndCheckToken(TokenKind::LCURLEY); // eat '{'
 
-    getVoidChain(true, TokenKind::RCURLEY, [&type, &hasSeenReturn, this]() {
+    recursiveParse(true, TokenKind::RCURLEY, [&type, &hasSeenReturn, this]() {
         auto a = this->parseStatement();
 
         if (std::get<1>(a) == "RETURN")
@@ -865,7 +857,7 @@ Parser2::parseBlock()
 std::tuple<std::string, std::string>
 Parser2::parseStatement()
 {
-    udtBuffer += "\n" + getTabs();
+    targetBuffer += "\n" + getTabs();
     switch (currentToken->kind)
     {
     case TokenKind::TREE:
@@ -874,19 +866,19 @@ Parser2::parseStatement()
     case TokenKind::RETURN:
     {
         auto type = parseReturn();
-        udtBuffer += ";";
+        targetBuffer += ";";
         return std::make_tuple(type, "RETURN");
     }
     case TokenKind::DEC:
     {
         auto type = parseDeclaration();
-        udtBuffer += ";";
+        targetBuffer += ";";
         return std::make_tuple(type, "DEC");
     }
     default:
     {
         auto type = parseE0();
-        udtBuffer += ";";
+        targetBuffer += ";";
         return std::make_tuple(type, "E0");
     }
     }
@@ -903,15 +895,15 @@ Parser2::parseTree()
 
     bool isFirstBranch = true;
 
-    getVoidChain(true, TokenKind::RPAREN, [&isFirstBranch, this]() {
+    recursiveParse(true, TokenKind::RPAREN, [&isFirstBranch, this]() {
         if (isFirstBranch)
         {
-            udtBuffer += "if";
+            targetBuffer += "if";
             isFirstBranch = false;
         }
         else
         {
-            udtBuffer += "\n " + getTabs() + " else if ";
+            targetBuffer += "\n " + getTabs() + " else if ";
         }
         this->parseBranch();
     });
@@ -929,13 +921,13 @@ Parser2::parseBranch()
 
     parseGrouping();
 
-    udtBuffer += "\n" + getTabs() + "{";
+    targetBuffer += "\n" + getTabs() + "{";
 
     symboltable->enterScope();
     parseBlock();
     symboltable->exitScope();
 
-    udtBuffer += "\n" + getTabs() + "}";
+    targetBuffer += "\n" + getTabs() + "}";
 
     advanceAndCheckToken(TokenKind::RPAREN); // eat ')'
 }
@@ -950,14 +942,14 @@ void
 Parser2::parseGrouping()
 {
     inGrouping = true;
-    udtBuffer += " (";
+    targetBuffer += " (";
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
 
     auto type = parseE0();
 
     checkType("bool", type);
 
-    udtBuffer += ") ";
+    targetBuffer += ") ";
 
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
     inGrouping = false;
@@ -970,7 +962,7 @@ std::string
 Parser2::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
-    udtBuffer += "return ";
+    targetBuffer += "return ";
 
     return parseE0();
 }
@@ -998,7 +990,7 @@ Parser2::parseDeclaration()
     else
         outtype = builtinTypesTranslator(outtype);
 
-    udtBuffer += outtype + " " + name + " = ";
+    targetBuffer += outtype + " " + name + " = ";
 
     checkExists(type);
 
@@ -1226,7 +1218,7 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::NEGATION)
     {
         advanceAndCheckToken(TokenKind::NEGATION); // consume '!'
-        udtBuffer += "!";
+        targetBuffer += "!";
         auto type = parseE0();
 
         checkType("bool", type);
@@ -1237,7 +1229,7 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::UNARYADD)
     {
         advanceAndCheckToken(TokenKind::UNARYADD); // consume '++'
-        udtBuffer += "++";
+        targetBuffer += "++";
         auto type = parseE0();
 
         checkType("num", type);
@@ -1248,7 +1240,7 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::UNARYMINUS)
     {
         advanceAndCheckToken(TokenKind::UNARYMINUS); // consume '--'
-        udtBuffer += "--";
+        targetBuffer += "--";
         auto type = parseE0();
 
         checkType("num", type);
@@ -1326,7 +1318,7 @@ Parser2::parseE12(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::LPAREN)
     {
-        udtBuffer += "(";
+        targetBuffer += "(";
         inGrouping = true;
         checkExists(T0);
 
@@ -1334,7 +1326,7 @@ Parser2::parseE12(const std::string& T0)
 
         auto output = checkFunctionCall(name, symboltable);
 
-        udtBuffer += ")";
+        targetBuffer += ")";
         inGrouping = false;
 
         return output;
@@ -1405,11 +1397,11 @@ Parser2::parseAttributeAccess(const std::string& udtname,
     auto attribute = parseIdentifier();
 
     if (udtname != "own")
-        udtBuffer += udtname;
+        targetBuffer += udtname;
     else
-        udtBuffer += "this";
+        targetBuffer += "this";
 
-    udtBuffer += "->" + builtinTypesTranslator(attribute);
+    targetBuffer += "->" + builtinTypesTranslator(attribute);
 
     // check if type exists
     if (!st->hasVariable(attribute))
@@ -1444,13 +1436,13 @@ Parser2::parseMethodAccess(const std::string& udtname,
 
     auto methodName = parseIdentifier();
 
-    udtBuffer += methodName + "(";
+    targetBuffer += methodName + "(";
 
     inGrouping = true;
 
     auto output = checkFunctionCall(methodName, st);
 
-    this->udtBuffer += ")";
+    this->targetBuffer += ")";
 
     inGrouping = false;
 
@@ -1469,9 +1461,9 @@ Parser2::parseFunctionCall()
 
     std::string types = "(";
     int nonVoidInputs = 0;
-    getVoidChain(true, TokenKind::RPAREN, [&nonVoidInputs, &types, this]() {
+    recursiveParse(true, TokenKind::RPAREN, [&nonVoidInputs, &types, this]() {
         if (nonVoidInputs)
-            udtBuffer += ", ";
+            targetBuffer += ", ";
 
         auto type = parseE0();
 
@@ -1486,9 +1478,9 @@ Parser2::parseFunctionCall()
 
     if (methodAccessName != "")
         if (nonVoidInputs == 0)
-            udtBuffer += methodAccessName;
+            targetBuffer += methodAccessName;
         else
-            udtBuffer += ", " + methodAccessName;
+            targetBuffer += ", " + methodAccessName;
 
     types += ")";
 
@@ -1530,7 +1522,7 @@ Parser2::parseUDTDec()
 {
 
     auto udtName = parseIdentifier();
-    udtBuffer +=
+    targetBuffer +=
         "(struct " + udtName + "*)malloc(sizeof(struct " + udtName + "));\n";
 
     checkExists(udtName);
@@ -1540,37 +1532,39 @@ Parser2::parseUDTDec()
     auto attributes = st->getSymbols();
 
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
-    getVoidChain(true, TokenKind::RCURLEY, [st, udtName, &attributes, this]() {
-        // capture key
-        auto attributeName = parseIdentifier();
+    recursiveParse(
+        true, TokenKind::RCURLEY, [st, udtName, &attributes, this]() {
+            // capture key
+            auto attributeName = parseIdentifier();
 
-        this->udtBuffer += getTabs() + decName + "->" + attributeName + " = ";
+            this->targetBuffer +=
+                getTabs() + decName + "->" + attributeName + " = ";
 
-        advanceAndCheckToken(TokenKind::COLON); // consume ':'
+            advanceAndCheckToken(TokenKind::COLON); // consume ':'
 
-        // capture value
-        auto type = parsePrimary();
+            // capture value
+            auto type = parsePrimary();
 
-        if (attributes.size() != 1)
-            this->udtBuffer += ";\n";
+            if (attributes.size() != 1)
+                this->targetBuffer += ";\n";
 
-        // determine if key exists for udt
-        std::vector<std::string>::iterator it =
-            std::find(attributes.begin(), attributes.end(), attributeName);
+            // determine if key exists for udt
+            std::vector<std::string>::iterator it =
+                std::find(attributes.begin(), attributes.end(), attributeName);
 
-        if (it != attributes.end())
-        {
-            int index = std::distance(attributes.begin(), it);
-            checkType(st->getSymbolType(attributeName), type);
-            attributes.erase(attributes.begin() + index);
-        }
-        else
-            semanticerrorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Unrecognized initialization key for new udt of type: " +
-                           udtName,
-                       "Unrecognized key: ", attributeName, ".")));
-    });
+            if (it != attributes.end())
+            {
+                int index = std::distance(attributes.begin(), it);
+                checkType(st->getSymbolType(attributeName), type);
+                attributes.erase(attributes.begin() + index);
+            }
+            else
+                semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+                    currentToken->col, currentToken->line,
+                    "Unrecognized initialization key for new udt of type: " +
+                        udtName,
+                    "Unrecognized key: ", attributeName, ".")));
+        });
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
 
     if (attributes.size() != 0)
@@ -1593,10 +1587,10 @@ Parser2::parseT()
     if (currentToken->kind == TokenKind::LPAREN)
     {
         advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
-        udtBuffer += "(";
+        targetBuffer += "(";
         auto type = parseE0();
         advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-        udtBuffer += ")";
+        targetBuffer += ")";
         return type;
     }
 
@@ -1647,7 +1641,7 @@ Parser2::parsePrimary()
         if (methodAccessName == "" ||
             (methodAccessName != "" && type != "void"))
             if (!udttable->hasUDT(symboltable->getSymbolType(type)))
-                udtBuffer += builtinTypesTranslator(type);
+                targetBuffer += builtinTypesTranslator(type);
 
         return type;
     }
@@ -1702,12 +1696,12 @@ Parser2::parseNumber()
     if (k == TokenKind::INTEGER)
     {
         advanceAndCheckToken(TokenKind::INTEGER); // eat integer
-        udtBuffer += v;
+        targetBuffer += v;
         return v;
     }
 
     advanceAndCheckToken(TokenKind::FLOAT); // eat float
-    udtBuffer += v;
+    targetBuffer += v;
     return v;
 }
 
@@ -1730,7 +1724,7 @@ Parser2::parseBoolean()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::BOOL); // eat identifier
-    udtBuffer += (v == "true" ? "1" : "0");
+    targetBuffer += (v == "true" ? "1" : "0");
 
     return v;
 }
@@ -1743,7 +1737,7 @@ Parser2::parseString()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::STRING); // true eat string
-    udtBuffer += v;
+    targetBuffer += v;
     return v;
 }
 
@@ -1774,7 +1768,7 @@ Parser2::parseEmpty()
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::EMPTY); // eat own accessor
 
-    udtBuffer += "NULL";
+    targetBuffer += "NULL";
 
     return v; // will not ever reach here
 }
@@ -1877,7 +1871,7 @@ Parser2::parseList()
 
     buf = buf.substr(0, buf.size() - 2);
 
-    udtBuffer += buf;
+    targetBuffer += buf;
 
     return type;
 }

@@ -38,7 +38,7 @@ class Parser2
     bool inGrouping = false;
     std::string decName = "";
     int currentTabs = 0;
-    std::string udtBuffer = "";
+    std::string targetBuffer = "";
     std::string methodAccessName = "";
 
     // ------- Transpiler -------- //
@@ -74,7 +74,7 @@ class Parser2
     // helper for simplifying redundancy of recursive loops
     template <typename F>
     void
-    getVoidChain(bool eq, TokenKind k, const F& f)
+    recursiveParse(bool eq, TokenKind k, const F& f)
     {
         if (((currentToken->kind == k) && (eq)) ||
             ((currentToken->kind != k) && (!eq)))
@@ -94,7 +94,7 @@ class Parser2
         else
         {
             f();
-            getVoidChain(eq, k, f); // call recursively instead of vectorize
+            recursiveParse(eq, k, f); // call recursively instead of vectorize
             return;
         }
     }
@@ -113,7 +113,7 @@ class Parser2
     {
         advanceAndCheckToken(tk); // consume token
         output << " " + symbol + " ";
-        udtBuffer += " " + symbol + " ";
+        targetBuffer += " " + symbol + " ";
         auto type = parseE0();
 
         return g(T0, type);
@@ -230,9 +230,9 @@ class Parser2
     }
 
     std::string
-    getUDTBuffer()
+    getTargetBuffer()
     {
-        return udtBuffer;
+        return targetBuffer;
     }
 
     void transpile();
