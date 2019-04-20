@@ -52,14 +52,16 @@ parseFile(const std::string& filename)
     }
     catch (const std::string msg)
     {
-        std::cerr << msg;
+        throw msg; // propogate message up
     }
     catch (char const* msg)
     {
-        std::cerr << msg;
+        throw msg; // propogate message up
     }
 }
 
+// given a filename, extracts the udt name since udt's are named by the file in
+// which they are defined
 std::string
 extractUDTName(const std::string& s)
 {
@@ -81,13 +83,11 @@ Parser2::advanceAndCheckToken(const TokenKind& k)
 {
     // first check value and kind
     if (currentToken->kind != k)
-    {
         errorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line,
                    "Expected a token of type: " + displayKind(k),
                    "Received: ", currentToken->value,
                    " of type " + displayKind(currentToken->kind) + ".")));
-    }
 
     advanceToken();
 }
@@ -99,11 +99,9 @@ Parser2::advanceToken()
 
     // catch errors from the lexar
     if (currentToken->kind == TokenKind::ERROR)
-    {
         errorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line, "Lexar Error.",
                    "Error: ", currentToken->value, "")));
-    }
 
     while (currentToken->kind == TokenKind::COMMENT ||
            currentToken->kind == TokenKind::COMMA)
@@ -112,11 +110,9 @@ Parser2::advanceToken()
 
         // catch errors from the lexar
         if (currentToken->kind == TokenKind::ERROR)
-        {
             errorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line, "Lexar Error.",
                        "Error: ", currentToken->value, "")));
-        }
     }
 }
 
@@ -124,68 +120,47 @@ Parser2::advanceToken()
 void
 Parser2::checkType(const std::string& t0, const std::string& t1)
 {
-    auto left = t0;
-    auto right = t1;
-
-    if (symboltable->hasVariable(left))
-        left = symboltable->getSymbolType(left);
-
-    if (symboltable->hasVariable(right))
-        right = symboltable->getSymbolType(right);
+    // convert left and right to type of var if they are vars
+    auto left =
+        symboltable->hasVariable(t0) ? symboltable->getSymbolType(t0) : t0;
+    auto right =
+        symboltable->hasVariable(t1) ? symboltable->getSymbolType(t1) : t1;
 
     // should actually check types here
-    if (left.at(0) == '[')
+
+    // edge case lists
+    if (left.at(0) == '[' || right.at(0) == '[')
     {
-        left = extractListType(left);
+        // if one is a list, both must be lists
+        if (left.at(0) == '[')
+            left = extractListType(left);
 
         if (right.at(0) == '[')
-        {
             right = extractListType(right);
-        }
 
-        if (t1 != "none" && left != right)
-        {
+        if (t0 != "none" && t1 != "none" && left != right)
             semanticerrorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line,
-                       "Mismatched list types. Expected is: " + left + ".",
+                       "Mismatched list types. Expected is: [" + left + "].",
                        "Received is: ", "[" + right + "]", ".")));
-        }
     }
-    else if (right.at(0) == '[')
-    {
-        right = extractListType(right);
 
-        if (left.at(0) == '[')
-        {
-            left = extractListType(left);
-        }
-
-        if (t1 != "none" && right != left)
-        {
-            semanticerrorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Mismatched list types. Expected is: " + left + ".",
-                       "Received is: ", "[" + right + "]", ".")));
-        }
-    }
+    // edge case left is num and thus right can be either int or flt type
     else if (left == "num")
     {
         if ("int" != right && "flt" != right)
-        {
             semanticerrorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line,
                        "Mismatched types. Expected/LeftHand is: int or flt.",
                        "Received/Right Hand is: ", right, ".")));
-        }
     }
 
+    // normal error check, with edge case that right is an empty
     else if (left != right && right != "empty")
-    {
         semanticerrorhandler->handle(std::make_unique<Error2>(
             Error2(currentToken->col, currentToken->line,
                    "Mismatched types. Expected/LeftHand is: " + t0 + ".",
                    "Received/Right Hand is: ", right, ".")));
-    }
 }
 
 bool
@@ -323,6 +298,7 @@ Parser2::parseFunctionInputTypes(const std::string& s)
                    "", "", "")));
         return inputs;
     }
+
     auto inputsOnly = s.substr(s.find_first_of("(") + 2,
                                s.find_last_of(")") - s.find_first_of("(") - 2);
 
@@ -388,7 +364,8 @@ Parser2::parseProgram()
 void
 Parser2::parseSource()
 {
-    recursiveParse(false, TokenKind::IMPORT, [this]() { parseImportInfo(); });
+    recursiveParse(false, TokenKind::IMPORT,
+                   [this]() { this->parseImportInfo(); });
     parseSourcePart();
 }
 
@@ -498,6 +475,7 @@ Parser2::parseSourcePart()
         output << targetBuffer;
         targetBuffer = "";
         parseScript();
+
         output << targetBuffer;
     }
     }
@@ -560,7 +538,8 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
         auto type = std::get<1>(sands);
 
         auto outtype = type;
-        if (st->hasVariable(outtype) && st->getSymbolType(outtype) == "U")
+        if ((st->hasVariable(outtype) && st->getSymbolType(outtype) == "U") ||
+            udttable->hasUDT(outtype))
             outtype = "struct " + outtype + "*";
         else
             outtype = builtinTypesTranslator(outtype);
@@ -589,7 +568,8 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
                     "illegal usage of own in a non udt method.", "", "", "")));
         }
 
-        if (!st->hasVariable(type) && !isPrimitive(type))
+        if (!st->hasVariable(type) && !isPrimitive(type) &&
+            !udttable->hasUDT(type))
         {
             semanticerrorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line,
@@ -782,10 +762,12 @@ Parser2::parseFunctionInOut(const std::string& name)
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
 
     if (isUdt)
+    {
         if (outputBuffer != "")
             outputBuffer += ", struct " + extractUDTName(filename) + "* this";
         else
             outputBuffer = "struct " + extractUDTName(filename) + "* this";
+    }
     outputBuffer = output + "\n" + name + "(" + outputBuffer + ")\n";
 
     targetBuffer += outputBuffer;
@@ -902,9 +884,7 @@ Parser2::parseTree()
             isFirstBranch = false;
         }
         else
-        {
             targetBuffer += "\n " + getTabs() + " else if ";
-        }
         this->parseBranch();
     });
 
@@ -994,8 +974,6 @@ Parser2::parseDeclaration()
 
     checkExists(type);
 
-    decName = name;
-
     auto ok = symboltable->addSymbol(name, type);
     if (!ok)
         semanticerrorhandler->handle(std::make_unique<Error2>(
@@ -1004,6 +982,8 @@ Parser2::parseDeclaration()
                        ", originally defined as type " +
                        symboltable->getSymbolType(name) + ".",
                    "Received second declaration of type: ", type, ".")));
+
+    decName = name;
 
     advanceAndCheckToken(TokenKind::ASSIGNMENT); // consume '='
     auto ta = parseE0();
@@ -1822,6 +1802,7 @@ Parser2::tokenToType(const TokenKind& tk, const std::string& val)
         errorhandler->handle(std::make_unique<Error2>(Error2(
             currentToken->col, currentToken->line, "Unexpected type in a list.",
             "Type: ", displayKind(tk), "")));
+        return ""; // unreachable
     }
 }
 
@@ -1838,10 +1819,7 @@ Parser2::parseList()
     std::string type = "none";
 
     std::deque<std::string> vals;
-    if (listVals.size() == 0)
-    {
-    }
-    else
+    if (listVals.size() != 0)
     {
         for (int i = listVals.size() - 1; i >= 0; i--)
         {
