@@ -62,44 +62,4 @@ class UDTTable
         udtTable.insert({name, udtmd});
         return true;
     }
-
-    // returns true if added or false if already exists
-    bool
-    addUDT(const std::string name)
-    {
-        if (hasUDT(name))
-            return false;
-
-        UDTMetaData* udtmd =
-            new UDTMetaData(std::make_shared<SymbolTable>(SymbolTable()),
-                            std::make_shared<SymbolTable>(SymbolTable()));
-        udtTable.insert({name, udtmd});
-        return true;
-    }
-
-    // allow us to update the table after udt key aleady added
-    bool
-    updateUDT(const std::string name, std::shared_ptr<SymbolTable> attributes,
-              std::shared_ptr<SymbolTable> methods)
-    {
-        if (!hasUDT(name))
-            return false;
-
-        udtTable.at(name)->setAttributeSymbolTable(attributes);
-        udtTable.at(name)->setMethodSymbolTable(methods);
-        return true;
-    }
-
-    void
-    dump()
-    {
-        std::cout << "\nDUMPING UDTTable: \n";
-        for (auto const& element : udtTable)
-        {
-            std::cout << "UDTNAME: " << element.first << std::endl;
-            element.second->getAttributeSymbolTable()->dump(4);
-            element.second->getMethodSymbolTable()->dump(4);
-        }
-        std::cout << "\n";
-    }
 };

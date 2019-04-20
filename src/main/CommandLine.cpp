@@ -28,11 +28,16 @@ fullCompilation(const std::string& filename)
 {
     try
     {
-        std::cout << "Compiling " << filename << ".\n\n";
+        std::cout << "Compiling " << filename << ".\n";
 
         Parser2* p = new Parser2(filename);
-        auto n = p->parse();
+        p->parse();
+
+        std::cout << "Successfully compiled: " + filename + "\n";
+
         p->transpile();
+
+        std::cout << "Successfully wrote compiled code to: out.c\n";
     }
     catch (const std::string msg)
     {
@@ -95,7 +100,7 @@ handleCommandLine(int argc, char* const* argv)
                 std::cout << "Parsing " << filename << ".\n\n";
 
                 Parser2* p = new Parser2(filename);
-                auto n = p->parse();
+                p->parse();
             }
             catch (const std::string msg)
             {

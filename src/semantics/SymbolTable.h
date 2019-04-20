@@ -23,7 +23,6 @@ class SymbolTable
     void addStdlib(std::string, std::string);
 
   public:
-    // constructor
     SymbolTable()
     {
         scopeLevel = 0;
@@ -31,10 +30,6 @@ class SymbolTable
         localCache.push_back("|");
 
         addBuiltins();
-    }
-    // destructor
-    ~SymbolTable()
-    {
     }
 
     // enter the scope, incrementing the scope level counter
@@ -55,15 +50,10 @@ class SymbolTable
 
     // either push to the variables scope if exists or add variable
     bool addSymbol(const std::string, const std::string);
-    bool addSymbolHack(const std::string, const std::string);
 
     // for removing symbols which should basically never happen except for the
     // class name from the attributes
     void removeSymbol(const std::string&);
-
-    // same as above, but used for attributes where we use scope level to mean
-    // ordering
-    bool addSymbolIterative(const std::string, const std::string);
 
     // helper methods
     bool
@@ -91,16 +81,4 @@ class SymbolTable
 
     void addBuiltins();
     void clear();
-
-    void
-    dump(int indent = 0)
-    {
-        std::cout << "\n\nDUMPING Symbol Table: \n";
-        for (auto const& element : globalScopeTable)
-        {
-            std::cout << std::setw(indent) << element.first << ": "
-                      << element.second.top()->getType() << std::endl;
-        }
-        std::cout << "\n\n";
-    }
 };

@@ -8,7 +8,6 @@ ADD_LIBRARY(SailfishcLibs
     ./src/lexar/Lexar2.cpp
     ./src/lexar/Token2.cpp
     ./src/parser/Parser2.cpp
-    ./src/parser/Lexeme.cpp
     ./src/errorhandler/Parser2ErrorHandler.cpp
     ./src/errorhandler/SemanticAnalyzerErrorHandler.cpp 
     ./src/main/CommandLine.cpp
