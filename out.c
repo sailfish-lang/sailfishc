@@ -10,46 +10,47 @@
 void
 print_bool(int i)
 {
-if (i == 1)
-printf("%s", "true");
-else
-printf("%s", "false")
-;
+    if (i == 1)
+        printf("%s", "true");
+    else
+        printf("%s", "false");
 }
 void
 print_flt(float f)
 {
-printf("%f", f);
+    printf("%f", f);
 };
 void
 print_int(int i)
 {
-printf("%d", i);
+    printf("%d", i);
 };
 void
 print_str(char* s)
 {
-printf("%s", s);
+    printf("%s", s);
 };
 // --------       STDLIB_END       ------- //
 
-typedef struct _Node_ {
+typedef struct _Node_
+{
     struct _Node_* next;
     int data;
 } Node;
 
 Node*
-construct_Node(Node* next,int data)
+construct_Node(Node* next, int data)
 {
     Node* a____struct___generated = (Node*)malloc(sizeof(Node));
-    a____struct___generated->next = next;    a____struct___generated->data = data;
+    a____struct___generated->next = next;
+    a____struct___generated->data = data;
     return a____struct___generated;
 }
 
 int
 has_next(Node* own)
 {
-    int ret = (own->next!=NULL);
+    int ret = (own->next != NULL);
     return ret;
 }
 void
@@ -67,23 +68,25 @@ data(Node* own)
 {
     return own->data;
 }
-typedef struct _Stack_ {
+typedef struct _Stack_
+{
     struct _Node_* head;
     int size;
 } Stack;
 
 Stack*
-construct_Stack(Node* head,int size)
+construct_Stack(Node* head, int size)
 {
     Stack* a____struct___generated = (Stack*)malloc(sizeof(Stack));
-    a____struct___generated->head = head;    a____struct___generated->size = size;
+    a____struct___generated->head = head;
+    a____struct___generated->size = size;
     return a____struct___generated;
 }
 
 int
 is_empty(Stack* own)
 {
-    return (own->size==0);
+    return (own->size == 0);
 }
 int
 size(Stack* own)
@@ -94,14 +97,13 @@ int
 peek(Stack* own)
 {
     int i = 0;
-    if(is_empty(own)==1)
-{
-
-}
-else 
-{
-    i = data(own->head);
-}
+    if (is_empty(own) == 1)
+    {
+    }
+    else
+    {
+        i = data(own->head);
+    }
 
     return i;
 }
@@ -110,36 +112,32 @@ push(Stack* own, Node* node)
 {
     set_next(node, own->head);
     own->head = node;
-    own->size = own->size+1;
+    own->size = own->size + 1;
 }
 void
 pop(Stack* own)
 {
-    if(is_empty(own)==1)
-{
-
-}
-else 
-{
-    own->head = next(own->head);
-    own->size = own->size-1;
-}
-
+    if (is_empty(own) == 1)
+    {
+    }
+    else
+    {
+        own->head = next(own->head);
+        own->size = own->size - 1;
+    }
 }
 void
 print_(Stack* own, Node* node)
 {
-    if(node!=NULL)
-{
-    print_int(data(node));
-    print_str(" ");
-    print_(own, next(node));
-}
-else 
-{
-
-}
-
+    if (node != NULL)
+    {
+        print_int(data(node));
+        print_str(" ");
+        print_(own, next(node));
+    }
+    else
+    {
+    }
 }
 void
 print(Stack* own)
@@ -151,12 +149,12 @@ print(Stack* own)
 int
 main()
 {
-    Node* a = construct_Node(NULL,10);
-    Node* b = construct_Node(NULL,20);
-    Node* c = construct_Node(NULL,30);
-    Node* d = construct_Node(NULL,40);
-    Node* e = construct_Node(NULL,50);
-    Stack* s = construct_Stack(NULL,0);
+    Node* a = construct_Node(NULL, 10);
+    Node* b = construct_Node(NULL, 20);
+    Node* c = construct_Node(NULL, 30);
+    Node* d = construct_Node(NULL, 40);
+    Node* e = construct_Node(NULL, 50);
+    Stack* s = construct_Stack(NULL, 0);
     push(s, a);
     push(s, b);
     push(s, c);

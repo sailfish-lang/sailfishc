@@ -504,7 +504,9 @@ Parser2::parseSourcePart()
 
         // add the buffers from parsed udt files
         output << udtBuffer;
+        udtBuffer = "";
         parseScript();
+        output << udtBuffer;
     }
     }
 }
@@ -700,7 +702,6 @@ Parser2::parseFunctionInfo(const std::string& name)
                        symboltable->getSymbolType(name) + ".",
                    "Received second declaration of type: ", type, ".")));
 
-    output << "{";
     udtBuffer += "{";
 
     symboltable->enterScope();
@@ -708,7 +709,6 @@ Parser2::parseFunctionInfo(const std::string& name)
 
     symboltable->exitScope();
 
-    output << "\n}\n\n";
     udtBuffer += "\n}\n\n";
 
     checkType(returnType, parseFunctionReturnType(type));
@@ -797,7 +797,6 @@ Parser2::parseFunctionInOut(const std::string& name)
     outputBuffer = output + "\n" + name + "(" + outputBuffer + ")\n";
 
     udtBuffer += outputBuffer;
-    this->output << outputBuffer;
 
     return types;
 }
@@ -810,13 +809,13 @@ Parser2::parseStart()
 {
     advanceAndCheckToken(TokenKind::START);
 
-    output << "int\nmain()\n{";
+    udtBuffer += "int\nmain()\n{";
 
     symboltable->enterScope();
     parseBlock();
     symboltable->exitScope();
 
-    output << "\n    return 1;\n}";
+    udtBuffer += "\n    return 1;\n}";
 }
 
 /**
@@ -866,7 +865,6 @@ Parser2::parseBlock()
 std::tuple<std::string, std::string>
 Parser2::parseStatement()
 {
-    output << "\n" + getTabs();
     udtBuffer += "\n" + getTabs();
     switch (currentToken->kind)
     {
@@ -876,21 +874,18 @@ Parser2::parseStatement()
     case TokenKind::RETURN:
     {
         auto type = parseReturn();
-        output << ";";
         udtBuffer += ";";
         return std::make_tuple(type, "RETURN");
     }
     case TokenKind::DEC:
     {
         auto type = parseDeclaration();
-        output << ";";
         udtBuffer += ";";
         return std::make_tuple(type, "DEC");
     }
     default:
     {
         auto type = parseE0();
-        output << ";";
         udtBuffer += ";";
         return std::make_tuple(type, "E0");
     }
@@ -911,13 +906,11 @@ Parser2::parseTree()
     getVoidChain(true, TokenKind::RPAREN, [&isFirstBranch, this]() {
         if (isFirstBranch)
         {
-            output << "if";
             udtBuffer += "if";
             isFirstBranch = false;
         }
         else
         {
-            output << "\n" + getTabs() + "else if";
             udtBuffer += "\n " + getTabs() + " else if ";
         }
         this->parseBranch();
@@ -936,14 +929,12 @@ Parser2::parseBranch()
 
     parseGrouping();
 
-    output << "\n" + getTabs() + "{";
     udtBuffer += "\n" + getTabs() + "{";
 
     symboltable->enterScope();
     parseBlock();
     symboltable->exitScope();
 
-    output << "\n" + getTabs() + "}";
     udtBuffer += "\n" + getTabs() + "}";
 
     advanceAndCheckToken(TokenKind::RPAREN); // eat ')'
@@ -959,7 +950,6 @@ void
 Parser2::parseGrouping()
 {
     inGrouping = true;
-    output << " (";
     udtBuffer += " (";
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
 
@@ -967,7 +957,6 @@ Parser2::parseGrouping()
 
     checkType("bool", type);
 
-    output << ") ";
     udtBuffer += ") ";
 
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
@@ -981,7 +970,6 @@ std::string
 Parser2::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
-    output << "return ";
     udtBuffer += "return ";
 
     return parseE0();
@@ -1010,7 +998,6 @@ Parser2::parseDeclaration()
     else
         outtype = builtinTypesTranslator(outtype);
 
-    output << outtype + " " + name + " = ";
     udtBuffer += outtype + " " + name + " = ";
 
     checkExists(type);
@@ -1239,7 +1226,6 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::NEGATION)
     {
         advanceAndCheckToken(TokenKind::NEGATION); // consume '!'
-        output << "!";
         udtBuffer += "!";
         auto type = parseE0();
 
@@ -1251,7 +1237,6 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::UNARYADD)
     {
         advanceAndCheckToken(TokenKind::UNARYADD); // consume '++'
-        output << "++";
         udtBuffer += "++";
         auto type = parseE0();
 
@@ -1263,7 +1248,6 @@ Parser2::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::UNARYMINUS)
     {
         advanceAndCheckToken(TokenKind::UNARYMINUS); // consume '--'
-        output << "--";
         udtBuffer += "--";
         auto type = parseE0();
 
@@ -1342,8 +1326,6 @@ Parser2::parseE12(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::LPAREN)
     {
-
-        this->output << "(";
         udtBuffer += "(";
         inGrouping = true;
         checkExists(T0);
@@ -1352,7 +1334,6 @@ Parser2::parseE12(const std::string& T0)
 
         auto output = checkFunctionCall(name, symboltable);
 
-        this->output << ")";
         udtBuffer += ")";
         inGrouping = false;
 
@@ -1424,16 +1405,10 @@ Parser2::parseAttributeAccess(const std::string& udtname,
     auto attribute = parseIdentifier();
 
     if (udtname != "own")
-    {
-        output << udtname;
         udtBuffer += udtname;
-    }
     else
-    {
-        output << "this";
         udtBuffer += "this";
-    }
-    output << "->" + builtinTypesTranslator(attribute);
+
     udtBuffer += "->" + builtinTypesTranslator(attribute);
 
     // check if type exists
@@ -1469,14 +1444,12 @@ Parser2::parseMethodAccess(const std::string& udtname,
 
     auto methodName = parseIdentifier();
 
-    output << methodName + "(";
     udtBuffer += methodName + "(";
 
     inGrouping = true;
 
     auto output = checkFunctionCall(methodName, st);
 
-    this->output << ")";
     this->udtBuffer += ")";
 
     inGrouping = false;
@@ -1498,10 +1471,7 @@ Parser2::parseFunctionCall()
     int nonVoidInputs = 0;
     getVoidChain(true, TokenKind::RPAREN, [&nonVoidInputs, &types, this]() {
         if (nonVoidInputs)
-        {
-            output << ", ";
             udtBuffer += ", ";
-        }
 
         auto type = parseE0();
 
@@ -1516,15 +1486,9 @@ Parser2::parseFunctionCall()
 
     if (methodAccessName != "")
         if (nonVoidInputs == 0)
-        {
-            output << methodAccessName;
             udtBuffer += methodAccessName;
-        }
         else
-        {
-            output << ", " + methodAccessName;
             udtBuffer += ", " + methodAccessName;
-        }
 
     types += ")";
 
@@ -1566,8 +1530,6 @@ Parser2::parseUDTDec()
 {
 
     auto udtName = parseIdentifier();
-    output << "(struct " + udtName + "*)malloc(sizeof(struct " + udtName +
-                  "));\n";
     udtBuffer +=
         "(struct " + udtName + "*)malloc(sizeof(struct " + udtName + "));\n";
 
@@ -1583,7 +1545,6 @@ Parser2::parseUDTDec()
         auto attributeName = parseIdentifier();
 
         this->udtBuffer += getTabs() + decName + "->" + attributeName + " = ";
-        this->output << getTabs() + decName + "->" + attributeName + " = ";
 
         advanceAndCheckToken(TokenKind::COLON); // consume ':'
 
@@ -1591,10 +1552,7 @@ Parser2::parseUDTDec()
         auto type = parsePrimary();
 
         if (attributes.size() != 1)
-        {
             this->udtBuffer += ";\n";
-            this->output << ";\n";
-        }
 
         // determine if key exists for udt
         std::vector<std::string>::iterator it =
@@ -1635,11 +1593,9 @@ Parser2::parseT()
     if (currentToken->kind == TokenKind::LPAREN)
     {
         advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
-        output << "(";
         udtBuffer += "(";
         auto type = parseE0();
         advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-        output << ")";
         udtBuffer += ")";
         return type;
     }
@@ -1690,13 +1646,8 @@ Parser2::parsePrimary()
 
         if (methodAccessName == "" ||
             (methodAccessName != "" && type != "void"))
-        {
             if (!udttable->hasUDT(symboltable->getSymbolType(type)))
-            {
-                output << builtinTypesTranslator(type);
                 udtBuffer += builtinTypesTranslator(type);
-            }
-        }
 
         return type;
     }
@@ -1751,13 +1702,11 @@ Parser2::parseNumber()
     if (k == TokenKind::INTEGER)
     {
         advanceAndCheckToken(TokenKind::INTEGER); // eat integer
-        output << v;
         udtBuffer += v;
         return v;
     }
 
     advanceAndCheckToken(TokenKind::FLOAT); // eat float
-    output << v;
     udtBuffer += v;
     return v;
 }
@@ -1781,7 +1730,6 @@ Parser2::parseBoolean()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::BOOL); // eat identifier
-    output << (v == "true" ? "1" : "0");
     udtBuffer += (v == "true" ? "1" : "0");
 
     return v;
@@ -1795,7 +1743,6 @@ Parser2::parseString()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::STRING); // true eat string
-    output << v;
     udtBuffer += v;
     return v;
 }
@@ -1827,7 +1774,6 @@ Parser2::parseEmpty()
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::EMPTY); // eat own accessor
 
-    output << "NULL";
     udtBuffer += "NULL";
 
     return v; // will not ever reach here
@@ -1932,7 +1878,6 @@ Parser2::parseList()
     buf = buf.substr(0, buf.size() - 2);
 
     udtBuffer += buf;
-    output << buf;
 
     return type;
 }
