@@ -78,13 +78,13 @@ enum class TokenKind
 
 std::string displayKind(const TokenKind&);
 
-struct Token2
+struct Token
 {
     TokenKind kind;
     std::string value;
     int col;
     int line;
-    Token2(TokenKind k, const std::string& v, int c, int l)
+    Token(TokenKind k, const std::string& v, int c, int l)
         : kind(k), value(v), col(c), line(l){};
     std::string prettifyFormatToken();
 };

@@ -5,14 +5,10 @@
 #pragma once
 #include "Error.h"
 #include <memory>
-#include <string>
 
-class SemanticAnalyzerErrorHandler
+class ParserErrorHandler
 {
-  private:
-    std::string filename;
-
   public:
-    SemanticAnalyzerErrorHandler(const std::string& f) : filename(f){};
+    ParserErrorHandler(){};
     void handle(std::unique_ptr<Error>);
 };

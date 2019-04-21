@@ -2,7 +2,7 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "Lexar2.h"
+#include "Lexar.h"
 #include <iostream>
 
 /*
@@ -11,8 +11,8 @@
  * having found the end of the token. In the second case, I need the buffer to
  * pop the last char and to return this char to the scanner.
  */
-std::unique_ptr<Token2>
-Lexar2::makeToken(const TokenKind& k, const std::string& v)
+std::unique_ptr<Token>
+Lexar::makeToken(const TokenKind& k, const std::string& v)
 {
     auto kd = k; // since kd is constant we copy here
 
@@ -30,8 +30,6 @@ Lexar2::makeToken(const TokenKind& k, const std::string& v)
             kd = TokenKind::UAT;
         else if (v == "Ufn")
             kd = TokenKind::UFN;
-        else if (v == "Ife")
-            kd = TokenKind::IFE;
         else if (v == "fun")
             kd = TokenKind::FUN;
         else if (v == "empty")
@@ -51,11 +49,11 @@ Lexar2::makeToken(const TokenKind& k, const std::string& v)
         else if (v == "true" || v == "false")
             kd = TokenKind::BOOL;
     }
-    return std::make_unique<Token2>(kd, v, col, line);
+    return std::make_unique<Token>(kd, v, col, line);
 }
 
-std::unique_ptr<Token2>
-Lexar2::makeTokenPutback(const TokenKind& k, std::string& v, char& c)
+std::unique_ptr<Token>
+Lexar::makeTokenPutback(const TokenKind& k, std::string& v, char& c)
 {
     // readjust the col and line counters
     col = prevCol;
@@ -75,7 +73,7 @@ Lexar2::makeTokenPutback(const TokenKind& k, std::string& v, char& c)
 }
 
 char
-Lexar2::getNextChar()
+Lexar::getNextChar()
 {
     if (isFile)
     {
@@ -95,7 +93,7 @@ Lexar2::getNextChar()
     return c;
 }
 
-Lexar2::Lexar2(const std::string& fileString, bool isAFile)
+Lexar::Lexar(const std::string& fileString, bool isAFile)
 {
     if (isAFile)
     {
@@ -114,8 +112,8 @@ Lexar2::Lexar2(const std::string& fileString, bool isAFile)
     prevCol = 0;
 }
 
-std::unique_ptr<Token2>
-Lexar2::getNextToken()
+std::unique_ptr<Token>
+Lexar::getNextToken()
 {
     char c;
     int state = State::START;

@@ -3,11 +3,11 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "Token2.h"
+#include "Token.h"
 #include <fstream>
 #include <memory>
 
-class Lexar2
+class Lexar
 {
   private:
     std::ifstream file;
@@ -18,9 +18,9 @@ class Lexar2
     bool isFile; // may have a raw string instead of a file
     std::string rawString;
     char getNextChar();
-    std::unique_ptr<Token2> makeToken(const TokenKind&, const std::string&);
-    std::unique_ptr<Token2> makeTokenPutback(const TokenKind&, std::string&,
-                                             char&);
+    std::unique_ptr<Token> makeToken(const TokenKind&, const std::string&);
+    std::unique_ptr<Token> makeTokenPutback(const TokenKind&, std::string&,
+                                            char&);
     // represents dfa states in our pseudo dfa/state machine implementation
     enum State
     {
@@ -46,6 +46,6 @@ class Lexar2
     };
 
   public:
-    Lexar2(const std::string&, bool);
-    std::unique_ptr<Token2> getNextToken();
+    Lexar(const std::string&, bool);
+    std::unique_ptr<Token> getNextToken();
 };

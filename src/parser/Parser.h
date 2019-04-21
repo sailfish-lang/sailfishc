@@ -3,11 +3,12 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "../errorhandler/Error2.h"
-#include "../errorhandler/Parser2ErrorHandler.h"
+#include "../common/display.h"
+#include "../errorhandler/Error.h"
+#include "../errorhandler/ParserErrorHandler.h"
 #include "../errorhandler/SemanticAnalyzerErrorHandler.h"
-#include "../lexar/Lexar2.h"
-#include "../lexar/Token2.h"
+#include "../lexar/Lexar.h"
+#include "../lexar/Token.h"
 #include "../semantics/SymbolTable.h"
 #include "../semantics/UDTTable.h"
 #include "../stdlib_c/stdlib_c.h"
@@ -25,12 +26,12 @@
 using UdtFlagAndBufer =
     std::tuple<std::shared_ptr<UDTTable>, bool, std::string>;
 
-class Parser2
+class Parser
 {
   private:
-    std::unique_ptr<Lexar2> lexar;
-    std::unique_ptr<Token2> currentToken;
-    std::unique_ptr<Parser2ErrorHandler> errorhandler;
+    std::unique_ptr<Lexar> lexar;
+    std::unique_ptr<Token> currentToken;
+    std::unique_ptr<ParserErrorHandler> errorhandler;
     std::unique_ptr<SemanticAnalyzerErrorHandler> semanticerrorhandler;
     std::shared_ptr<SymbolTable> symboltable;
     std::unique_ptr<UDTTable> udttable;
@@ -85,12 +86,12 @@ class Parser2
         }
         else if (currentToken->kind == TokenKind::EOF_)
         {
-            errorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Unexpected end of file.",
-                       "Expected to receive an end of token delimiter such "
-                       "as '(' or '}'",
-                       "", "")));
+            errorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line,
+                      "Unexpected end of file.",
+                      "Expected to receive an end of token delimiter such "
+                      "as '(' or '}'",
+                      "", "")));
             return;
         }
         else
@@ -211,7 +212,7 @@ class Parser2
 
   public:
     void parse();
-    Parser2(const std::string& file);
+    Parser(const std::string& file);
 
     std::shared_ptr<SymbolTable>
     getSymbolTable()

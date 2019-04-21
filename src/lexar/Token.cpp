@@ -1,4 +1,4 @@
-#include "Token2.h"
+#include "Token.h"
 
 std::string
 displayKind(const TokenKind& k)
@@ -117,7 +117,7 @@ displayKind(const TokenKind& k)
 }
 
 std::string
-Token2::prettifyFormatToken()
+Token::prettifyFormatToken()
 {
     return "[" + std::to_string(line) + ":" + std::to_string(col) +
            "]: " + displayKind(kind) + " - " + value + '\n';

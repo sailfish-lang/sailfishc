@@ -2,10 +2,10 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "Parser2ErrorHandler.h"
+#include "ParserErrorHandler.h"
 
 void
-Parser2ErrorHandler::handle(std::unique_ptr<Error2> err)
+ParserErrorHandler::handle(std::unique_ptr<Error> err)
 {
     // finish the initialization of Error
     err->setErrorType("PARSER");

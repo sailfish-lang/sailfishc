@@ -1,7 +1,7 @@
-#include "Parser2.h"
+#include "Parser.h"
 
 std::string
-Parser2::getTabs()
+Parser::getTabs()
 {
     std::string s = "";
     for (int i = 0; i < currentTabs; i++)
@@ -45,7 +45,7 @@ parseFile(const std::string& filename)
 {
     try
     {
-        Parser2* p = new Parser2(filename);
+        Parser* p = new Parser(filename);
         p->parse();
         return std::make_tuple(std::move(p->getUDTTable()), p->getIsUDTFlag(),
                                p->getTargetBuffer());
@@ -79,29 +79,29 @@ extractListType(const std::string& s)
 }
 
 void
-Parser2::advanceAndCheckToken(const TokenKind& k)
+Parser::advanceAndCheckToken(const TokenKind& k)
 {
     // first check value and kind
     if (currentToken->kind != k)
-        errorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "Expected a token of type: " + displayKind(k),
-                   "Received: ", currentToken->value,
-                   " of type " + displayKind(currentToken->kind) + ".")));
+        errorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "Expected a token of type: " + displayKind(k),
+                  "Received: ", currentToken->value,
+                  " of type " + displayKind(currentToken->kind) + ".")));
 
     advanceToken();
 }
 
 void
-Parser2::advanceToken()
+Parser::advanceToken()
 {
     currentToken = lexar->getNextToken();
 
     // catch errors from the lexar
     if (currentToken->kind == TokenKind::ERROR)
-        errorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line, "Lexar Error.",
-                   "Error: ", currentToken->value, "")));
+        errorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line, "Lexar Error.",
+                  "Error: ", currentToken->value, "")));
 
     while (currentToken->kind == TokenKind::COMMENT ||
            currentToken->kind == TokenKind::COMMA)
@@ -110,15 +110,15 @@ Parser2::advanceToken()
 
         // catch errors from the lexar
         if (currentToken->kind == TokenKind::ERROR)
-            errorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line, "Lexar Error.",
-                       "Error: ", currentToken->value, "")));
+            errorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line, "Lexar Error.",
+                      "Error: ", currentToken->value, "")));
     }
 }
 
 // -------- Semantic Analysis Helper Code --------- //
 void
-Parser2::checkType(const std::string& t0, const std::string& t1)
+Parser::checkType(const std::string& t0, const std::string& t1)
 {
     // convert left and right to type of var if they are vars
     auto left =
@@ -140,28 +140,28 @@ Parser2::checkType(const std::string& t0, const std::string& t1)
             right = extractListType(right);
 
         if (t0 != "none" && t1 != "none" && left != right)
-            semanticerrorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Mismatched list types. Expected is: [" + left + "].",
-                       "Received is: ", "[" + right + "]", ".")));
+            semanticerrorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line,
+                      "Mismatched list types. Expected is: [" + left + "].",
+                      "Received is: ", "[" + right + "]", ".")));
     }
 
     // edge case left is num and thus right can be either int or flt type
     else if (left == "num")
     {
         if ("int" != right && "flt" != right)
-            semanticerrorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Mismatched types. Expected/LeftHand is: int or flt.",
-                       "Received/Right Hand is: ", right, ".")));
+            semanticerrorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line,
+                      "Mismatched types. Expected/LeftHand is: int or flt.",
+                      "Received/Right Hand is: ", right, ".")));
     }
 
     // normal error check, with edge case that right is an empty
     else if (left != right && right != "empty")
-        semanticerrorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "Mismatched types. Expected/LeftHand is: " + t0 + ".",
-                   "Received/Right Hand is: ", right, ".")));
+        semanticerrorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "Mismatched types. Expected/LeftHand is: " + t0 + ".",
+                  "Received/Right Hand is: ", right, ".")));
 }
 
 bool
@@ -171,16 +171,16 @@ isPrimitive(const std::string& s)
 }
 
 void
-Parser2::checkUnique(const std::string& s)
+Parser::checkUnique(const std::string& s)
 {
     if (symboltable->hasVariable(s))
-        semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+        semanticerrorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line, "Illegal redeclaration.",
             "Redeclared variable named: ", s, ".")));
 }
 
 void
-Parser2::checkExists(const std::string& s)
+Parser::checkExists(const std::string& s)
 {
 
     auto type = s;
@@ -189,7 +189,7 @@ Parser2::checkExists(const std::string& s)
         if (isUdt)
             type = extractUDTName(filename);
         else
-            errorhandler->handle(std::make_unique<Error2>(Error2(
+            errorhandler->handle(std::make_unique<Error>(Error(
                 currentToken->col, currentToken->line,
                 "illegal usage of own in a non udt method.", "", "", "")));
     }
@@ -199,13 +199,13 @@ Parser2::checkExists(const std::string& s)
 
     if (!symboltable->hasVariable(type) && !isPrimitive(type) &&
         !udttable->hasUDT(type))
-        semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+        semanticerrorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line, "Unknown variable or type.",
             "Unknown variable/type named: ", type, ".")));
 }
 
 void
-Parser2::checkUDTExists(const std::string& s)
+Parser::checkUDTExists(const std::string& s)
 {
     auto udtname = s;
     if (udtname == "own")
@@ -213,7 +213,7 @@ Parser2::checkUDTExists(const std::string& s)
         if (isUdt)
             udtname = extractUDTName(filename);
         else
-            errorhandler->handle(std::make_unique<Error2>(Error2(
+            errorhandler->handle(std::make_unique<Error>(Error(
                 currentToken->col, currentToken->line,
                 "illegal usage of own in a non udt method.", "", "", "")));
     }
@@ -221,23 +221,23 @@ Parser2::checkUDTExists(const std::string& s)
     if (!udttable->hasUDT(udtname) &&
         (!symboltable->hasVariable(udtname) &&
          !udttable->hasUDT(symboltable->getSymbolType(udtname))))
-        semanticerrorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line, "Unknown udt type.",
-                   "Unknown type named: ", udtname, ".")));
+        semanticerrorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line, "Unknown udt type.",
+                  "Unknown type named: ", udtname, ".")));
 }
 
 std::string
-Parser2::checkFunctionCall(const std::string& name,
-                           std::shared_ptr<SymbolTable> st)
+Parser::checkFunctionCall(const std::string& name,
+                          std::shared_ptr<SymbolTable> st)
 {
     auto fcInputs = parseFunctionInputTypes(parseFunctionCall());
 
     // check if function exists
     if (!st->hasVariable(name))
-        semanticerrorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "Nonexistent member function.",
-                   "Nonexistent member function named: ", name, ".")));
+        semanticerrorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "Nonexistent member function.",
+                  "Nonexistent member function named: ", name, ".")));
 
     // get method signature
     auto functionSig = st->getSymbolType(name);
@@ -245,13 +245,13 @@ Parser2::checkFunctionCall(const std::string& name,
     auto output = parseFunctionReturnType(functionSig);
 
     if (fcInputs.size() > inputs.size())
-        semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+        semanticerrorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line,
             "Too many inputs in function call " + name,
             "Expected " + std::to_string(inputs.size()) + " and received: ",
             std::to_string(fcInputs.size()), ".")));
     else if (fcInputs.size() < inputs.size())
-        semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+        semanticerrorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line,
             "Too few inputs in function call " + name,
             "Expected " + std::to_string(inputs.size()) + " and received: ",
@@ -268,7 +268,7 @@ Parser2::checkFunctionCall(const std::string& name,
                 fcInputs[i] = extractListType(fcInputs[i]);
 
             if (inputs[i] != fcInputs[i])
-                semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+                semanticerrorhandler->handle(std::make_unique<Error>(Error(
                     currentToken->col, currentToken->line,
                     "Function input parameter type mismatch in function call " +
                         name,
@@ -281,23 +281,23 @@ Parser2::checkFunctionCall(const std::string& name,
 }
 
 std::string
-Parser2::parseFunctionReturnType(const std::string& s)
+Parser::parseFunctionReturnType(const std::string& s)
 {
     return s.substr(s.find_last_of(")") + 1, s.size());
 }
 
 std::vector<std::string>
-Parser2::parseFunctionInputTypes(const std::string& s)
+Parser::parseFunctionInputTypes(const std::string& s)
 {
     std::vector<std::string> inputs;
 
     if (s.find_first_of("(") + 1 == s.find_last_of(")"))
     {
-        semanticerrorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "At least one input is required for a function call. For a "
-                   "function with no arguments, use the 'void' keyword.",
-                   "", "", "")));
+        semanticerrorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "At least one input is required for a function call. For a "
+                  "function with no arguments, use the 'void' keyword.",
+                  "", "", "")));
         return inputs;
     }
 
@@ -331,12 +331,12 @@ parseListValues(const std::string& s)
 }
 
 // constructor
-Parser2::Parser2(const std::string& file)
+Parser::Parser(const std::string& file)
 {
     filename = file;
-    lexar = std::make_unique<Lexar2>(file, true);
+    lexar = std::make_unique<Lexar>(file, true);
     advanceToken();
-    errorhandler = std::make_unique<Parser2ErrorHandler>(Parser2ErrorHandler());
+    errorhandler = std::make_unique<ParserErrorHandler>(ParserErrorHandler());
     semanticerrorhandler = std::make_unique<SemanticAnalyzerErrorHandler>(
         SemanticAnalyzerErrorHandler(file));
     symboltable = std::make_shared<SymbolTable>(SymbolTable());
@@ -346,7 +346,7 @@ Parser2::Parser2(const std::string& file)
 
 // public interface method
 void
-Parser2::parse()
+Parser::parse()
 {
     parseProgram();
 }
@@ -356,7 +356,7 @@ Parser2::parse()
  * Program := Source
  */
 void
-Parser2::parseProgram()
+Parser::parseProgram()
 {
     parseSource();
 }
@@ -364,7 +364,7 @@ Parser2::parseProgram()
 bool
 containsUDT(const std::string& filename)
 {
-    auto lex = std::make_unique<Lexar2>(filename, true);
+    auto lex = std::make_unique<Lexar>(filename, true);
     auto currentToken = lex->getNextToken();
     while (currentToken->kind != TokenKind::EOF_)
     {
@@ -380,7 +380,7 @@ containsUDT(const std::string& filename)
  * Source := Import Source | SourcePart
  */
 void
-Parser2::parseSource()
+Parser::parseSource()
 {
     if (containsUDT(filename))
         isUdt = true;
@@ -391,9 +391,9 @@ Parser2::parseSource()
     else
     {
         if (currentToken->kind == TokenKind::IMPORT)
-            semanticerrorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Illegal import in udt file.", "", "", "")));
+            semanticerrorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line,
+                      "Illegal import in udt file.", "", "", "")));
     }
     parseSourcePart();
 }
@@ -406,7 +406,7 @@ Parser2::parseSource()
  *      - import is a udt
  */
 void
-Parser2::parseImportInfo()
+Parser::parseImportInfo()
 {
     advanceAndCheckToken(TokenKind::IMPORT); // eat 'Import'
     auto name = parseUDName();
@@ -415,7 +415,11 @@ Parser2::parseImportInfo()
 
     auto file = loc.substr(1, loc.size() - 2);
 
-    std::cout << "Compiling import: " + file + "\n";
+    Prettify::Formatter green(Prettify::FG_GREEN);
+    Prettify::Formatter blue(Prettify::FG_LIGHT_BLUE);
+    Prettify::Formatter normal(Prettify::RESET);
+
+    std::cout << "Compiling import: " << blue << file << normal << ".\n";
     try
     {
         auto udtFlagAndBufer = parseFile(file);
@@ -425,18 +429,18 @@ Parser2::parseImportInfo()
         auto buf = std::get<2>(udtFlagAndBufer);
 
         if (!flag)
-            errorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Expected imported file of type UDT",
-                       "Received: ", "\"" + file + "\"", " of type script")));
+            errorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line,
+                      "Expected imported file of type UDT",
+                      "Received: ", "\"" + file + "\"", " of type script")));
 
         if (name != extractUDTName(file))
-            errorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Expected imported udt filename to match corresponding "
-                       "variable name.",
-                       "Received: ", name,
-                       " and expected: " + extractUDTName(file) + ".")));
+            errorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line,
+                      "Expected imported udt filename to match corresponding "
+                      "variable name.",
+                      "Received: ", name,
+                      " and expected: " + extractUDTName(file) + ".")));
 
         // add to own udt table under imported name, throwing an error if
         // the name already exists
@@ -450,7 +454,9 @@ Parser2::parseImportInfo()
         // aggregate udt buffers
         targetBuffer += buf;
 
-        std::cout << "Successfully compiled import: " + file + "\n";
+        std::cout << green << "Successfully compiled import: " << normal << blue
+                  << file << "\n"
+                  << normal;
     }
     catch (char const* msg)
     {
@@ -462,7 +468,7 @@ Parser2::parseImportInfo()
  * UDName := Identifier
  */
 std::string
-Parser2::parseUDName()
+Parser::parseUDName()
 {
     return parseIdentifier();
 }
@@ -471,7 +477,7 @@ Parser2::parseUDName()
  * Location := String
  */
 std::string
-Parser2::parseLocation()
+Parser::parseLocation()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::STRING); // true eat string
@@ -482,7 +488,7 @@ Parser2::parseLocation()
  * SourcePart := UDT | Script
  */
 void
-Parser2::parseSourcePart()
+Parser::parseSourcePart()
 {
     switch (currentToken->kind)
     {
@@ -513,7 +519,7 @@ Parser2::parseSourcePart()
  * UDT := UserDefinedType
  */
 void
-Parser2::parseUDT()
+Parser::parseUDT()
 {
     parseUserDefinedType();
 }
@@ -522,7 +528,7 @@ Parser2::parseUDT()
  * UserDefinedType := Attributes Methods
  */
 void
-Parser2::parseUserDefinedType()
+Parser::parseUserDefinedType()
 {
     auto udtname = extractUDTName(filename);
 
@@ -552,7 +558,7 @@ Parser2::parseUserDefinedType()
  *      - unique attribute
  */
 void
-Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
+Parser::parseAttributes(std::shared_ptr<SymbolTable> st)
 {
     advanceAndCheckToken(TokenKind::UAT);     // consume uat
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
@@ -579,7 +585,7 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
         // check if unique name
         if (st->hasVariable(name))
         {
-            semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+            semanticerrorhandler->handle(std::make_unique<Error>(Error(
                 currentToken->col, currentToken->line, "Illegal redeclaration.",
                 "Redeclared variable named: ", name, ".")));
         }
@@ -593,7 +599,7 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
             if (isUdt)
                 type = extractUDTName(filename);
             else
-                errorhandler->handle(std::make_unique<Error2>(Error2(
+                errorhandler->handle(std::make_unique<Error>(Error(
                     currentToken->col, currentToken->line,
                     "illegal usage of own in a non udt method.", "", "", "")));
         }
@@ -601,20 +607,20 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
         if (!st->hasVariable(type) && !isPrimitive(type) &&
             !udttable->hasUDT(type) && !symboltable->hasVariable(type))
         {
-            semanticerrorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Unknown variable or type.",
-                       "Unknown variable/type named: ", type, ".")));
+            semanticerrorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line,
+                      "Unknown variable or type.",
+                      "Unknown variable/type named: ", type, ".")));
         }
 
         auto ok = st->addSymbol(name, type);
         if (!ok)
-            semanticerrorhandler->handle(std::make_unique<Error2>(
-                Error2(currentToken->col, currentToken->line,
-                       "Unexpected redeclaration of " + name +
-                           ", originally defined as type " +
-                           st->getSymbolType(name) + ".",
-                       "Received second declaration of type: ", type, ".")));
+            semanticerrorhandler->handle(std::make_unique<Error>(
+                Error(currentToken->col, currentToken->line,
+                      "Unexpected redeclaration of " + name +
+                          ", originally defined as type " +
+                          st->getSymbolType(name) + ".",
+                      "Received second declaration of type: ", type, ".")));
     });
 
     st->removeSymbol(extractUDTName(filename));
@@ -626,7 +632,7 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
  * Methods := 'Ufn' [FunctionDefinition]*
  */
 void
-Parser2::parseMethods(std::shared_ptr<SymbolTable> st)
+Parser::parseMethods(std::shared_ptr<SymbolTable> st)
 {
     advanceAndCheckToken(TokenKind::UFN);     // consume ufn
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
@@ -649,7 +655,7 @@ Parser2::parseMethods(std::shared_ptr<SymbolTable> st)
 }
 
 void
-Parser2::parseScript()
+Parser::parseScript()
 {
     recursiveParse(true, TokenKind::START,
                    [this]() { this->parseFunctionDefinition(); });
@@ -663,7 +669,7 @@ Parser2::parseScript()
  *      - function is a unique declaration
  */
 void
-Parser2::parseFunctionDefinition()
+Parser::parseFunctionDefinition()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
     advanceAndCheckToken(TokenKind::FUN);    // consume fun
@@ -684,7 +690,7 @@ Parser2::parseFunctionDefinition()
  *  - actual return type matches expected return type
  */
 void
-Parser2::parseFunctionInfo(const std::string& name)
+Parser::parseFunctionInfo(const std::string& name)
 {
 
     auto type = parseFunctionInOut(name);
@@ -694,12 +700,12 @@ Parser2::parseFunctionInfo(const std::string& name)
     // add function itself to symbol table, one scope level back
     auto ok = symboltable->addSymbol(name, type);
     if (!ok)
-        semanticerrorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "Unexpected redeclaration of " + name +
-                       ", originally defined as type " +
-                       symboltable->getSymbolType(name) + ".",
-                   "Received second declaration of type: ", type, ".")));
+        semanticerrorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "Unexpected redeclaration of " + name +
+                      ", originally defined as type " +
+                      symboltable->getSymbolType(name) + ".",
+                  "Received second declaration of type: ", type, ".")));
 
     targetBuffer += "{";
 
@@ -722,7 +728,7 @@ Parser2::parseFunctionInfo(const std::string& name)
  * is first declaration as part of formals
  */
 std::string
-Parser2::parseFunctionInOut(const std::string& name)
+Parser::parseFunctionInOut(const std::string& name)
 {
     // inputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
@@ -759,11 +765,11 @@ Parser2::parseFunctionInOut(const std::string& name)
 
             if (argCount > 1 && seenVoid)
             {
-                semanticerrorhandler->handle(std::make_unique<Error2>(
-                    Error2(currentToken->col, currentToken->line,
-                           "Illegal multi-void definition of formals "
-                           "in function signature",
-                           "", "", "")));
+                semanticerrorhandler->handle(std::make_unique<Error>(
+                    Error(currentToken->col, currentToken->line,
+                          "Illegal multi-void definition of formals "
+                          "in function signature",
+                          "", "", "")));
             }
 
             if (type != "void")
@@ -801,7 +807,7 @@ Parser2::parseFunctionInOut(const std::string& name)
  * Start := 'start' Block
  */
 void
-Parser2::parseStart()
+Parser::parseStart()
 {
     advanceAndCheckToken(TokenKind::START);
 
@@ -823,7 +829,7 @@ Parser2::parseStart()
  * Notes: defaults to void return type
  */
 std::string
-Parser2::parseBlock()
+Parser::parseBlock()
 {
     ++currentTabs;
     std::string type = "void";
@@ -837,7 +843,7 @@ Parser2::parseBlock()
         {
             if (hasSeenReturn)
             {
-                semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+                semanticerrorhandler->handle(std::make_unique<Error>(Error(
                     currentToken->col, currentToken->line,
                     "Illegal multiple definitions of return.", "", "", "")));
             }
@@ -859,7 +865,7 @@ Parser2::parseBlock()
  * Statement := Tree | Return | Declaration | E0
  */
 std::tuple<std::string, std::string>
-Parser2::parseStatement()
+Parser::parseStatement()
 {
     targetBuffer += "\n" + getTabs();
     switch (currentToken->kind)
@@ -892,7 +898,7 @@ Parser2::parseStatement()
  * Tree := 'tree' (' Branch* ')'
  */
 void
-Parser2::parseTree()
+Parser::parseTree()
 {
     advanceAndCheckToken(TokenKind::TREE);   // eat 'tree'
     advanceAndCheckToken(TokenKind::LPAREN); // eat '('
@@ -917,7 +923,7 @@ Parser2::parseTree()
  * Branch := '(' Grouping Block')'
  */
 void
-Parser2::parseBranch()
+Parser::parseBranch()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // eat '('
 
@@ -941,7 +947,7 @@ Parser2::parseBranch()
  *  - resulting type is a bool
  */
 void
-Parser2::parseGrouping()
+Parser::parseGrouping()
 {
     inGrouping = true;
     targetBuffer += " (";
@@ -961,7 +967,7 @@ Parser2::parseGrouping()
  * Return := 'return' T
  */
 std::string
-Parser2::parseReturn()
+Parser::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
     targetBuffer += "return ";
@@ -976,7 +982,7 @@ Parser2::parseReturn()
  *  - check that the declared type and the init type are the same
  */
 std::string
-Parser2::parseDeclaration()
+Parser::parseDeclaration()
 {
     advanceAndCheckToken(TokenKind::DEC); // consume 'dec'
 
@@ -998,12 +1004,12 @@ Parser2::parseDeclaration()
 
     auto ok = symboltable->addSymbol(name, type);
     if (!ok)
-        semanticerrorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "Unexpected redeclaration of " + name +
-                       ", originally defined as type " +
-                       symboltable->getSymbolType(name) + ".",
-                   "Received second declaration of type: ", type, ".")));
+        semanticerrorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "Unexpected redeclaration of " + name +
+                      ", originally defined as type " +
+                      symboltable->getSymbolType(name) + ".",
+                  "Received second declaration of type: ", type, ".")));
 
     decName = name;
 
@@ -1022,7 +1028,7 @@ Parser2::parseDeclaration()
  * E0 := T0 E1
  */
 std::string
-Parser2::parseE0()
+Parser::parseE0()
 {
     auto type = parseT();
     return parseE1(type);
@@ -1035,7 +1041,7 @@ Parser2::parseE0()
  *  - both are int
  */
 std::string
-Parser2::parseE1(const std::string& T0)
+Parser::parseE1(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1058,7 +1064,7 @@ Parser2::parseE1(const std::string& T0)
  *  - both are num (int or flt) and the same type
  */
 std::string
-Parser2::parseE2(const std::string& T0)
+Parser::parseE2(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1084,7 +1090,7 @@ Parser2::parseE2(const std::string& T0)
  *  - both are num (int or flt) and the same type
  */
 std::string
-Parser2::parseE3(const std::string& T0)
+Parser::parseE3(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1109,7 +1115,7 @@ Parser2::parseE3(const std::string& T0)
  *  - both are num (int or flt) and the same type
  */
 std::string
-Parser2::parseE4(const std::string& T0)
+Parser::parseE4(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1136,7 +1142,7 @@ Parser2::parseE4(const std::string& T0)
  *  - both are the same type
  */
 std::string
-Parser2::parseE5(const std::string& T0)
+Parser::parseE5(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1159,7 +1165,7 @@ Parser2::parseE5(const std::string& T0)
  *  - both are bool
  */
 std::string
-Parser2::parseE6(const std::string& T0)
+Parser::parseE6(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1185,7 +1191,7 @@ Parser2::parseE6(const std::string& T0)
  *  - the lhs matches the rhs
  */
 std::string
-Parser2::parseE7(const std::string& T0)
+Parser::parseE7(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1214,7 +1220,7 @@ Parser2::parseE7(const std::string& T0)
  *  - check that ! is bool and ++/-- are num
  */
 std::string
-Parser2::parseE8(const std::string& T0)
+Parser::parseE8(const std::string& T0)
 {
 
     if (currentToken->kind == TokenKind::NEGATION)
@@ -1260,7 +1266,7 @@ Parser2::parseE8(const std::string& T0)
  *  - both are num and the same type
  */
 std::string
-Parser2::parseE9(const std::string& T0)
+Parser::parseE9(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1284,7 +1290,7 @@ Parser2::parseE9(const std::string& T0)
  * E10 := MemberAccess E0 | E11
  */
 std::string
-Parser2::parseE10(const std::string& T0)
+Parser::parseE10(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::DOT ||
         currentToken->kind == TokenKind::TRIPLE_DOT)
@@ -1301,7 +1307,7 @@ Parser2::parseE10(const std::string& T0)
  * E11 := New | E12
  */
 std::string
-Parser2::parseE11(const std::string& T0)
+Parser::parseE11(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::NEW)
     {
@@ -1316,7 +1322,7 @@ Parser2::parseE11(const std::string& T0)
  * E12 := FunctionCall | E13
  */
 std::string
-Parser2::parseE12(const std::string& T0)
+Parser::parseE12(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::LPAREN)
     {
@@ -1341,7 +1347,7 @@ Parser2::parseE12(const std::string& T0)
  * E13 := T13 | ε
  */
 std::string
-Parser2::parseE13(const std::string& T11)
+Parser::parseE13(const std::string& T11)
 {
     return T11;
 }
@@ -1350,7 +1356,7 @@ Parser2::parseE13(const std::string& T11)
  * MemberAccess := AttributeAccess | MethodAccess
  */
 std::string
-Parser2::parseMemberAccess(const std::string& T0)
+Parser::parseMemberAccess(const std::string& T0)
 {
     auto type = T0;
     if (type == "own")
@@ -1358,7 +1364,7 @@ Parser2::parseMemberAccess(const std::string& T0)
         if (isUdt)
             type = extractUDTName(filename);
         else
-            errorhandler->handle(std::make_unique<Error2>(Error2(
+            errorhandler->handle(std::make_unique<Error>(Error(
                 currentToken->col, currentToken->line,
                 "illegal usage of own in a non udt method.", "", "", "")));
     }
@@ -1374,7 +1380,7 @@ Parser2::parseMemberAccess(const std::string& T0)
     case TokenKind::TRIPLE_DOT:
         return parseMethodAccess(T0, type);
     default:
-        errorhandler->handle(std::make_unique<Error2>(Error2(
+        errorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line, "Expected a ... or . token.",
             "Received: ", currentToken->value,
             " of type " + displayKind(currentToken->kind) + ".")));
@@ -1386,8 +1392,8 @@ Parser2::parseMemberAccess(const std::string& T0)
  * AttributeAccess := '.' Identifier
  */
 std::string
-Parser2::parseAttributeAccess(const std::string& udtname,
-                              const std::string& udtType)
+Parser::parseAttributeAccess(const std::string& udtname,
+                             const std::string& udtType)
 {
 
     checkExists(udtType);
@@ -1408,7 +1414,7 @@ Parser2::parseAttributeAccess(const std::string& udtname,
     // check if type exists
     if (!st->hasVariable(attribute))
     {
-        semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+        semanticerrorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line, "Nonexistent attribute.",
             "Nonexistent attribute named: ", attribute, ".")));
     }
@@ -1420,8 +1426,8 @@ Parser2::parseAttributeAccess(const std::string& udtname,
  * MethodAccess := '...' Identifier FunctionCall
  */
 std::string
-Parser2::parseMethodAccess(const std::string& udtname,
-                           const std::string& udtType)
+Parser::parseMethodAccess(const std::string& udtname,
+                          const std::string& udtType)
 {
     methodAccessName = udtname;
 
@@ -1457,7 +1463,7 @@ Parser2::parseMethodAccess(const std::string& udtname,
  * FunctionCall := '(' [Identifier [',' Identifier]*] ')'
  */
 std::string
-Parser2::parseFunctionCall()
+Parser::parseFunctionCall()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
 
@@ -1495,7 +1501,7 @@ Parser2::parseFunctionCall()
  * New := UDTDec
  */
 std::string
-Parser2::parseNew()
+Parser::parseNew()
 {
     advanceAndCheckToken(TokenKind::NEW); // consume new
     switch (currentToken->kind)
@@ -1505,12 +1511,12 @@ Parser2::parseNew()
         return parseUDTDec();
     }
     default:
-        errorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "Expected a valid new declaration such as a UDT defined "
-                   "by '{' '}'.",
-                   "Received: ", currentToken->value,
-                   " of type " + displayKind(currentToken->kind) + ".")));
+        errorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "Expected a valid new declaration such as a UDT defined "
+                  "by '{' '}'.",
+                  "Received: ", currentToken->value,
+                  " of type " + displayKind(currentToken->kind) + ".")));
         return ""; //  unreachable
     }
 }
@@ -1520,7 +1526,7 @@ Parser2::parseNew()
  * UDTDecItem := Identifier ':' Primary
  */
 std::string
-Parser2::parseUDTDec()
+Parser::parseUDTDec()
 {
     auto udtName = parseIdentifier();
 
@@ -1570,7 +1576,7 @@ Parser2::parseUDTDec()
                 attributes.erase(attributes.begin() + index);
             }
             else
-                semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+                semanticerrorhandler->handle(std::make_unique<Error>(Error(
                     currentToken->col, currentToken->line,
                     "Unrecognized initialization key for new udt of type: " +
                         udtName,
@@ -1579,7 +1585,7 @@ Parser2::parseUDTDec()
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
 
     if (attributes.size() != 0)
-        semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
+        semanticerrorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line,
             "Missing keys in udt initialization for type: " + udtName,
             "Expected " + std::to_string(st->getSymbols().size()) +
@@ -1592,7 +1598,7 @@ Parser2::parseUDTDec()
  * T := Primary | '(' E0 ')'
  */
 std::string
-Parser2::parseT()
+Parser::parseT()
 {
     if (currentToken->kind == TokenKind::LPAREN)
     {
@@ -1619,7 +1625,7 @@ Parser2::parseT()
  * Primary := Bool | Integer |  String | Identifier
  */
 std::string
-Parser2::parsePrimary()
+Parser::parsePrimary()
 {
     switch (currentToken->kind)
     {
@@ -1658,12 +1664,12 @@ Parser2::parsePrimary()
     case TokenKind::LIST:
         return parseList();
     default:
-        errorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "Expected a valid primary token such as a boolean, "
-                   "integer, float, string, identifier, or list.",
-                   "Received: ", currentToken->value,
-                   " of type " + displayKind(currentToken->kind) + ".")));
+        errorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "Expected a valid primary token such as a boolean, "
+                  "integer, float, string, identifier, or list.",
+                  "Received: ", currentToken->value,
+                  " of type " + displayKind(currentToken->kind) + ".")));
         return "bool"; //  unreachable
     }
 }
@@ -1672,7 +1678,7 @@ Parser2::parsePrimary()
  * Type := Identifier
  */
 std::string
-Parser2::parseType()
+Parser::parseType()
 {
     return currentToken->kind == TokenKind::LISTTYPE ? parseListType()
                                                      : parseIdentifier();
@@ -1682,7 +1688,7 @@ Parser2::parseType()
  * Variable := Type Identifier
  */
 std::tuple<std::string, std::string>
-Parser2::parseVariable()
+Parser::parseVariable()
 {
     auto type = parseType();
 
@@ -1698,7 +1704,7 @@ Parser2::parseVariable()
  * Number := Integer | Float
  */
 std::string
-Parser2::parseNumber()
+Parser::parseNumber()
 {
     auto v = currentToken->value;
     auto k = currentToken->kind;
@@ -1719,7 +1725,7 @@ Parser2::parseNumber()
  * Identifier := lexvalue
  */
 std::string
-Parser2::parseIdentifier()
+Parser::parseIdentifier()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::IDENTIFIER); // eat identifier
@@ -1730,7 +1736,7 @@ Parser2::parseIdentifier()
  * Bool := lexvalue
  */
 std::string
-Parser2::parseBoolean()
+Parser::parseBoolean()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::BOOL); // eat identifier
@@ -1743,7 +1749,7 @@ Parser2::parseBoolean()
  * String := lexvalue
  */
 std::string
-Parser2::parseString()
+Parser::parseString()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::STRING); // true eat string
@@ -1755,7 +1761,7 @@ Parser2::parseString()
  * Own Accessor:= lexvalue
  */
 std::string
-Parser2::parseOwnAccessor()
+Parser::parseOwnAccessor()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::OWN_ACCESSOR); // eat own accessor
@@ -1763,9 +1769,9 @@ Parser2::parseOwnAccessor()
     if (isUdt)
         return extractUDTName(filename);
     else
-        errorhandler->handle(std::make_unique<Error2>(
-            Error2(currentToken->col, currentToken->line,
-                   "illegal usage of own in a non udt method.", "", "", "")));
+        errorhandler->handle(std::make_unique<Error>(
+            Error(currentToken->col, currentToken->line,
+                  "illegal usage of own in a non udt method.", "", "", "")));
     return v; // will not ever reach here
 }
 
@@ -1773,7 +1779,7 @@ Parser2::parseOwnAccessor()
  * Empty:= lexvalue
  */
 std::string
-Parser2::parseEmpty()
+Parser::parseEmpty()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::EMPTY); // eat own accessor
@@ -1787,7 +1793,7 @@ Parser2::parseEmpty()
  * ListType := lexvalue
  */
 std::string
-Parser2::parseListType()
+Parser::parseListType()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::LISTTYPE); // eat list type
@@ -1796,11 +1802,11 @@ Parser2::parseListType()
 
 // --------       Some helpers for parsing a list       -------- //
 
-std::vector<std::unique_ptr<Token2>>
+std::vector<std::unique_ptr<Token>>
 determineTypes(const std::string& s)
 {
-    auto lexar = std::make_unique<Lexar2>(s, false);
-    std::vector<std::unique_ptr<Token2>> vals;
+    auto lexar = std::make_unique<Lexar>(s, false);
+    std::vector<std::unique_ptr<Token>> vals;
     auto token = lexar->getNextToken();
     while (token->kind != TokenKind::EOF_)
     {
@@ -1812,7 +1818,7 @@ determineTypes(const std::string& s)
 }
 
 std::string
-Parser2::tokenToType(const TokenKind& tk, const std::string& val)
+Parser::tokenToType(const TokenKind& tk, const std::string& val)
 {
     switch (tk)
     {
@@ -1829,7 +1835,7 @@ Parser2::tokenToType(const TokenKind& tk, const std::string& val)
     case TokenKind::BOOL:
         return "bool";
     default:
-        errorhandler->handle(std::make_unique<Error2>(Error2(
+        errorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line, "Unexpected type in a list.",
             "Type: ", displayKind(tk), "")));
         return ""; // unreachable
@@ -1840,7 +1846,7 @@ Parser2::tokenToType(const TokenKind& tk, const std::string& val)
  * List := lexvalue
  */
 std::string
-Parser2::parseList()
+Parser::parseList()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::LIST); // eat list
@@ -1885,7 +1891,7 @@ Parser2::parseList()
 }
 
 void
-Parser2::transpile()
+Parser::transpile()
 {
     output.close();
 }

@@ -3,8 +3,9 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "../lexar/Lexar2.h"
-#include "../parser/Parser2.h"
+#include "../common/display.h"
+#include "../lexar/Lexar.h"
+#include "../parser/Parser.h"
 #include <iostream>
 #include <stdlib.h>
 #include <string>

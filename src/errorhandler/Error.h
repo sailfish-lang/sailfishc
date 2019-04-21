@@ -3,11 +3,11 @@
  * Sailfish Programming Language
  */
 #pragma once
-#include "display.h"
+#include "../common/display.h"
 #include <iostream>
 #include <string>
 
-class Warning
+class Error
 {
   private:
     int col;
@@ -20,8 +20,8 @@ class Warning
     std::string filename;
 
   public:
-    Warning(int c, int l, const std::string& m, const std::string& le,
-            const std::string& mid, const std::string& ri)
+    Error(int c, int l, const std::string& m, const std::string& le,
+          const std::string& mid, const std::string& ri)
     {
         col = c;
         line = l;
@@ -32,7 +32,7 @@ class Warning
     }
     // set method for receiving type to utilize internally
     void
-    setWarningType(const std::string& e)
+    setErrorType(const std::string& e)
     {
         errtype = e;
     }
@@ -45,19 +45,17 @@ class Warning
     void
     displayMessage()
     {
-        Prettify::Formatter yellow(Prettify::FG_YELLOW);
+        Prettify::Formatter red(Prettify::FG_RED);
         Prettify::Formatter def(Prettify::FG_DEFAULT);
         Prettify::Formatter underline(Prettify::UNDERLINE);
         Prettify::Formatter normal(Prettify::RESET);
 
         if (left == "" && middle == "" && right == "")
-            std::cout << yellow << "[" << errtype
-                      << " WARNING at " + filename + " [" << line << ":" << col
-                      << "]: " << msg << def << "\n";
+            std::cout << red << "[" << errtype << " ERROR at " + filename + " ["
+                      << line << ":" << col << "]: " << msg << def << "\n";
         else
-            std::cout << yellow << "[" << errtype
-                      << " WARNING at " + filename + " [" << line << ":" << col
-                      << "]: " << msg << def << "\n\n\t" << left << underline
-                      << middle << normal << right << "\n";
+            std::cout << red << "[" << errtype << " ERROR at " + filename + " ["
+                      << line << ":" << col << "]: " << msg << def << "\n\n\t"
+                      << left << underline << middle << normal << right << "\n";
     }
 };

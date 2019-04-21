@@ -4,23 +4,37 @@
  */
 #include "CommandLine.h"
 
+const static std::string VERSION = "sailfishc 0.2.0 (marlin)";
+
 void
 helpMessage()
 {
-    std::cout << "Welcome to the Sailfish Compiler!\n"
-                 "The Sailfish is hungry and wants to compile some code.\n"
+    Prettify::Formatter bold(Prettify::BOLD);
+    Prettify::Formatter white(Prettify::FG_WHITE);
+    Prettify::Formatter blue(Prettify::FG_LIGHT_BLUE);
+    Prettify::Formatter normal(Prettify::RESET);
+
+    std::cout << blue << "\t🐟 " << white << "Welcome" << blue << " to " << white
+              << "the " << blue << "Sailfish " << white << "Compiler " << blue
+              << "🐟\n"
+              << normal
+              << "The Sailfish is hungry and wants to compile some code.\n"
                  "To get started, consider one of the following commands:\n"
-                 "\n\tsailfishc [filename]\n"
+              << bold
+              << "\n\tsailfishc [filename]\n"
                  "\n\tsailfishc --help\n"
                  "\n\tsailfishc --version\n"
-                 "\n\tsailfishc --lex [filename]\n"
-                 "\n\tsailfishc --parse [filename]\n";
+              << normal;
 }
 
 void
 versionInfo()
 {
-    std::cout << "sailfishc 0.2.0 (marlin)\n";
+    Prettify::Formatter white(Prettify::FG_WHITE);
+    Prettify::Formatter blue(Prettify::BG_BLUE);
+    Prettify::Formatter normal(Prettify::RESET);
+
+    std::cout << white << blue << VERSION << '\n' << normal;
 }
 
 void
@@ -28,16 +42,29 @@ fullCompilation(const std::string& filename)
 {
     try
     {
-        std::cout << "Compiling " << filename << ".\n";
+        Prettify::Formatter white(Prettify::FG_WHITE);
+        Prettify::Formatter green(Prettify::FG_GREEN);
+        Prettify::Formatter blue(Prettify::FG_LIGHT_BLUE);
+        Prettify::Formatter normal(Prettify::RESET);
 
-        Parser2* p = new Parser2(filename);
+        std::cout << blue << "\t🐟 " << white << "The Sailfish" << blue
+                  << " Compiler " << white << VERSION << blue << " 🐟\n"
+                  << normal;
+
+        std::cout << "Compiling " << blue << filename << normal << ".\n";
+
+        Parser* p = new Parser(filename);
         p->parse();
 
-        std::cout << "Successfully compiled: " + filename + "\n";
+        std::cout << green << "Successfully compiled: " << normal << blue
+                  << filename << "\n"
+                  << normal;
 
         p->transpile();
 
-        std::cout << "Successfully wrote compiled code to: out.c\n";
+        std::cout << green << "Successfully wrote compiled code to: " << normal
+                  << blue << " out.c\n"
+                  << normal;
     }
     catch (const std::string msg)
     {
@@ -76,53 +103,14 @@ handleCommandLine(int argc, char* const* argv)
         return 0;
     }
 
-    case 3:
-        if (std::string("--lex").compare(argv[1]) == 0)
-        {
-            std::string filename = argv[2];
-            std::cout << "Lexing " << filename << ".\n\n";
-
-            Lexar2* l = new Lexar2(filename, true);
-            std::unique_ptr<Token2> t = l->getNextToken();
-
-            while (t->kind != TokenKind::EOF_)
-            {
-                std::cout << t->prettifyFormatToken();
-                t = l->getNextToken();
-            }
-        }
-        else if (std::string("--parse").compare(argv[1]) == 0)
-        {
-
-            try
-            {
-                auto filename = argv[2];
-                std::cout << "Parsing " << filename << ".\n\n";
-
-                Parser2* p = new Parser2(filename);
-                p->parse();
-            }
-            catch (const std::string msg)
-            {
-                std::cerr << msg;
-            }
-            catch (char const* msg)
-            {
-                std::cerr << msg;
-            }
-        }
-        else
-        {
-            std::cout
-                << "Unrecognized flag. "
-                   "Try again or type sailfishc to see command options!\n";
-        }
-
-        return 0;
-
     default:
+        Prettify::Formatter blue(Prettify::FG_LIGHT_BLUE);
+        Prettify::Formatter normal(Prettify::RESET);
+
         std::cout << "Unexpected number of arguments. "
-                     "Try again or type sailfishc to see command options!\n";
+                     "Try again or type "
+                  << blue << "sailfishc" << normal
+                  << " to see command options !\n ";
         return 0;
     }
 }
