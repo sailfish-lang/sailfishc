@@ -18,6 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <tuple>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -158,8 +159,8 @@ class Parser2
     std::string parseLocation();
     void parseUDT();
     void parseUserDefinedType();
-    std::shared_ptr<SymbolTable> parseAttributes(std::shared_ptr<SymbolTable>);
-    std::shared_ptr<SymbolTable> parseMethods(std::shared_ptr<SymbolTable>);
+    void parseAttributes(std::shared_ptr<SymbolTable>);
+    void parseMethods(std::shared_ptr<SymbolTable>);
     void parseScript();
     void parseFunctionDefinition();
     void parseFunctionInfo(const std::string&);

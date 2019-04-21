@@ -129,7 +129,8 @@ Parser2::checkType(const std::string& t0, const std::string& t1)
     // should actually check types here
 
     // edge case lists
-    if (left.at(0) == '[' || right.at(0) == '[')
+    if (left.size() > 0 && right.size() > 0 &&
+        (left.at(0) == '[' || right.at(0) == '['))
     {
         // if one is a list, both must be lists
         if (left.at(0) == '[')
@@ -196,7 +197,8 @@ Parser2::checkExists(const std::string& s)
     if (s.at(0) == '[')
         type = extractListType(type);
 
-    if (!symboltable->hasVariable(type) && !isPrimitive(type))
+    if (!symboltable->hasVariable(type) && !isPrimitive(type) &&
+        !udttable->hasUDT(type))
         semanticerrorhandler->handle(std::make_unique<Error2>(Error2(
             currentToken->col, currentToken->line, "Unknown variable or type.",
             "Unknown variable/type named: ", type, ".")));
@@ -358,14 +360,41 @@ Parser2::parseProgram()
 {
     parseSource();
 }
+
+bool
+containsUDT(const std::string& filename)
+{
+    auto lex = std::make_unique<Lexar2>(filename, true);
+    auto currentToken = lex->getNextToken();
+    while (currentToken->kind != TokenKind::EOF_)
+    {
+        if (currentToken->kind == TokenKind::UAT)
+            return true;
+        currentToken = lex->getNextToken();
+    }
+
+    return false;
+}
+
 /**
  * Source := Import Source | SourcePart
  */
 void
 Parser2::parseSource()
 {
-    recursiveParse(false, TokenKind::IMPORT,
-                   [this]() { this->parseImportInfo(); });
+    if (containsUDT(filename))
+        isUdt = true;
+
+    if (!isUdt)
+        recursiveParse(false, TokenKind::IMPORT,
+                       [this]() { this->parseImportInfo(); });
+    else
+    {
+        if (currentToken->kind == TokenKind::IMPORT)
+            semanticerrorhandler->handle(std::make_unique<Error2>(
+                Error2(currentToken->col, currentToken->line,
+                       "Illegal import in udt file.", "", "", "")));
+    }
     parseSourcePart();
 }
 
@@ -386,9 +415,9 @@ Parser2::parseImportInfo()
 
     auto file = loc.substr(1, loc.size() - 2);
 
+    std::cout << "Compiling import: " + file + "\n";
     try
     {
-        std::cout << "Compiling import: " + file + "\n";
         auto udtFlagAndBufer = parseFile(file);
 
         auto table = std::move(std::get<0>(udtFlagAndBufer));
@@ -409,14 +438,14 @@ Parser2::parseImportInfo()
                        "Received: ", name,
                        " and expected: " + extractUDTName(file) + ".")));
 
-        // add to own udt table under imported name, throwing an error if the
-        // name already exists
+        // add to own udt table under imported name, throwing an error if
+        // the name already exists
         if (!udttable->hasUDT(name))
             udttable->addUDT(
                 name, table->getAttributeSymbolTable(extractUDTName(file)),
                 table->getMethodSymbolTable(extractUDTName(file)));
 
-        symboltable->addSymbol(name, "U");
+        symboltable->addSymbol(extractUDTName(file), "U");
 
         // aggregate udt buffers
         targetBuffer += buf;
@@ -458,7 +487,6 @@ Parser2::parseSourcePart()
     switch (currentToken->kind)
     {
     case TokenKind::UAT:
-        isUdt = true;
         parseUDT();
         break;
     default:
@@ -507,10 +535,10 @@ Parser2::parseUserDefinedType()
         "\n//___________BEGIN_" + udtname + "_UDT_DEFINITION__________/_//\n\n";
 
     targetBuffer += "struct " + udtname + "\n{\n";
-    a_st = this->parseAttributes(a_st);
+    this->parseAttributes(a_st);
     targetBuffer += "};\n";
 
-    std::shared_ptr<SymbolTable> methodst = this->parseMethods(m_st);
+    this->parseMethods(m_st);
 
     targetBuffer +=
         "//___________END_" + udtname + "_UDT_DEFINITION__________/_//\n\n";
@@ -523,7 +551,7 @@ Parser2::parseUserDefinedType()
  *      - type exists
  *      - unique attribute
  */
-std::shared_ptr<SymbolTable>
+void
 Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
 {
     advanceAndCheckToken(TokenKind::UAT);     // consume uat
@@ -539,7 +567,9 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
 
         auto outtype = type;
         if ((st->hasVariable(outtype) && st->getSymbolType(outtype) == "U") ||
-            udttable->hasUDT(outtype))
+            udttable->hasUDT(outtype) ||
+            (symboltable->hasVariable(outtype) &&
+             symboltable->getSymbolType(outtype) == "U"))
             outtype = "struct " + outtype + "*";
         else
             outtype = builtinTypesTranslator(outtype);
@@ -569,7 +599,7 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
         }
 
         if (!st->hasVariable(type) && !isPrimitive(type) &&
-            !udttable->hasUDT(type))
+            !udttable->hasUDT(type) && !symboltable->hasVariable(type))
         {
             semanticerrorhandler->handle(std::make_unique<Error2>(
                 Error2(currentToken->col, currentToken->line,
@@ -590,14 +620,12 @@ Parser2::parseAttributes(std::shared_ptr<SymbolTable> st)
     st->removeSymbol(extractUDTName(filename));
 
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-
-    return st;
 }
 
 /**
  * Methods := 'Ufn' [FunctionDefinition]*
  */
-std::shared_ptr<SymbolTable>
+void
 Parser2::parseMethods(std::shared_ptr<SymbolTable> st)
 {
     advanceAndCheckToken(TokenKind::UFN);     // consume ufn
@@ -618,7 +646,6 @@ Parser2::parseMethods(std::shared_ptr<SymbolTable> st)
     symboltable = temp;
 
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
-    return st;
 }
 
 void
@@ -740,17 +767,8 @@ Parser2::parseFunctionInOut(const std::string& name)
             }
 
             if (type != "void")
-            {
-                auto ok = symboltable->addSymbol(std::get<0>(sands), type);
-                // if (!ok)
-                // semanticerrorhandler->handle(std::make_unique<Error2>(
-                //     Error2(currentToken->col, currentToken->line,
-                //            "Unexpected redeclaration of " + name +
-                //                ", originally defined as type " +
-                //                symboltable->getSymbolType(name) + ".",
-                //            "Received second declaration of type: ", type,
-                //            ".")));
-            }
+                symboltable->addSymbol(std::get<0>(sands), type);
+
             types += "_" + type;
         });
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
@@ -1500,7 +1518,6 @@ Parser2::parseNew()
 std::string
 Parser2::parseUDTDec()
 {
-
     auto udtName = parseIdentifier();
     targetBuffer +=
         "(struct " + udtName + "*)malloc(sizeof(struct " + udtName + "));\n";
