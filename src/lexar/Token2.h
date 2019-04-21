@@ -15,7 +15,6 @@ enum class TokenKind
     TREE,
     UAT,
     UFN,
-    IFE,
     FUN,
     DEC,
     IMPORT,
