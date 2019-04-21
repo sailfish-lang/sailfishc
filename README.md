@@ -16,16 +16,6 @@ For now, you can either build from source:
 
 Or use the install script [here](https://github.com/sailfish-lang/sailfish-lang-install-script.git).
 
-## Development
-
-To run tests, you'll need [GoogleTest](https://github.com/google/googletest) and [CMake](https://cmake.org). There is a nice tutorial on how to get GoogleTest up and running on Ubuntu [here](https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/). Also check [this](https://github.com/AppImage/AppImageKit/issues/571#issuecomment-349471627) out if gtest isn't working In order to run the test suite, follow these steps:
-```
-cd test
-cmake CMakeLists.txt
-make
-./sailfishc_tests
-```
-
 ***
 
 ## Sailfish Wiki
