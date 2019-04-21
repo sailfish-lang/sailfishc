@@ -2,15 +2,17 @@
  * Robert Durst 2019
  * Sailfish Programming Language
  */
-#include "ParserErrorHandler.h"
+#include "SemanticAnalyzerErrorHandler.h"
 
 void
-ParserErrorHandler::handle(std::unique_ptr<Error> err)
+SemanticAnalyzerErrorHandler::handle(std::unique_ptr<Error> err)
 {
     // finish the initialization of Error
-    err->setErrorType("PARSER");
+    err->setErrorType("SEMANTIC");
+
+    err->setFilename(filename);
 
     // throw an error since we stop at first error here
     err->displayMessage();
-    throw "";
+    // throw "";
 }

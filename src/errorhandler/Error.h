@@ -1,45 +1,63 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * Simple utility class for formatting and displaying various types of errors.
  */
 #pragma once
+#include "../common/display.h"
+#include <iostream>
 #include <string>
 
-// data structure describing an error
 class Error
 {
   private:
-    int lineNumber;
+    int col;
+    int line;
     std::string msg;
+    std::string left;
+    std::string middle;
+    std::string right;
     std::string errtype;
+    std::string filename;
 
   public:
-    // constructor
-    Error(const int l, const std::string m)
+    Error(int c, int l, const std::string& m, const std::string& le,
+          const std::string& mid, const std::string& ri)
     {
-        lineNumber = l;
+        col = c;
+        line = l;
         msg = m;
+        left = le;
+        middle = mid;
+        right = ri;
     }
-    // destructor
-    ~Error(){};
     // set method for receiving type to utilize internally
     void
-    setErrorType(const std::string e)
+    setErrorType(const std::string& e)
     {
         errtype = e;
     }
-    // helper method for pretty printing error message with all (well, not
-    // actually all...) information
-    std::string
-    getPrettyMessage()
+    void
+    setFilename(const std::string& f)
     {
-        return "[" + errtype + " Error at line: " + std::to_string(lineNumber) +
-               "]: " + msg + "\n";
+        filename = f;
     }
-    // get methods
-    std::string
-    getErrorMessage()
+    // helper method for pretty printing error message
+    void
+    displayMessage()
     {
-        return msg;
+        Prettify::Formatter red(Prettify::FG_RED);
+        Prettify::Formatter def(Prettify::FG_DEFAULT);
+        Prettify::Formatter underline(Prettify::UNDERLINE);
+        Prettify::Formatter normal(Prettify::RESET);
+
+        if (left == "" && middle == "" && right == "")
+            std::cout << red << "[" << errtype << " ERROR at " + filename + " ["
+                      << line << ":" << col << "]: " << msg << def << "\n";
+        else
+            std::cout << red << "[" << errtype << " ERROR at " + filename + " ["
+                      << line << ":" << col << "]: " << msg << def << "\n\n\t"
+                      << left << underline << middle << normal << right << "\n";
     }
 };

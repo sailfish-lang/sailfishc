@@ -1,15 +1,13 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * CommandLine handles the basic command line utilities for the compiler.
  */
 #pragma once
-#include "../ast/Ast.h"
+#include "../common/display.h"
 #include "../lexar/Lexar.h"
-#include "../lexar/Lexar2.h"
-#include "../parser/Parser.h"
-#include "../parser/Parser2.h"
-#include "../semantics/SemanticAnalyzer.h"
-#include "../transpiler/Transpiler.h"
+#include "../sailfish/sailfishc.h"
 #include <iostream>
 #include <stdlib.h>
 #include <string>

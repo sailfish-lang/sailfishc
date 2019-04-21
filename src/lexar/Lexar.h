@@ -1,54 +1,54 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * Lexar encapsulates the logic for retreiving tokens one by one from a given
+ * source code text file.
  */
 #pragma once
-#include "Scanner.h"
 #include "Token.h"
-#include <string>
-
-// These states are utilized by the lexar as a sort of DFA.
-enum State
-{
-    START,
-    IDENTIFIER,
-    INTEGER,
-    FLOAT,
-    DIVISION_OR_COMMENT,
-    SINGLE_LINE_COMMENT,
-    MULTIPLE_LINE_COMMENT_PRESTATE,
-    MULTIPLE_LINE_COMMENT,
-    STRING,
-    STRING_ESCAPE,
-    SUBTRACTION,
-    ASSIGNMENT,
-    NEGATION,
-    MULTIPLICATION,
-    AND_PRESTATE,
-    OR_PRESTATE,
-    LESS_THAN,
-    GREATER_THAN,
-    DOUBLE_DOT_PRESTATE,
-    TRIPLE_DOT_PRESTATE,
-    RBRACKET_PRESTATE,
-    ERROR
-};
+#include <fstream>
+#include <memory>
 
 class Lexar
 {
   private:
-    Scanner* scanner;
-    int currentLineNum;
-    int currentColNum;
+    std::ifstream file;
+    int line;
+    int col;
+    int prevCol; // for when we need to jump back a line and remember where the
+                 // end of that line was
+    bool isFile; // may have a raw string instead of a file
+    std::string rawString;
+    char getNextChar();
+    std::unique_ptr<Token> makeToken(const TokenKind&, const std::string&);
+    std::unique_ptr<Token> makeTokenPutback(const TokenKind&, std::string&,
+                                            char&);
+    // represents dfa states in our pseudo dfa/state machine implementation
+    enum State
+    {
+        START,
+        IDENTIFIER,
+        INTEGER,
+        FLOAT,
+        DIVISION,
+        ADDITION,
+        SUBTRACTION,
+        STRING,
+        STRING_ESCAPE,
+        ASSIGNMENT,
+        NEGATION,
+        MULTIPLICATION,
+        LESS_THAN,
+        GREATER_THAN,
+        DOUBLE_DOT,
+        TRIPLE_DOT,
+        COMMENT,
+        LIST,
+        ERROR
+    };
 
   public:
-    // constructor
-    Lexar(const std::string filename);
-    // destructor
-    ~Lexar()
-    {
-        delete scanner;
-    };
-    // will return EOF_TOKEN indefinitely once done parsing
-    Token* getNextToken();
+    Lexar(const std::string&, bool);
+    std::unique_ptr<Token> getNextToken();
 };

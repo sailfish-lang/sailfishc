@@ -14,7 +14,7 @@ addToLocalCache(std::string varName, std::vector<std::string> localCache)
 
 // helper method to get only this scope's local cache
 std::vector<std::string>
-getLastScopeCache(std::vector<std::string> cache)
+getLastScopeCache(std::vector<std::string>& cache)
 {
     std::vector<std::string> localCache;
     while (cache.size() > 0)
@@ -118,27 +118,13 @@ SymbolTable::addSymbol(const std::string varName, const std::string type)
     }
 }
 
-bool
-SymbolTable::addSymbolIterative(const std::string varName,
-                                const std::string type)
+void
+SymbolTable::removeSymbol(const std::string& varName)
 {
-    if (!hasVariable(varName))
+    if (hasVariable(varName))
     {
-        std::stack<SymbolMetaData*> ss;
-        SymbolMetaData* smd = new SymbolMetaData(type, scopeLevel);
-        ss.push(smd);
-        globalScopeTable.insert({varName, ss});
-        localCache = addToLocalCache(varName, localCache);
-
-        ++scopeLevel;
-
-        return true;
+        globalScopeTable.erase(varName);
     }
-
-    // ensure not adding a variable if already exists, since all scope is
-    // essentially first leveel and scope is just used for ordering
-    else
-        return false;
 }
 
 // helper function for adding standard lib variables
@@ -150,4 +136,39 @@ SymbolTable::addStdlib(const std::string varName, const std::string type)
     ss.push(smd);
     globalScopeTable.insert({varName, ss});
     localCache = addToLocalCache(varName, localCache);
+}
+
+void
+SymbolTable::clear()
+{
+    globalScopeTable.clear();
+}
+
+void
+SymbolTable::addBuiltins()
+{
+    addSymbol("appendListInt", "F(_[int]_[int]_int_int)[int]");
+    addSymbol("appendListStr", "F(_[str]_[str]_int_int)[str]");
+    addSymbol("appendListBool", "F(_[bool]_[bool]_int_int)[bool]");
+    addSymbol("appendListFlt", "F(_[flt]_[flt]_int_int)[flt]");
+
+    addSymbol("deleteAtIndexInt", "F(_[int]_int_int)[int]");
+    addSymbol("deleteAtIndexStr", "F(_[str]_int_int)[str]");
+    addSymbol("deleteAtIndexBool", "F(_[bool]_int_int)[bool]");
+    addSymbol("deleteAtIndexFlt", "F(_[flt]_int_int)[flt]");
+
+    addSymbol("getAtIndexInt", "F(_[int]_int)int");
+    addSymbol("getAtIndexStr", "F(_[str]_int)str");
+    addSymbol("getAtIndexBool", "F(_[bool]_int)bool");
+    addSymbol("getAtIndexFlt", "F(_[flt]_int)flt");
+
+    addSymbol("setAtIndexInt", "F(_[int]_int_int)[int]");
+    addSymbol("setAtIndexStr", "F(_[str]_int_str)[str]");
+    addSymbol("setAtIndexBool", "F(_[bool]_int_bool)[bool]");
+    addSymbol("setAtIndexFlt", "F(_[flt]_int_flt)[flt]");
+
+    addSymbol("printInt", "F(_int)void");
+    addSymbol("printStr", "F(_str)void");
+    addSymbol("printBool", "F(_bool)void");
+    addSymbol("printFlt", "F(_flt)void");
 }

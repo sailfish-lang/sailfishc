@@ -1,22 +1,16 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * Parser handles errors related to lexing and parsing.
  */
 #pragma once
 #include "Error.h"
+#include <memory>
 
 class ParserErrorHandler
 {
-  private:
-    bool foundError;
-
   public:
-    // constructor
-    ParserErrorHandler()
-    {
-        foundError = false;
-    };
-    // destructor
-    ~ParserErrorHandler(){};
-    void handle(Error*);
+    ParserErrorHandler(){};
+    void handle(std::unique_ptr<Error>);
 };

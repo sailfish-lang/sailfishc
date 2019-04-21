@@ -1,9 +1,12 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * SymbolTable maps variable names to types.
  */
 #pragma once
 #include "SymbolMetaData.h"
+#include <iomanip>
 #include <iostream>
 #include <stack>
 #include <string>
@@ -22,24 +25,13 @@ class SymbolTable
     void addStdlib(std::string, std::string);
 
   public:
-    // constructor
     SymbolTable()
     {
         scopeLevel = 0;
         globalScopeTable.clear();
         localCache.push_back("|");
 
-        // add standard library methods
-        // ensures known even at internal symbol tables such as for udt
-        // attributes and methods
-        addSymbol("display_str", "Fdisplay_str{$str}($void)");
-        addSymbol("display_int", "Fdisplay_int{$int}($void)");
-        addSymbol("display_flt", "Fdisplay_flt{$flt}($void)");
-        addSymbol("display_bool", "Fdisplay_bool{$bool}($void)");
-    }
-    // destructor
-    ~SymbolTable()
-    {
+        addBuiltins();
     }
 
     // enter the scope, incrementing the scope level counter
@@ -61,9 +53,9 @@ class SymbolTable
     // either push to the variables scope if exists or add variable
     bool addSymbol(const std::string, const std::string);
 
-    // same as above, but used for attributes where we use scope level to mean
-    // ordering
-    bool addSymbolIterative(const std::string, const std::string);
+    // for removing symbols which should basically never happen except for the
+    // class name from the attributes
+    void removeSymbol(const std::string&);
 
     // helper methods
     bool
@@ -76,4 +68,19 @@ class SymbolTable
     {
         return scopeLevel;
     }
+
+    std::vector<std::string>
+    getSymbols()
+    {
+        std::vector<std::string> symbols;
+        for (auto const& element : globalScopeTable)
+        {
+            symbols.push_back(element.first);
+        }
+
+        return symbols;
+    }
+
+    void addBuiltins();
+    void clear();
 };

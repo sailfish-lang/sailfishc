@@ -1,6 +1,9 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * SymbolMetaData represents the per scope level data associated with a field in
+ * the SymbolTable.
  */
 #pragma once
 #include <string>

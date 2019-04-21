@@ -1,10 +1,13 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * UDTTable maps udt names to related data.
  */
 #pragma once
 #include "SymbolTable.h"
 #include "UDTMetaData.h"
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -30,7 +33,7 @@ class UDTTable
     }
 
     // retreive a UDT's attribute Symbol Table from the UDT table
-    SymbolTable*
+    std::shared_ptr<SymbolTable>
     getAttributeSymbolTable(const std::string name)
     {
         if (hasUDT(name))
@@ -40,7 +43,7 @@ class UDTTable
     }
 
     // retreive a UDT's method Symbol Table from the UDT table
-    SymbolTable*
+    std::shared_ptr<SymbolTable>
     getMethodSymbolTable(const std::string name)
     {
         if (hasUDT(name))
@@ -51,27 +54,14 @@ class UDTTable
 
     // returns true if added or false if already exists
     bool
-    addUDT(const std::string name, SymbolTable* attributes,
-           SymbolTable* methods)
+    addUDT(const std::string name, std::shared_ptr<SymbolTable> attributes,
+           std::shared_ptr<SymbolTable> methods)
     {
         if (hasUDT(name))
             return false;
 
         UDTMetaData* udtmd = new UDTMetaData(attributes, methods);
         udtTable.insert({name, udtmd});
-        return true;
-    }
-
-    // allow us to update the table after udt key aleady added
-    bool
-    updateUDT(const std::string name, SymbolTable* attributes,
-              SymbolTable* methods)
-    {
-        if (!hasUDT(name))
-            return false;
-
-        udtTable.at(name)->setAttributeSymbolTable(attributes);
-        udtTable.at(name)->setMethodSymbolTable(methods);
         return true;
     }
 };

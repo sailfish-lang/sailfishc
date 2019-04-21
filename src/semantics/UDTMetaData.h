@@ -1,20 +1,24 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * UDTMetaData holds the attribute and method symbol table for a udt entry in
+ * the udt table.
  */
 #pragma once
 #include "SymbolTable.h"
+#include <memory>
 #include <string>
 
 class UDTMetaData
 {
   private:
-    SymbolTable* attributes;
-    SymbolTable* methods;
+    std::shared_ptr<SymbolTable> attributes;
+    std::shared_ptr<SymbolTable> methods;
 
   public:
     // constructor
-    UDTMetaData(SymbolTable* a, SymbolTable* m)
+    UDTMetaData(std::shared_ptr<SymbolTable> a, std::shared_ptr<SymbolTable> m)
     {
         attributes = a;
         methods = m;
@@ -22,24 +26,24 @@ class UDTMetaData
     // destructor
     ~UDTMetaData(){};
     // get methods
-    SymbolTable*
+    std::shared_ptr<SymbolTable>
     getAttributeSymbolTable()
     {
         return attributes;
     }
-    SymbolTable*
+    std::shared_ptr<SymbolTable>
     getMethodSymbolTable()
     {
         return methods;
     }
     // set methods
     void
-    setAttributeSymbolTable(SymbolTable* a)
+    setAttributeSymbolTable(std::shared_ptr<SymbolTable> a)
     {
         attributes = a;
     }
     void
-    setMethodSymbolTable(SymbolTable* m)
+    setMethodSymbolTable(std::shared_ptr<SymbolTable> m)
     {
         methods = m;
     }
