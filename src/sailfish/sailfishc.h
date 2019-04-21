@@ -80,6 +80,7 @@ class sailfishc
     int currentTabs = 0;
     std::string targetBuffer = "";
     std::string methodAccessName = "";
+    std::string attributeAccessName = "";
 
     // ------- Transpiler -------- //
     std::ofstream output;

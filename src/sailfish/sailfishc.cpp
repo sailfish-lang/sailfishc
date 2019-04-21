@@ -126,6 +126,11 @@ sailfishc::checkType(const std::string& t0, const std::string& t1)
     auto right =
         symboltable->hasVariable(t1) ? symboltable->getSymbolType(t1) : t1;
 
+    // if either is a udt, make sure we check udt type, not U which is returned
+    // by symbol table
+    left = left == "U" && udttable->hasUDT(t0) ? t0 : left;
+    right = right == "U" && udttable->hasUDT(t1) ? t1 : right;
+
     // should actually check types here
 
     // edge case lists
@@ -261,16 +266,24 @@ sailfishc::checkFunctionCall(const std::string& name,
         bool flag = false;
         for (int i = 0; i < inputs.size(); i++)
         {
+            auto left = symboltable->hasVariable(inputs[i])
+                            ? symboltable->getSymbolType(inputs[i])
+                            : inputs[i];
+            auto right = symboltable->hasVariable(fcInputs[i])
+                             ? symboltable->getSymbolType(fcInputs[i])
+                             : fcInputs[i];
+
             if (inputs[i].at(0) == '[')
                 inputs[i] = extractListType(inputs[i]);
 
             if (fcInputs[i].at(0) == '[')
                 fcInputs[i] = extractListType(fcInputs[i]);
 
-            if (inputs[i] != fcInputs[i])
+            if (left != right)
                 semanticerrorhandler->handle(std::make_unique<Error>(Error(
                     currentToken->col, currentToken->line,
-                    "Function input parameter type mismatch in function call " +
+                    "Function input parameter type mismatch in "
+                    "function call " +
                         name,
                     "Expected " + inputs[i] + " and received: ", fcInputs[i],
                     ".")));
@@ -740,46 +753,48 @@ sailfishc::parseFunctionInOut(const std::string& name)
     bool seenVoid = false;
     int argCount = 0;
     std::string outputBuffer = "";
-    recursiveParse(
-        true, TokenKind::RPAREN,
-        [&outputBuffer, &types, &seenVoid, &argCount, this]() {
-            ++argCount;
+    recursiveParse(true, TokenKind::RPAREN,
+                   [&outputBuffer, &types, &seenVoid, &argCount, this]() {
+                       ++argCount;
 
-            auto sands = this->parseVariable();
-            auto name = std::get<0>(sands);
-            auto type = std::get<1>(sands);
+                       auto sands = this->parseVariable();
+                       auto name = std::get<0>(sands);
+                       auto type = std::get<1>(sands);
 
-            if (type != "void")
-                if (outputBuffer != "")
-                    outputBuffer +=
-                        ", " + builtinTypesTranslator(type) + " " + name;
-                else
-                    outputBuffer += builtinTypesTranslator(type) + " " + name;
-            else if (!isUdt)
-            {
-                if (outputBuffer != "")
-                    outputBuffer += ", " + builtinTypesTranslator(type);
-                else
-                    outputBuffer += builtinTypesTranslator(type);
-            }
+                       auto outedType = builtinTypesTranslator(type);
+                       if (udttable->hasUDT(type))
+                           outedType = "struct " + outedType + "*";
 
-            if (type == "void")
-                seenVoid = true;
+                       if (type != "void")
+                           if (outputBuffer != "")
+                               outputBuffer += ", " + outedType + " " + name;
+                           else
+                               outputBuffer += outedType + " " + name;
+                       else if (!isUdt)
+                       {
+                           if (outputBuffer != "")
+                               outputBuffer += ", " + outedType;
+                           else
+                               outputBuffer += outedType;
+                       }
 
-            if (argCount > 1 && seenVoid)
-            {
-                semanticerrorhandler->handle(std::make_unique<Error>(
-                    Error(currentToken->col, currentToken->line,
-                          "Illegal multi-void definition of formals "
-                          "in function signature",
-                          "", "", "")));
-            }
+                       if (type == "void")
+                           seenVoid = true;
 
-            if (type != "void")
-                symboltable->addSymbol(std::get<0>(sands), type);
+                       if (argCount > 1 && seenVoid)
+                       {
+                           semanticerrorhandler->handle(std::make_unique<Error>(
+                               Error(currentToken->col, currentToken->line,
+                                     "Illegal multi-void definition of formals "
+                                     "in function signature",
+                                     "", "", "")));
+                       }
 
-            types += "_" + type;
-        });
+                       if (type != "void")
+                           symboltable->addSymbol(std::get<0>(sands), type);
+
+                       types += "_" + type;
+                   });
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
 
     // outputs
@@ -790,6 +805,9 @@ sailfishc::parseFunctionInOut(const std::string& name)
 
     if (udttable->hasUDT(output))
         output = "struct " + output + "*";
+    else
+        output = builtinTypesTranslator(output);
+
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
 
     if (isUdt)
@@ -1209,6 +1227,9 @@ sailfishc::parseE7(const std::string& T0)
             auto type = T0;
             if (!isPrimitive(T0))
                 type = this->symboltable->getSymbolType(T0);
+            if (type == "U")
+                type = T0;
+
             this->checkType(type, T1);
             return T1;
         },
@@ -1300,7 +1321,9 @@ sailfishc::parseE10(const std::string& T0)
     {
         auto type = parseMemberAccess(T0);
 
-        return parseE1(type);
+        type = parseE1(type);
+
+        return type;
     }
 
     return parseE11(T0);
@@ -1398,12 +1421,16 @@ sailfishc::parseAttributeAccess(const std::string& udtname,
     advanceAndCheckToken(TokenKind::DOT); // consume '.'
     auto attribute = parseIdentifier();
 
-    if (udtname != "own")
-        targetBuffer += udtname;
+    if (currentToken->kind == TokenKind::TRIPLE_DOT)
+        attributeAccessName = attribute;
     else
-        targetBuffer += "this";
-
-    targetBuffer += "->" + builtinTypesTranslator(attribute);
+    {
+        if (udtname != "own")
+            targetBuffer += udtname;
+        else
+            targetBuffer += "this";
+        targetBuffer += "->" + builtinTypesTranslator(attribute);
+    }
 
     // check if type exists
     if (!st->hasVariable(attribute))
@@ -1479,10 +1506,24 @@ sailfishc::parseFunctionCall()
     });
 
     if (methodAccessName != "")
+    {
         if (nonVoidInputs == 0)
-            targetBuffer += methodAccessName;
+        {
+            if (attributeAccessName != "")
+                targetBuffer += "this->" + attributeAccessName;
+            else
+                targetBuffer += methodAccessName;
+        }
         else
-            targetBuffer += ", " + methodAccessName;
+        {
+            if (attributeAccessName != "")
+                targetBuffer += ", this->" + attributeAccessName;
+            else
+                targetBuffer += ',' + methodAccessName;
+        }
+    }
+
+    attributeAccessName = "";
 
     types += ")";
 
@@ -1650,8 +1691,14 @@ sailfishc::parsePrimary()
 
         if (methodAccessName == "" ||
             (methodAccessName != "" && type != "void"))
-            // if (!udttable->hasUDT(symboltable->getSymbolType(type)))
-            targetBuffer += builtinTypesTranslator(type);
+            if ((currentToken->kind != TokenKind::TRIPLE_DOT) &&
+                (currentToken->kind != TokenKind::DOT))
+            {
+                if (udttable->hasUDT(type))
+                    targetBuffer += "struct " + type + "*";
+                else
+                    targetBuffer += builtinTypesTranslator(type);
+            }
 
         return type;
     }
