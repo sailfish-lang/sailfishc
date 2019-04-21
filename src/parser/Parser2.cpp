@@ -745,13 +745,13 @@ Parser2::parseFunctionInOut(const std::string& name)
                     outputBuffer +=
                         ", " + builtinTypesTranslator(type) + " " + name;
                 else
-                    outputBuffer += type + " " + name;
+                    outputBuffer += builtinTypesTranslator(type) + " " + name;
             else if (!isUdt)
             {
                 if (outputBuffer != "")
                     outputBuffer += ", " + builtinTypesTranslator(type);
                 else
-                    outputBuffer += type;
+                    outputBuffer += builtinTypesTranslator(type);
             }
 
             if (type == "void")
@@ -776,7 +776,11 @@ Parser2::parseFunctionInOut(const std::string& name)
     // outputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
     auto output = parseType();
+
     types += ")" + output;
+
+    if (udttable->hasUDT(output))
+        output = "struct " + output + "*";
     advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
 
     if (isUdt)
@@ -1519,6 +1523,7 @@ std::string
 Parser2::parseUDTDec()
 {
     auto udtName = parseIdentifier();
+
     targetBuffer +=
         "(struct " + udtName + "*)malloc(sizeof(struct " + udtName + "));\n";
 
@@ -1539,8 +1544,17 @@ Parser2::parseUDTDec()
 
             advanceAndCheckToken(TokenKind::COLON); // consume ':'
 
+            std::string temp = decName;
+            if (currentToken->value.at(0) == '[')
+            {
+                decName = decName + "->" + attributeName;
+                decType = st->getSymbolType(attributeName);
+            }
+
             // capture value
             auto type = parsePrimary();
+
+            decName = temp;
 
             if (attributes.size() != 1)
                 this->targetBuffer += ";\n";
@@ -1571,7 +1585,6 @@ Parser2::parseUDTDec()
             "Expected " + std::to_string(st->getSymbols().size()) +
                 " keys and received ",
             std::to_string(st->getSymbols().size() - attributes.size()), ".")));
-
     return udtName;
 }
 
@@ -1637,8 +1650,8 @@ Parser2::parsePrimary()
 
         if (methodAccessName == "" ||
             (methodAccessName != "" && type != "void"))
-            if (!udttable->hasUDT(symboltable->getSymbolType(type)))
-                targetBuffer += builtinTypesTranslator(type);
+            // if (!udttable->hasUDT(symboltable->getSymbolType(type)))
+            targetBuffer += builtinTypesTranslator(type);
 
         return type;
     }
@@ -1833,7 +1846,7 @@ Parser2::parseList()
     advanceAndCheckToken(TokenKind::LIST); // eat list
     auto listVals = determineTypes(parseListValues(v));
 
-    std::string type = "none";
+    std::string type = decType;
 
     std::deque<std::string> vals;
     if (listVals.size() != 0)

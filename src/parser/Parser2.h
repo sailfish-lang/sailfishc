@@ -38,6 +38,7 @@ class Parser2
     bool isUdt;
     bool inGrouping = false;
     std::string decName = "";
+    std::string decType = "";
     int currentTabs = 0;
     std::string targetBuffer = "";
     std::string methodAccessName = "";

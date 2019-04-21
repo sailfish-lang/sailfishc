@@ -3,7 +3,7 @@ Uat {
     int size
 }
 
-Ufn {
+Ufn{
     (fun printFoo_(int i)(void){
         Tree(
             (| i != own.size | { 
