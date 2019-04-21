@@ -4,19 +4,19 @@ Uat {
 }
 
 Ufn{
-    (fun printFoo_(int i)(void){
+    (fun display_(int i)(void){
         Tree(
             (| i != own.size | { 
                 printInt(getAtIndexInt(own.list, i))
                 ++i
-                own...printFoo_(i)
+                own...display_(i)
             })
         )
     })
 
-    (fun printFoo(void)(void){
+    (fun display(void)(void){
         printStr("List Contents:")
-        own...printFoo_(0)
+        own...display_(0)
     })
 
     # rather inefficient because we malloc every time
@@ -25,6 +25,11 @@ Ufn{
        own.list = appendListInt(own.list, is, own.size, 1)
        ++own.size
     })
+
+    (fun peek_front(void)(int){
+      return getAtIndexInt(own.list, 0)
+    })
+
 
     (fun removeByIndex(int i)(void){
         Tree (

@@ -128,7 +128,6 @@ class sailfishc
                const G& g)
     {
         advanceAndCheckToken(tk); // consume token
-        output << " " + symbol + " ";
         targetBuffer += " " + symbol + " ";
         auto type = parseE0();
 

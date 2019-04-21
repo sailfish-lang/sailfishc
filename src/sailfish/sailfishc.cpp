@@ -273,11 +273,11 @@ sailfishc::checkFunctionCall(const std::string& name,
                              ? symboltable->getSymbolType(fcInputs[i])
                              : fcInputs[i];
 
-            if (inputs[i].at(0) == '[')
-                inputs[i] = extractListType(inputs[i]);
+            if (left.at(0) == '[')
+                left = extractListType(left);
 
-            if (fcInputs[i].at(0) == '[')
-                fcInputs[i] = extractListType(fcInputs[i]);
+            if (right.at(0) == '[')
+                right = extractListType(right);
 
             if (left != right)
                 semanticerrorhandler->handle(std::make_unique<Error>(Error(
@@ -817,6 +817,7 @@ sailfishc::parseFunctionInOut(const std::string& name)
         else
             outputBuffer = "struct " + extractUDTName(filename) + "* this";
     }
+
     outputBuffer = output + "\n" + name + "(" + outputBuffer + ")\n";
 
     targetBuffer += outputBuffer;
@@ -873,6 +874,8 @@ sailfishc::parseBlock()
                 type = std::get<0>(a);
                 if (symboltable->hasVariable(type))
                     type = symboltable->getSymbolType(type);
+                if (type == "U" && udttable->hasUDT(std::get<0>(a)))
+                    type = std::get<0>(a);
                 hasSeenReturn = true;
             }
         }

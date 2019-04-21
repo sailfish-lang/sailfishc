@@ -43,7 +43,7 @@ Ufn{
        )
    })
 
-    (fun inorderTraversal(void)(void) {
+   (fun inorderTraversal(void)(void) {
         Tree (
             # left 
             ( | own...hasLeft(void) | { 
