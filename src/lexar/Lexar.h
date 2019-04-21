@@ -1,6 +1,9 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * Lexar encapsulates the logic for retreiving tokens one by one from a given
+ * source code text file.
  */
 #pragma once
 #include "Token.h"

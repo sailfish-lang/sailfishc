@@ -1,7 +1,7 @@
-#include "Parser.h"
+#include "sailfishc.h"
 
 std::string
-Parser::getTabs()
+sailfishc::getTabs()
 {
     std::string s = "";
     for (int i = 0; i < currentTabs; i++)
@@ -45,10 +45,10 @@ parseFile(const std::string& filename)
 {
     try
     {
-        Parser* p = new Parser(filename);
-        p->parse();
-        return std::make_tuple(std::move(p->getUDTTable()), p->getIsUDTFlag(),
-                               p->getTargetBuffer());
+        sailfishc* sfc = new sailfishc(filename);
+        sfc->parse();
+        return std::make_tuple(std::move(sfc->getUDTTable()),
+                               sfc->getIsUDTFlag(), sfc->getTargetBuffer());
     }
     catch (const std::string msg)
     {
@@ -79,7 +79,7 @@ extractListType(const std::string& s)
 }
 
 void
-Parser::advanceAndCheckToken(const TokenKind& k)
+sailfishc::advanceAndCheckToken(const TokenKind& k)
 {
     // first check value and kind
     if (currentToken->kind != k)
@@ -93,7 +93,7 @@ Parser::advanceAndCheckToken(const TokenKind& k)
 }
 
 void
-Parser::advanceToken()
+sailfishc::advanceToken()
 {
     currentToken = lexar->getNextToken();
 
@@ -118,7 +118,7 @@ Parser::advanceToken()
 
 // -------- Semantic Analysis Helper Code --------- //
 void
-Parser::checkType(const std::string& t0, const std::string& t1)
+sailfishc::checkType(const std::string& t0, const std::string& t1)
 {
     // convert left and right to type of var if they are vars
     auto left =
@@ -171,7 +171,7 @@ isPrimitive(const std::string& s)
 }
 
 void
-Parser::checkUnique(const std::string& s)
+sailfishc::checkUnique(const std::string& s)
 {
     if (symboltable->hasVariable(s))
         semanticerrorhandler->handle(std::make_unique<Error>(Error(
@@ -180,7 +180,7 @@ Parser::checkUnique(const std::string& s)
 }
 
 void
-Parser::checkExists(const std::string& s)
+sailfishc::checkExists(const std::string& s)
 {
 
     auto type = s;
@@ -205,7 +205,7 @@ Parser::checkExists(const std::string& s)
 }
 
 void
-Parser::checkUDTExists(const std::string& s)
+sailfishc::checkUDTExists(const std::string& s)
 {
     auto udtname = s;
     if (udtname == "own")
@@ -227,8 +227,8 @@ Parser::checkUDTExists(const std::string& s)
 }
 
 std::string
-Parser::checkFunctionCall(const std::string& name,
-                          std::shared_ptr<SymbolTable> st)
+sailfishc::checkFunctionCall(const std::string& name,
+                             std::shared_ptr<SymbolTable> st)
 {
     auto fcInputs = parseFunctionInputTypes(parseFunctionCall());
 
@@ -281,13 +281,13 @@ Parser::checkFunctionCall(const std::string& name,
 }
 
 std::string
-Parser::parseFunctionReturnType(const std::string& s)
+sailfishc::parseFunctionReturnType(const std::string& s)
 {
     return s.substr(s.find_last_of(")") + 1, s.size());
 }
 
 std::vector<std::string>
-Parser::parseFunctionInputTypes(const std::string& s)
+sailfishc::parseFunctionInputTypes(const std::string& s)
 {
     std::vector<std::string> inputs;
 
@@ -331,7 +331,7 @@ parseListValues(const std::string& s)
 }
 
 // constructor
-Parser::Parser(const std::string& file)
+sailfishc::sailfishc(const std::string& file)
 {
     filename = file;
     lexar = std::make_unique<Lexar>(file, true);
@@ -346,7 +346,7 @@ Parser::Parser(const std::string& file)
 
 // public interface method
 void
-Parser::parse()
+sailfishc::parse()
 {
     parseProgram();
 }
@@ -356,7 +356,7 @@ Parser::parse()
  * Program := Source
  */
 void
-Parser::parseProgram()
+sailfishc::parseProgram()
 {
     parseSource();
 }
@@ -380,7 +380,7 @@ containsUDT(const std::string& filename)
  * Source := Import Source | SourcePart
  */
 void
-Parser::parseSource()
+sailfishc::parseSource()
 {
     if (containsUDT(filename))
         isUdt = true;
@@ -406,7 +406,7 @@ Parser::parseSource()
  *      - import is a udt
  */
 void
-Parser::parseImportInfo()
+sailfishc::parseImportInfo()
 {
     advanceAndCheckToken(TokenKind::IMPORT); // eat 'Import'
     auto name = parseUDName();
@@ -468,7 +468,7 @@ Parser::parseImportInfo()
  * UDName := Identifier
  */
 std::string
-Parser::parseUDName()
+sailfishc::parseUDName()
 {
     return parseIdentifier();
 }
@@ -477,7 +477,7 @@ Parser::parseUDName()
  * Location := String
  */
 std::string
-Parser::parseLocation()
+sailfishc::parseLocation()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::STRING); // true eat string
@@ -488,7 +488,7 @@ Parser::parseLocation()
  * SourcePart := UDT | Script
  */
 void
-Parser::parseSourcePart()
+sailfishc::parseSourcePart()
 {
     switch (currentToken->kind)
     {
@@ -519,7 +519,7 @@ Parser::parseSourcePart()
  * UDT := UserDefinedType
  */
 void
-Parser::parseUDT()
+sailfishc::parseUDT()
 {
     parseUserDefinedType();
 }
@@ -528,7 +528,7 @@ Parser::parseUDT()
  * UserDefinedType := Attributes Methods
  */
 void
-Parser::parseUserDefinedType()
+sailfishc::parseUserDefinedType()
 {
     auto udtname = extractUDTName(filename);
 
@@ -558,7 +558,7 @@ Parser::parseUserDefinedType()
  *      - unique attribute
  */
 void
-Parser::parseAttributes(std::shared_ptr<SymbolTable> st)
+sailfishc::parseAttributes(std::shared_ptr<SymbolTable> st)
 {
     advanceAndCheckToken(TokenKind::UAT);     // consume uat
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
@@ -632,7 +632,7 @@ Parser::parseAttributes(std::shared_ptr<SymbolTable> st)
  * Methods := 'Ufn' [FunctionDefinition]*
  */
 void
-Parser::parseMethods(std::shared_ptr<SymbolTable> st)
+sailfishc::parseMethods(std::shared_ptr<SymbolTable> st)
 {
     advanceAndCheckToken(TokenKind::UFN);     // consume ufn
     advanceAndCheckToken(TokenKind::LCURLEY); // consume l curley
@@ -654,8 +654,11 @@ Parser::parseMethods(std::shared_ptr<SymbolTable> st)
     advanceAndCheckToken(TokenKind::RCURLEY); // consume r curley
 }
 
+/**
+ * Script := FunctionDefinition Script | Start
+ */
 void
-Parser::parseScript()
+sailfishc::parseScript()
 {
     recursiveParse(true, TokenKind::START,
                    [this]() { this->parseFunctionDefinition(); });
@@ -669,7 +672,7 @@ Parser::parseScript()
  *      - function is a unique declaration
  */
 void
-Parser::parseFunctionDefinition()
+sailfishc::parseFunctionDefinition()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
     advanceAndCheckToken(TokenKind::FUN);    // consume fun
@@ -690,7 +693,7 @@ Parser::parseFunctionDefinition()
  *  - actual return type matches expected return type
  */
 void
-Parser::parseFunctionInfo(const std::string& name)
+sailfishc::parseFunctionInfo(const std::string& name)
 {
 
     auto type = parseFunctionInOut(name);
@@ -728,7 +731,7 @@ Parser::parseFunctionInfo(const std::string& name)
  * is first declaration as part of formals
  */
 std::string
-Parser::parseFunctionInOut(const std::string& name)
+sailfishc::parseFunctionInOut(const std::string& name)
 {
     // inputs
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
@@ -807,7 +810,7 @@ Parser::parseFunctionInOut(const std::string& name)
  * Start := 'start' Block
  */
 void
-Parser::parseStart()
+sailfishc::parseStart()
 {
     advanceAndCheckToken(TokenKind::START);
 
@@ -829,7 +832,7 @@ Parser::parseStart()
  * Notes: defaults to void return type
  */
 std::string
-Parser::parseBlock()
+sailfishc::parseBlock()
 {
     ++currentTabs;
     std::string type = "void";
@@ -865,7 +868,7 @@ Parser::parseBlock()
  * Statement := Tree | Return | Declaration | E0
  */
 std::tuple<std::string, std::string>
-Parser::parseStatement()
+sailfishc::parseStatement()
 {
     targetBuffer += "\n" + getTabs();
     switch (currentToken->kind)
@@ -898,7 +901,7 @@ Parser::parseStatement()
  * Tree := 'tree' (' Branch* ')'
  */
 void
-Parser::parseTree()
+sailfishc::parseTree()
 {
     advanceAndCheckToken(TokenKind::TREE);   // eat 'tree'
     advanceAndCheckToken(TokenKind::LPAREN); // eat '('
@@ -923,7 +926,7 @@ Parser::parseTree()
  * Branch := '(' Grouping Block')'
  */
 void
-Parser::parseBranch()
+sailfishc::parseBranch()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // eat '('
 
@@ -947,7 +950,7 @@ Parser::parseBranch()
  *  - resulting type is a bool
  */
 void
-Parser::parseGrouping()
+sailfishc::parseGrouping()
 {
     inGrouping = true;
     targetBuffer += " (";
@@ -967,7 +970,7 @@ Parser::parseGrouping()
  * Return := 'return' T
  */
 std::string
-Parser::parseReturn()
+sailfishc::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
     targetBuffer += "return ";
@@ -982,7 +985,7 @@ Parser::parseReturn()
  *  - check that the declared type and the init type are the same
  */
 std::string
-Parser::parseDeclaration()
+sailfishc::parseDeclaration()
 {
     advanceAndCheckToken(TokenKind::DEC); // consume 'dec'
 
@@ -1028,7 +1031,7 @@ Parser::parseDeclaration()
  * E0 := T0 E1
  */
 std::string
-Parser::parseE0()
+sailfishc::parseE0()
 {
     auto type = parseT();
     return parseE1(type);
@@ -1041,7 +1044,7 @@ Parser::parseE0()
  *  - both are int
  */
 std::string
-Parser::parseE1(const std::string& T0)
+sailfishc::parseE1(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1064,7 +1067,7 @@ Parser::parseE1(const std::string& T0)
  *  - both are num (int or flt) and the same type
  */
 std::string
-Parser::parseE2(const std::string& T0)
+sailfishc::parseE2(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1090,7 +1093,7 @@ Parser::parseE2(const std::string& T0)
  *  - both are num (int or flt) and the same type
  */
 std::string
-Parser::parseE3(const std::string& T0)
+sailfishc::parseE3(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1115,7 +1118,7 @@ Parser::parseE3(const std::string& T0)
  *  - both are num (int or flt) and the same type
  */
 std::string
-Parser::parseE4(const std::string& T0)
+sailfishc::parseE4(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1142,7 +1145,7 @@ Parser::parseE4(const std::string& T0)
  *  - both are the same type
  */
 std::string
-Parser::parseE5(const std::string& T0)
+sailfishc::parseE5(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1165,7 +1168,7 @@ Parser::parseE5(const std::string& T0)
  *  - both are bool
  */
 std::string
-Parser::parseE6(const std::string& T0)
+sailfishc::parseE6(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1191,7 +1194,7 @@ Parser::parseE6(const std::string& T0)
  *  - the lhs matches the rhs
  */
 std::string
-Parser::parseE7(const std::string& T0)
+sailfishc::parseE7(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1220,7 +1223,7 @@ Parser::parseE7(const std::string& T0)
  *  - check that ! is bool and ++/-- are num
  */
 std::string
-Parser::parseE8(const std::string& T0)
+sailfishc::parseE8(const std::string& T0)
 {
 
     if (currentToken->kind == TokenKind::NEGATION)
@@ -1266,7 +1269,7 @@ Parser::parseE8(const std::string& T0)
  *  - both are num and the same type
  */
 std::string
-Parser::parseE9(const std::string& T0)
+sailfishc::parseE9(const std::string& T0)
 {
     return parseExpr(
         T0,
@@ -1290,7 +1293,7 @@ Parser::parseE9(const std::string& T0)
  * E10 := MemberAccess E0 | E11
  */
 std::string
-Parser::parseE10(const std::string& T0)
+sailfishc::parseE10(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::DOT ||
         currentToken->kind == TokenKind::TRIPLE_DOT)
@@ -1307,7 +1310,7 @@ Parser::parseE10(const std::string& T0)
  * E11 := New | E12
  */
 std::string
-Parser::parseE11(const std::string& T0)
+sailfishc::parseE11(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::NEW)
     {
@@ -1322,7 +1325,7 @@ Parser::parseE11(const std::string& T0)
  * E12 := FunctionCall | E13
  */
 std::string
-Parser::parseE12(const std::string& T0)
+sailfishc::parseE12(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::LPAREN)
     {
@@ -1340,23 +1343,14 @@ Parser::parseE12(const std::string& T0)
         return output;
     }
 
-    return parseE13(T0);
-}
-
-/**
- * E13 := T13 | ε
- */
-std::string
-Parser::parseE13(const std::string& T11)
-{
-    return T11;
+    return T0;
 }
 
 /**
  * MemberAccess := AttributeAccess | MethodAccess
  */
 std::string
-Parser::parseMemberAccess(const std::string& T0)
+sailfishc::parseMemberAccess(const std::string& T0)
 {
     auto type = T0;
     if (type == "own")
@@ -1392,8 +1386,8 @@ Parser::parseMemberAccess(const std::string& T0)
  * AttributeAccess := '.' Identifier
  */
 std::string
-Parser::parseAttributeAccess(const std::string& udtname,
-                             const std::string& udtType)
+sailfishc::parseAttributeAccess(const std::string& udtname,
+                                const std::string& udtType)
 {
 
     checkExists(udtType);
@@ -1426,8 +1420,8 @@ Parser::parseAttributeAccess(const std::string& udtname,
  * MethodAccess := '...' Identifier FunctionCall
  */
 std::string
-Parser::parseMethodAccess(const std::string& udtname,
-                          const std::string& udtType)
+sailfishc::parseMethodAccess(const std::string& udtname,
+                             const std::string& udtType)
 {
     methodAccessName = udtname;
 
@@ -1463,7 +1457,7 @@ Parser::parseMethodAccess(const std::string& udtname,
  * FunctionCall := '(' [Identifier [',' Identifier]*] ')'
  */
 std::string
-Parser::parseFunctionCall()
+sailfishc::parseFunctionCall()
 {
     advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
 
@@ -1501,7 +1495,7 @@ Parser::parseFunctionCall()
  * New := UDTDec
  */
 std::string
-Parser::parseNew()
+sailfishc::parseNew()
 {
     advanceAndCheckToken(TokenKind::NEW); // consume new
     switch (currentToken->kind)
@@ -1526,7 +1520,7 @@ Parser::parseNew()
  * UDTDecItem := Identifier ':' Primary
  */
 std::string
-Parser::parseUDTDec()
+sailfishc::parseUDTDec()
 {
     auto udtName = parseIdentifier();
 
@@ -1598,7 +1592,7 @@ Parser::parseUDTDec()
  * T := Primary | '(' E0 ')'
  */
 std::string
-Parser::parseT()
+sailfishc::parseT()
 {
     if (currentToken->kind == TokenKind::LPAREN)
     {
@@ -1625,7 +1619,7 @@ Parser::parseT()
  * Primary := Bool | Integer |  String | Identifier
  */
 std::string
-Parser::parsePrimary()
+sailfishc::parsePrimary()
 {
     switch (currentToken->kind)
     {
@@ -1678,7 +1672,7 @@ Parser::parsePrimary()
  * Type := Identifier
  */
 std::string
-Parser::parseType()
+sailfishc::parseType()
 {
     return currentToken->kind == TokenKind::LISTTYPE ? parseListType()
                                                      : parseIdentifier();
@@ -1688,7 +1682,7 @@ Parser::parseType()
  * Variable := Type Identifier
  */
 std::tuple<std::string, std::string>
-Parser::parseVariable()
+sailfishc::parseVariable()
 {
     auto type = parseType();
 
@@ -1704,7 +1698,7 @@ Parser::parseVariable()
  * Number := Integer | Float
  */
 std::string
-Parser::parseNumber()
+sailfishc::parseNumber()
 {
     auto v = currentToken->value;
     auto k = currentToken->kind;
@@ -1725,7 +1719,7 @@ Parser::parseNumber()
  * Identifier := lexvalue
  */
 std::string
-Parser::parseIdentifier()
+sailfishc::parseIdentifier()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::IDENTIFIER); // eat identifier
@@ -1736,7 +1730,7 @@ Parser::parseIdentifier()
  * Bool := lexvalue
  */
 std::string
-Parser::parseBoolean()
+sailfishc::parseBoolean()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::BOOL); // eat identifier
@@ -1749,7 +1743,7 @@ Parser::parseBoolean()
  * String := lexvalue
  */
 std::string
-Parser::parseString()
+sailfishc::parseString()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::STRING); // true eat string
@@ -1761,7 +1755,7 @@ Parser::parseString()
  * Own Accessor:= lexvalue
  */
 std::string
-Parser::parseOwnAccessor()
+sailfishc::parseOwnAccessor()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::OWN_ACCESSOR); // eat own accessor
@@ -1779,7 +1773,7 @@ Parser::parseOwnAccessor()
  * Empty:= lexvalue
  */
 std::string
-Parser::parseEmpty()
+sailfishc::parseEmpty()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::EMPTY); // eat own accessor
@@ -1793,7 +1787,7 @@ Parser::parseEmpty()
  * ListType := lexvalue
  */
 std::string
-Parser::parseListType()
+sailfishc::parseListType()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::LISTTYPE); // eat list type
@@ -1818,7 +1812,7 @@ determineTypes(const std::string& s)
 }
 
 std::string
-Parser::tokenToType(const TokenKind& tk, const std::string& val)
+sailfishc::tokenToType(const TokenKind& tk, const std::string& val)
 {
     switch (tk)
     {
@@ -1846,7 +1840,7 @@ Parser::tokenToType(const TokenKind& tk, const std::string& val)
  * List := lexvalue
  */
 std::string
-Parser::parseList()
+sailfishc::parseList()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::LIST); // eat list
@@ -1891,7 +1885,7 @@ Parser::parseList()
 }
 
 void
-Parser::transpile()
+sailfishc::transpile()
 {
     output.close();
 }

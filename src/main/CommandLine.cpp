@@ -53,14 +53,14 @@ fullCompilation(const std::string& filename)
 
         std::cout << "Compiling " << blue << filename << normal << ".\n";
 
-        Parser* p = new Parser(filename);
-        p->parse();
+        sailfishc* sfc = new sailfishc(filename);
+        sfc->parse();
 
         std::cout << green << "Successfully compiled: " << normal << blue
                   << filename << "\n"
                   << normal;
 
-        p->transpile();
+        sfc->transpile();
 
         std::cout << green << "Successfully wrote compiled code to: " << normal
                   << blue << " out.c\n"

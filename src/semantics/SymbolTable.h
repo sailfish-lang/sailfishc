@@ -1,6 +1,8 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * SymbolTable maps variable names to types.
  */
 #pragma once
 #include "SymbolMetaData.h"

@@ -4,6 +4,8 @@
  *
  * Base structure and credit:
  * https://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal
+ *
+ * Simple utility class for displaying formatted messages.
  */
 #pragma once
 #include <ostream>

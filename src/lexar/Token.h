@@ -1,6 +1,8 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * Tokens are objects with a kind and a value.
  */
 #pragma once
 #include <iostream>

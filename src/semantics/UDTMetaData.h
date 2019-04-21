@@ -1,6 +1,9 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * UDTMetaData holds the attribute and method symbol table for a udt entry in
+ * the udt table.
  */
 #pragma once
 #include "SymbolTable.h"

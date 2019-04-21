@@ -1,6 +1,8 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * Parser handles errors related to lexing and parsing.
  */
 #pragma once
 #include "Error.h"

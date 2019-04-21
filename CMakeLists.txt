@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 ADD_LIBRARY(SailfishcLibs 
     ./src/lexar/Lexar.cpp
     ./src/lexar/Token.cpp
-    ./src/parser/Parser.cpp
+    ./src/sailfish/sailfishc.cpp
     ./src/errorhandler/ParserErrorHandler.cpp
     ./src/errorhandler/SemanticAnalyzerErrorHandler.cpp 
     ./src/main/CommandLine.cpp

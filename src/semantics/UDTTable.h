@@ -1,6 +1,8 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * UDTTable maps udt names to related data.
  */
 #pragma once
 #include "SymbolTable.h"

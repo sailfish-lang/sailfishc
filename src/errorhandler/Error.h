@@ -1,6 +1,8 @@
 /*
  * Robert Durst 2019
  * Sailfish Programming Language
+ *
+ * Simple utility class for formatting and displaying various types of errors.
  */
 #pragma once
 #include "../common/display.h"
