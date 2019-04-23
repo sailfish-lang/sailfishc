@@ -30,6 +30,10 @@ Ufn{
       return getAtIndexInt(own.list, 0)
     })
 
+    (fun peek(int i)(int){
+      return getAtIndexInt(own.list, i)
+    })
+
 
     (fun removeByIndex(int i)(void){
         Tree (

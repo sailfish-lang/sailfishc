@@ -1,6 +1,9 @@
 import intListHandler : "../examples/intListHandler.fish"
 
-(fun merge(intListHandler a, intListHandler b, intListHandler c) (intListHandler) {
+(fun merge(intListHandler a, intListHandler b) (intListHandler) {
+    # create another empty list for merging
+    dec intListHandler c = new intListHandler { list: [], size: 0}
+    
     Tree (
         ( | a.size == 0 | {
             c.list = appendListInt(c.list, b.list, c.size, b.size)
@@ -30,21 +33,49 @@ import intListHandler : "../examples/intListHandler.fish"
     return merge(a,b,c)
 })
 
-start {
-    dec intListHandler a = new intListHandler { list: [1, 3, 5], size: 3}
-    dec intListHandler b = new intListHandler { list: [2, 4, 7], size: 3}
-    dec intListHandler c = new intListHandler { list: [], size: 0}
+(fun sublist(intListHandler a, intListHandler b, int front, int back)(intListHandler) {
+    Tree (
+        ( | front == back | { 
+            dec int j = a...peek(front)
+            b...push(j)
+            return b
+        } )
+        ( | true | {
+            dec int j = a...peek(front)
+            b...push(j)
+            sublist(a, b, front+1, back)
+        })
+    )
 
-    dec intListHandler d = new intListHandler { list: [7, 11, 12], size: 3}
-    dec intListHandler e = new intListHandler { list: [2, 4, 13, 14, 15], size: 5}
+    return b
+})
+
+(fun mergesort(intListHandler a, int front, int end)(intListHandler) {
+    Tree (
+        ( | (front == end) or ((end - front) == 1) | {
+            dec int i = a...peek(front)
+            dec intListHandler b = new intListHandler { list: [i], size: 1}
+            return b
+        })
+
+    # find middle
+    dec int middle = (end - front) / 2
+
+    # generate two empty lists for recursively dividing
     dec intListHandler f = new intListHandler { list: [], size: 0}
+    dec intListHandler b = new intListHandler { list: [], size: 0}
 
-    dec intListHandler g = new intListHandler { list: [], size: 0}
+    f = sublist(a, f, front, middle-1)
+    b = sublist(a, b, middle, end-1)
 
-    c = merge(a,b,c)
-    f = merge(d,e,f)
-    g = merge(c,f,g)
-    
+    return merge(
+        mergesort(f, 0, f.size),
+        mergesort(b, 0, b.size)
+    )
+})
 
-    g...display(void)
+start {
+    dec intListHandler a = new intListHandler { list: [5, 10, 12, 3, 4, 2, 11, 1], size: 8}
+    a = mergesort(a, 0, a.size)
+    a...display(void)
 }
