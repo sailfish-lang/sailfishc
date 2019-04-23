@@ -4,7 +4,7 @@
  */
 #include "CommandLine.h"
 
-const static std::string VERSION = "sailfishc 0.2.0 (marlin)";
+const static std::string VERSION = "sailfishc 0.2.1 (marlin++)";
 
 void
 helpMessage()
