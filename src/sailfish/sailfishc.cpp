@@ -1450,10 +1450,14 @@ sailfishc::parseAttributeAccess(const std::string& udtname,
         attributeAccessStack.push_back(std::make_tuple(udtname, attribute));
     else
     {
-        if (udtname != "own")
-            targetBuffer += udtname;
-        else
-            targetBuffer += "this";
+        if (attributeAccessStack.size() <= 1 && methodAccessStack.size() == 0 &&
+            !udttable->hasUDT(udtname)) // bandaid solution
+        {
+            if (udtname != "own")
+                targetBuffer += udtname;
+            else
+                targetBuffer += "this";
+        }
         targetBuffer += "->" + builtinTypesTranslator(attribute);
     }
 

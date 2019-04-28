@@ -5,5 +5,5 @@ start {
     dec Foo f = new Foo {i: 10, s: empty}
     dec Foo b = new Foo {i: 11, s: f}
 
-    f = b.s...self(void)
+    f.i = b.s.i
 }
