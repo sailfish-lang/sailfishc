@@ -36,6 +36,9 @@ builtinTypesTranslator(std::string type)
     if (type == "[bool]")
         return "int*";
 
+    if (type == "own")
+        return "this";
+
     else
         return type;
 }
@@ -130,6 +133,12 @@ sailfishc::checkType(const std::string& t0, const std::string& t1)
     // by symbol table
     left = left == "U" && udttable->hasUDT(t0) ? t0 : left;
     right = right == "U" && udttable->hasUDT(t1) ? t1 : right;
+
+    // adjust for own
+    if (left == "own")
+        left = extractUDTName(filename);
+    if (right == "own")
+        right = extractUDTName(filename);
 
     // should actually check types here
 
@@ -1438,7 +1447,7 @@ sailfishc::parseAttributeAccess(const std::string& udtname,
     auto attribute = parseIdentifier();
 
     if (currentToken->kind == TokenKind::TRIPLE_DOT)
-        attributeAccessStack.push_back(attribute);
+        attributeAccessStack.push_back(std::make_tuple(udtname, attribute));
     else
     {
         if (udtname != "own")
@@ -1466,11 +1475,6 @@ std::string
 sailfishc::parseMethodAccess(const std::string& udtname,
                              const std::string& udtType)
 {
-    if (udtname == "own")
-        methodAccessStack.push_back("this");
-    else
-        methodAccessStack.push_back(udtname);
-
     checkExists(udtType);
     checkUDTExists(udtType);
 
@@ -1480,6 +1484,11 @@ sailfishc::parseMethodAccess(const std::string& udtname,
     advanceAndCheckToken(TokenKind::TRIPLE_DOT); // consume '...'
 
     auto methodName = parseIdentifier();
+
+    if (udtname == "own")
+        methodAccessStack.push_back(std::make_tuple("this", methodName));
+    else
+        methodAccessStack.push_back(std::make_tuple(udtname, methodName));
 
     targetBuffer += methodName + "(";
 
@@ -1525,28 +1534,37 @@ sailfishc::parseFunctionCall()
     {
         if (nonVoidInputs == 0)
         {
-            if (attributeAccessStack.size() != 0)
+            if (attributeAccessStack.size() != 0 && isUdt)
             {
-                targetBuffer += "this->" + attributeAccessStack.at(
-                                               attributeAccessStack.size() - 1);
+                targetBuffer +=
+                    "this->" + std::get<1>(attributeAccessStack.at(
+                                   attributeAccessStack.size() - 1));
+                attributeAccessStack.pop_back();
+            }
+            else if (attributeAccessStack.size() != 0 && !isUdt)
+            {
+                targetBuffer += std::get<0>(attributeAccessStack.at(
+                                    attributeAccessStack.size() - 1)) +
+                                "->" +
+                                std::get<1>(attributeAccessStack.at(
+                                    attributeAccessStack.size() - 1));
                 attributeAccessStack.pop_back();
             }
             else
-                targetBuffer +=
-                    methodAccessStack.at(methodAccessStack.size() - 1);
+                targetBuffer += std::get<1>(
+                    methodAccessStack.at(methodAccessStack.size() - 1));
         }
         else
         {
             if (attributeAccessStack.size() != 0)
             {
-                targetBuffer +=
-                    ", this->" +
-                    attributeAccessStack.at(attributeAccessStack.size() - 1);
+                targetBuffer += ", this->" + std::get<1>(methodAccessStack.at(
+                                                 methodAccessStack.size() - 1));
                 attributeAccessStack.pop_back();
             }
             else
-                targetBuffer +=
-                    ',' + methodAccessStack.at(methodAccessStack.size() - 1);
+                targetBuffer += ',' + std::get<1>(methodAccessStack.at(
+                                          methodAccessStack.size() - 1));
             ;
         }
     }

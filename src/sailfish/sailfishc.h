@@ -79,8 +79,8 @@ class sailfishc
     std::string decType = "";
     int currentTabs = 0;
     std::string targetBuffer = "";
-    std::vector<std::string> methodAccessStack;
-    std::vector<std::string> attributeAccessStack;
+    std::vector<std::tuple<std::string, std::string>> methodAccessStack;
+    std::vector<std::tuple<std::string, std::string>> attributeAccessStack;
     bool shouldDisplayErrors;
 
     // ------- Transpiler -------- //
