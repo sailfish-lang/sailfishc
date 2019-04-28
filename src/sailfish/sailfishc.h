@@ -81,6 +81,7 @@ class sailfishc
     std::string targetBuffer = "";
     std::string methodAccessName = "";
     std::string attributeAccessName = "";
+    bool shouldDisplayErrors;
 
     // ------- Transpiler -------- //
     std::ofstream output;
@@ -224,7 +225,7 @@ class sailfishc
 
   public:
     void parse();
-    sailfishc(const std::string& file);
+    sailfishc(const std::string& file, bool shouldDisplayErrors);
 
     std::shared_ptr<SymbolTable>
     getSymbolTable()
@@ -251,4 +252,5 @@ class sailfishc
     }
 
     void transpile();
+    std::vector<std::shared_ptr<Error>> getErrors();
 };

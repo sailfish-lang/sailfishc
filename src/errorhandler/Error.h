@@ -60,4 +60,9 @@ class Error
                       << line << ":" << col << "]: " << msg << def << "\n\n\t"
                       << left << underline << middle << normal << right << "\n";
     }
+    std::string
+    getMsg()
+    {
+        return msg;
+    }
 };

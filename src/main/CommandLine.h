@@ -8,6 +8,7 @@
 #include "../common/display.h"
 #include "../lexar/Lexar.h"
 #include "../sailfish/sailfishc.h"
+#include <assert.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string>

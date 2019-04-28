@@ -53,7 +53,7 @@ fullCompilation(const std::string& filename)
 
         std::cout << "Compiling " << blue << filename << normal << ".\n";
 
-        sailfishc* sfc = new sailfishc(filename);
+        sailfishc* sfc = new sailfishc(filename, true);
         sfc->parse();
 
         std::cout << green << "Successfully compiled: " << normal << blue
@@ -101,6 +101,69 @@ handleCommandLine(int argc, char* const* argv)
         }
 
         return 0;
+    }
+    case 3:
+    {
+        if (std::string("--test").compare(argv[1]) == 0)
+        {
+            try
+            {
+                std::vector<std::string> expected = {
+                    "Mismatched types. Expected/LeftHand is: int.",
+                    "Mismatched types. Expected/LeftHand is: i.",
+                    "Mismatched types. Expected/LeftHand is: flt.",
+                    "Mismatched types. Expected/LeftHand is: int or flt.",
+                    "Mismatched types. Expected/LeftHand is: int.",
+                    "Mismatched types. Expected/LeftHand is: int or flt.",
+                    "Mismatched types. Expected/LeftHand is: int.",
+                    "Mismatched types. Expected/LeftHand is: int.",
+                    "Mismatched types. Expected/LeftHand is: int.",
+                    "Mismatched types. Expected/LeftHand is: int or flt.",
+                    "Mismatched types. Expected/LeftHand is: int or flt.",
+                    "Mismatched types. Expected/LeftHand is: bool.",
+                    "Mismatched types. Expected/LeftHand is: bool.",
+                    "Mismatched types. Expected/LeftHand is: int or flt.",
+                    "Mismatched types. Expected/LeftHand is: int or flt.",
+                    "Mismatched types. Expected/LeftHand is: bool.",
+                    "Mismatched types. Expected/LeftHand is: int.",
+                    "Unexpected redeclaration of f, originally defined as type "
+                    "flt.",
+                    "Missing keys in udt initialization for type: Foo",
+                    "Nonexistent member function.",
+                    "Mismatched types. Expected/LeftHand is: flt.",
+                    "Mismatched types. Expected/LeftHand is: int.",
+                    "Mismatched types. Expected/LeftHand is: flt.",
+                    "Nonexistent attribute.",
+                    "Mismatched types. Expected/LeftHand is: int.",
+                    "Function input parameter type mismatch in function call "
+                    "soFun",
+                    "Mismatched types. Expected/LeftHand is: flt.",
+                    "Mismatched list types. Expected is: [int].",
+                    "Mismatched types. Expected/LeftHand is: bool.",
+                };
+
+                sailfishc* sfc = new sailfishc(argv[2], false);
+                sfc->parse();
+                auto errors = sfc->getErrors();
+
+                int i = 0;
+                for (auto const& e : errors)
+                {
+                    // std::cout << e->getMsg() << " " << expected[i] <<
+                    // std::endl; assert(e->getMsg() == expected[i++]);
+                    std::cout << e->getMsg() << std::endl;
+                }
+            }
+            catch (const std::string msg)
+            {
+                std::cerr << msg;
+            }
+            catch (char const* msg)
+            {
+                std::cerr << msg;
+            }
+        }
+        break;
     }
 
     default:

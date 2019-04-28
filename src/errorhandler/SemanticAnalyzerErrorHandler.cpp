@@ -13,6 +13,11 @@ SemanticAnalyzerErrorHandler::handle(std::unique_ptr<Error> err)
     err->setFilename(filename);
 
     // throw an error since we stop at first error here
-    err->displayMessage();
-    // throw "";
+    if (shouldDisplay)
+        err->displayMessage();
+
+    std::shared_ptr<Error> e = std::move(err);
+
+    // capture
+    errors.push_back(e);
 }

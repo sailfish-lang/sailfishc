@@ -41,11 +41,11 @@ builtinTypesTranslator(std::string type)
 }
 
 UdtFlagAndBufer
-parseFile(const std::string& filename)
+parseFile(const std::string& filename, bool shouldDisplayErrors)
 {
     try
     {
-        sailfishc* sfc = new sailfishc(filename);
+        sailfishc* sfc = new sailfishc(filename, shouldDisplayErrors);
         sfc->parse();
         return std::make_tuple(std::move(sfc->getUDTTable()),
                                sfc->getIsUDTFlag(), sfc->getTargetBuffer());
@@ -239,10 +239,13 @@ sailfishc::checkFunctionCall(const std::string& name,
 
     // check if function exists
     if (!st->hasVariable(name))
+    {
         semanticerrorhandler->handle(std::make_unique<Error>(
             Error(currentToken->col, currentToken->line,
                   "Nonexistent member function.",
                   "Nonexistent member function named: ", name, ".")));
+        return "";
+    }
 
     // get method signature
     auto functionSig = st->getSymbolType(name);
@@ -250,17 +253,23 @@ sailfishc::checkFunctionCall(const std::string& name,
     auto output = parseFunctionReturnType(functionSig);
 
     if (fcInputs.size() > inputs.size())
+    {
         semanticerrorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line,
             "Too many inputs in function call " + name,
             "Expected " + std::to_string(inputs.size()) + " and received: ",
             std::to_string(fcInputs.size()), ".")));
+        return "";
+    }
     else if (fcInputs.size() < inputs.size())
+    {
         semanticerrorhandler->handle(std::make_unique<Error>(Error(
             currentToken->col, currentToken->line,
             "Too few inputs in function call " + name,
             "Expected " + std::to_string(inputs.size()) + " and received: ",
             std::to_string(fcInputs.size()), ".")));
+        return "";
+    }
     else
     {
         bool flag = false;
@@ -280,6 +289,7 @@ sailfishc::checkFunctionCall(const std::string& name,
                 right = extractListType(right);
 
             if (left != right)
+            {
                 semanticerrorhandler->handle(std::make_unique<Error>(Error(
                     currentToken->col, currentToken->line,
                     "Function input parameter type mismatch in "
@@ -287,6 +297,8 @@ sailfishc::checkFunctionCall(const std::string& name,
                         name,
                     "Expected " + inputs[i] + " and received: ", fcInputs[i],
                     ".")));
+                return "";
+            }
         }
     }
 
@@ -344,17 +356,18 @@ parseListValues(const std::string& s)
 }
 
 // constructor
-sailfishc::sailfishc(const std::string& file)
+sailfishc::sailfishc(const std::string& file, bool sde)
 {
     filename = file;
     lexar = std::make_unique<Lexar>(file, true);
     advanceToken();
     errorhandler = std::make_unique<ParserErrorHandler>(ParserErrorHandler());
     semanticerrorhandler = std::make_unique<SemanticAnalyzerErrorHandler>(
-        SemanticAnalyzerErrorHandler(file));
+        SemanticAnalyzerErrorHandler(file, shouldDisplayErrors));
     symboltable = std::make_shared<SymbolTable>(SymbolTable());
     udttable = std::make_unique<UDTTable>(UDTTable());
     isUdt = false;
+    shouldDisplayErrors = sde;
 }
 
 // public interface method
@@ -435,7 +448,7 @@ sailfishc::parseImportInfo()
     std::cout << "Compiling import: " << blue << file << normal << ".\n";
     try
     {
-        auto udtFlagAndBufer = parseFile(file);
+        auto udtFlagAndBufer = parseFile(file, shouldDisplayErrors);
 
         auto table = std::move(std::get<0>(udtFlagAndBufer));
         auto flag = std::get<1>(udtFlagAndBufer);
@@ -1938,4 +1951,10 @@ void
 sailfishc::transpile()
 {
     output.close();
+}
+
+std::vector<std::shared_ptr<Error>>
+sailfishc::getErrors()
+{
+    return semanticerrorhandler->getErrors();
 }
