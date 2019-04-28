@@ -363,7 +363,7 @@ sailfishc::sailfishc(const std::string& file, bool sde)
     advanceToken();
     errorhandler = std::make_unique<ParserErrorHandler>(ParserErrorHandler());
     semanticerrorhandler = std::make_unique<SemanticAnalyzerErrorHandler>(
-        SemanticAnalyzerErrorHandler(file, shouldDisplayErrors));
+        SemanticAnalyzerErrorHandler(file, sde));
     symboltable = std::make_shared<SymbolTable>(SymbolTable());
     udttable = std::make_unique<UDTTable>(UDTTable());
     isUdt = false;
@@ -1950,7 +1950,11 @@ sailfishc::parseList()
 void
 sailfishc::transpile()
 {
-    output.close();
+    if (semanticerrorhandler->getErrors().size() == 0)
+        output.close();
+    else
+        throw "Cannot compile. Please fix semantic errors as described "
+              "above.\n";
 }
 
 std::vector<std::shared_ptr<Error>>
