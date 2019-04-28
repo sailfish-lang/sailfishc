@@ -4,7 +4,7 @@
  */
 #include "CommandLine.h"
 
-const static std::string VERSION = "sailfishc 0.2.1 (marlin++)";
+const static std::string VERSION = "sailfishc 0.3.0 (Istiophoriformes)";
 
 void
 helpMessage()
@@ -37,7 +37,33 @@ versionInfo()
     std::cout << white << blue << VERSION << '\n' << normal;
 }
 
+bool
+compileC()
+{
+    // check to see if we can use system
+    if (!system(NULL))
+    {
+        std::cout << "System command processor doesn't exist. Please compile "
+                     "sailfishc generated C code yourself.\n";
+        return false;
+    }
+
+    std::cout << "EXECUTING: gcc out.c\n";
+    system("gcc out.c");
+
+    std::cout << "gcc compiled out.c to: a.out\n";
+
+    return true;
+}
+
 void
+executeBinary()
+{
+    std::cout << "EXECUTING: ./a.out.\n";
+    system("./a.out");
+}
+
+bool
 fullCompilation(const std::string& filename)
 {
     try
@@ -65,14 +91,17 @@ fullCompilation(const std::string& filename)
         std::cout << green << "Successfully wrote compiled code to: " << normal
                   << blue << " out.c\n"
                   << normal;
+        return true;
     }
     catch (const std::string msg)
     {
         std::cerr << msg;
+        return false;
     }
     catch (char const* msg)
     {
         std::cerr << msg;
+        return false;
     }
 }
 
@@ -161,6 +190,28 @@ handleCommandLine(int argc, char* const* argv)
             catch (char const* msg)
             {
                 std::cerr << msg;
+            }
+        }
+        else if (std::string("--compile_c").compare(argv[1]) == 0)
+        {
+            // compile sailfish
+            if (fullCompilation(argv[2]))
+            {
+                // compile c
+                compileC();
+            }
+        }
+        else if (std::string("--compile_and_execute").compare(argv[1]) == 0)
+        {
+            // compile sailfish
+            if (fullCompilation(argv[2]))
+            {
+                // compile c
+                if (compileC())
+                {
+                    // execute gcc generated binary
+                    executeBinary();
+                }
             }
         }
         break;
