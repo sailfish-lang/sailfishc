@@ -1438,7 +1438,7 @@ sailfishc::parseAttributeAccess(const std::string& udtname,
     auto attribute = parseIdentifier();
 
     if (currentToken->kind == TokenKind::TRIPLE_DOT)
-        attributeAccessName = attribute;
+        attributeAccessStack.push_back(attribute);
     else
     {
         if (udtname != "own")
@@ -1466,10 +1466,10 @@ std::string
 sailfishc::parseMethodAccess(const std::string& udtname,
                              const std::string& udtType)
 {
-    methodAccessName = udtname;
-
-    if (methodAccessName == "own")
-        methodAccessName = "this";
+    if (udtname == "own")
+        methodAccessStack.push_back("this");
+    else
+        methodAccessStack.push_back(udtname);
 
     checkExists(udtType);
     checkUDTExists(udtType);
@@ -1491,7 +1491,7 @@ sailfishc::parseMethodAccess(const std::string& udtname,
 
     inGrouping = false;
 
-    methodAccessName = "";
+    methodAccessStack.pop_back();
 
     return output;
 }
@@ -1521,25 +1521,35 @@ sailfishc::parseFunctionCall()
         types += "_" + type;
     });
 
-    if (methodAccessName != "")
+    if (methodAccessStack.size() != 0)
     {
         if (nonVoidInputs == 0)
         {
-            if (attributeAccessName != "")
-                targetBuffer += "this->" + attributeAccessName;
+            if (attributeAccessStack.size() != 0)
+            {
+                targetBuffer += "this->" + attributeAccessStack.at(
+                                               attributeAccessStack.size() - 1);
+                attributeAccessStack.pop_back();
+            }
             else
-                targetBuffer += methodAccessName;
+                targetBuffer +=
+                    methodAccessStack.at(methodAccessStack.size() - 1);
         }
         else
         {
-            if (attributeAccessName != "")
-                targetBuffer += ", this->" + attributeAccessName;
+            if (attributeAccessStack.size() != 0)
+            {
+                targetBuffer +=
+                    ", this->" +
+                    attributeAccessStack.at(attributeAccessStack.size() - 1);
+                attributeAccessStack.pop_back();
+            }
             else
-                targetBuffer += ',' + methodAccessName;
+                targetBuffer +=
+                    ',' + methodAccessStack.at(methodAccessStack.size() - 1);
+            ;
         }
     }
-
-    attributeAccessName = "";
 
     types += ")";
 
@@ -1705,8 +1715,8 @@ sailfishc::parsePrimary()
 
         auto type = parseIdentifier();
 
-        if (methodAccessName == "" ||
-            (methodAccessName != "" && type != "void"))
+        if (methodAccessStack.size() == 0 ||
+            (methodAccessStack.size() != 0 && type != "void"))
             if ((currentToken->kind != TokenKind::TRIPLE_DOT) &&
                 (currentToken->kind != TokenKind::DOT))
             {
