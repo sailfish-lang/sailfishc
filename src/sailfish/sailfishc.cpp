@@ -1,15 +1,6 @@
 #include "sailfishc.h"
 
 std::string
-sailfishc::getTabs()
-{
-    std::string s = "";
-    for (int i = 0; i < currentTabs; i++)
-        s += "    ";
-    return s;
-}
-
-std::string
 builtinTypesTranslator(std::string type)
 {
     if (type == "int")
@@ -51,7 +42,8 @@ parseFile(const std::string& filename, bool shouldDisplayErrors)
         sailfishc* sfc = new sailfishc(filename, shouldDisplayErrors);
         sfc->parse();
         return std::make_tuple(std::move(sfc->getUDTTable()),
-                               sfc->getIsUDTFlag(), sfc->getTargetBuffer());
+                               sfc->getIsUDTFlag(),
+                               sfc->getTranspiler()->getBuffer());
     }
     catch (const std::string msg)
     {
@@ -364,6 +356,21 @@ parseListValues(const std::string& s)
     return inputs + " "; // so that we don't get EOF before done parsing
 }
 
+bool
+containsUDT(const std::string& filename)
+{
+    auto lex = std::make_unique<Lexar>(filename, true);
+    auto currentToken = lex->getNextToken();
+    while (currentToken->kind != TokenKind::EOF_)
+    {
+        if (currentToken->kind == TokenKind::UAT)
+            return true;
+        currentToken = lex->getNextToken();
+    }
+
+    return false;
+}
+
 // constructor
 sailfishc::sailfishc(const std::string& file, bool sde)
 {
@@ -377,6 +384,7 @@ sailfishc::sailfishc(const std::string& file, bool sde)
     udttable = std::make_unique<UDTTable>(UDTTable());
     isUdt = false;
     shouldDisplayErrors = sde;
+    transpiler = std::make_unique<Transpiler>(Transpiler());
 }
 
 // public interface method
@@ -394,21 +402,6 @@ void
 sailfishc::parseProgram()
 {
     parseSource();
-}
-
-bool
-containsUDT(const std::string& filename)
-{
-    auto lex = std::make_unique<Lexar>(filename, true);
-    auto currentToken = lex->getNextToken();
-    while (currentToken->kind != TokenKind::EOF_)
-    {
-        if (currentToken->kind == TokenKind::UAT)
-            return true;
-        currentToken = lex->getNextToken();
-    }
-
-    return false;
 }
 
 /**
@@ -487,7 +480,7 @@ sailfishc::parseImportInfo()
         symboltable->addSymbol(extractUDTName(file), "U");
 
         // aggregate udt buffers
-        targetBuffer += buf;
+        transpiler->append(buf);
 
         std::cout << green << "Successfully compiled import: " << normal << blue
                   << file << "\n"
@@ -531,22 +524,8 @@ sailfishc::parseSourcePart()
         parseUDT();
         break;
     default:
-    {
-        // capture and open file only if not a udt so that imports do not
-        // override
-        output.clear();
-        output.open("out.c");
-
-        // set the file header here
-        output << OUTPUT_HEADER << getStdLibC();
-
-        // add the buffers from parsed udt files
-        output << targetBuffer;
-        targetBuffer = "";
         parseScript();
-
-        output << targetBuffer;
-    }
+        transpiler->write(semanticerrorhandler->getErrors().size() == 0);
     }
 }
 
@@ -572,17 +551,16 @@ sailfishc::parseUserDefinedType()
 
     udttable->addUDT(udtname, a_st, m_st);
 
-    targetBuffer +=
-        "\n//___________BEGIN_" + udtname + "_UDT_DEFINITION__________/_//\n\n";
+    transpiler->genUDTHeader(udtname);
 
-    targetBuffer += "struct " + udtname + "\n{\n";
     this->parseAttributes(a_st);
-    targetBuffer += "};\n";
+
+    transpiler->genRightCurley();
+    transpiler->genSemiColonAndNewline();
 
     this->parseMethods(m_st);
 
-    targetBuffer +=
-        "//___________END_" + udtname + "_UDT_DEFINITION__________/_//\n\n";
+    transpiler->genUDTFooter(udtname);
 }
 
 /**
@@ -615,7 +593,7 @@ sailfishc::parseAttributes(std::shared_ptr<SymbolTable> st)
         else
             outtype = builtinTypesTranslator(outtype);
 
-        targetBuffer += "\t" + outtype + " " + name + ";\n";
+        transpiler->genTypeAndNameNewLine(outtype, name);
 
         // check if unique name
         if (st->hasVariable(name))
@@ -745,14 +723,14 @@ sailfishc::parseFunctionInfo(const std::string& name)
                       symboltable->getSymbolType(name) + ".",
                   "Received second declaration of type: ", type, ".")));
 
-    targetBuffer += "{";
+    transpiler->genLeftCurley();
 
     symboltable->enterScope();
     auto returnType = parseBlock();
 
     symboltable->exitScope();
 
-    targetBuffer += "\n}\n\n";
+    transpiler->genFunctionEnd();
 
     checkType(returnType, parseFunctionReturnType(type));
 }
@@ -842,7 +820,7 @@ sailfishc::parseFunctionInOut(const std::string& name)
 
     outputBuffer = output + "\n" + name + "(" + outputBuffer + ")\n";
 
-    targetBuffer += outputBuffer;
+    transpiler->append(outputBuffer);
 
     return types;
 }
@@ -855,13 +833,13 @@ sailfishc::parseStart()
 {
     advanceAndCheckToken(TokenKind::START);
 
-    targetBuffer += "int\nmain()\n{";
+    transpiler->genMainHeader();
 
     symboltable->enterScope();
     parseBlock();
     symboltable->exitScope();
 
-    targetBuffer += "\n    return 1;\n}";
+    transpiler->genMainFooter();
 }
 
 /**
@@ -875,7 +853,7 @@ sailfishc::parseStart()
 std::string
 sailfishc::parseBlock()
 {
-    ++currentTabs;
+    transpiler->incrementTabs();
     std::string type = "void";
     bool hasSeenReturn = false;
     advanceAndCheckToken(TokenKind::LCURLEY); // eat '{'
@@ -903,7 +881,7 @@ sailfishc::parseBlock()
         }
     });
     advanceAndCheckToken(TokenKind::RCURLEY); // eat '}'
-    --currentTabs;
+    transpiler->decrementTabs();
     return type;
 }
 
@@ -913,31 +891,32 @@ sailfishc::parseBlock()
 std::tuple<std::string, std::string>
 sailfishc::parseStatement()
 {
-    targetBuffer += "\n" + getTabs();
+    std::string type = "";
+    std::string val = "";
+    transpiler->genStatementHeader();
+
     switch (currentToken->kind)
     {
     case TokenKind::TREE:
         parseTree();
-        return std::make_tuple("tree", "TREE");
+        type = "tree";
+        val = "TREE";
+        break;
     case TokenKind::RETURN:
-    {
-        auto type = parseReturn();
-        targetBuffer += ";";
-        return std::make_tuple(type, "RETURN");
-    }
+        type = parseReturn();
+        val = "RETURN";
+        break;
     case TokenKind::DEC:
-    {
-        auto type = parseDeclaration();
-        targetBuffer += ";";
-        return std::make_tuple(type, "DEC");
-    }
+        type = parseDeclaration();
+        val = "DEC";
+        break;
     default:
-    {
-        auto type = parseE0();
-        targetBuffer += ";";
-        return std::make_tuple(type, "E0");
+        type = parseE0();
+        val = "E0";
     }
-    }
+
+    transpiler->genStatementFooter();
+    return std::make_tuple(type, val);
 }
 
 /**
@@ -954,11 +933,11 @@ sailfishc::parseTree()
     recursiveParse(true, TokenKind::RPAREN, [&isFirstBranch, this]() {
         if (isFirstBranch)
         {
-            targetBuffer += "if";
+            transpiler->genIfHeader();
             isFirstBranch = false;
         }
         else
-            targetBuffer += "\n " + getTabs() + " else if ";
+            transpiler->genElseHeader();
         this->parseBranch();
     });
 
@@ -975,13 +954,13 @@ sailfishc::parseBranch()
 
     parseGrouping();
 
-    targetBuffer += "\n" + getTabs() + "{";
+    transpiler->genBranchHeader();
 
     symboltable->enterScope();
     parseBlock();
     symboltable->exitScope();
 
-    targetBuffer += "\n" + getTabs() + "}";
+    transpiler->genBranchFooter();
 
     advanceAndCheckToken(TokenKind::RPAREN); // eat ')'
 }
@@ -995,18 +974,16 @@ sailfishc::parseBranch()
 void
 sailfishc::parseGrouping()
 {
-    inGrouping = true;
-    targetBuffer += " (";
+    transpiler->genLeftParen();
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
 
     auto type = parseE0();
 
     checkType("bool", type);
 
-    targetBuffer += ") ";
+    transpiler->genRightParen();
 
     advanceAndCheckToken(TokenKind::PIPE); // eat '|'
-    inGrouping = false;
 }
 
 /**
@@ -1016,7 +993,7 @@ std::string
 sailfishc::parseReturn()
 {
     advanceAndCheckToken(TokenKind::RETURN); // consume 'return'
-    targetBuffer += "return ";
+    transpiler->genReturn();
 
     return parseE0();
 }
@@ -1044,7 +1021,8 @@ sailfishc::parseDeclaration()
     else
         outtype = builtinTypesTranslator(outtype);
 
-    targetBuffer += outtype + " " + name + " = ";
+    transpiler->genTypeAndName(outtype, name);
+    transpiler->genOperator("=");
 
     checkExists(type);
 
@@ -1057,7 +1035,7 @@ sailfishc::parseDeclaration()
                       symboltable->getSymbolType(name) + ".",
                   "Received second declaration of type: ", type, ".")));
 
-    decName = name;
+    transpiler->setDecName(name);
 
     advanceAndCheckToken(TokenKind::ASSIGNMENT); // consume '='
     auto ta = parseE0();
@@ -1275,7 +1253,7 @@ sailfishc::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::NEGATION)
     {
         advanceAndCheckToken(TokenKind::NEGATION); // consume '!'
-        targetBuffer += "!";
+        transpiler->genOperator("!");
         auto type = parseE0();
 
         checkType("bool", type);
@@ -1286,7 +1264,7 @@ sailfishc::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::UNARYADD)
     {
         advanceAndCheckToken(TokenKind::UNARYADD); // consume '++'
-        targetBuffer += "++";
+        transpiler->genOperator("++");
         auto type = parseE0();
 
         checkType("num", type);
@@ -1297,7 +1275,7 @@ sailfishc::parseE8(const std::string& T0)
     if (currentToken->kind == TokenKind::UNARYMINUS)
     {
         advanceAndCheckToken(TokenKind::UNARYMINUS); // consume '--'
-        targetBuffer += "--";
+        transpiler->genOperator("--");
         auto type = parseE0();
 
         checkType("num", type);
@@ -1377,17 +1355,14 @@ sailfishc::parseE12(const std::string& T0)
 {
     if (currentToken->kind == TokenKind::LPAREN)
     {
-        targetBuffer += "(";
-        inGrouping = true;
+        transpiler->genLeftParen();
         checkExists(T0);
 
         auto name = T0;
 
         auto output = checkFunctionCall(name, symboltable);
 
-        targetBuffer += ")";
-        inGrouping = false;
-
+        transpiler->genRightParen();
         return output;
     }
 
@@ -1446,20 +1421,9 @@ sailfishc::parseAttributeAccess(const std::string& udtname,
     advanceAndCheckToken(TokenKind::DOT); // consume '.'
     auto attribute = parseIdentifier();
 
-    if (currentToken->kind == TokenKind::TRIPLE_DOT)
-        attributeAccessStack.push_back(std::make_tuple(udtname, attribute));
-    else
-    {
-        if (attributeAccessStack.size() <= 1 && methodAccessStack.size() == 0 &&
-            !udttable->hasUDT(udtname)) // bandaid solution
-        {
-            if (udtname != "own")
-                targetBuffer += udtname;
-            else
-                targetBuffer += "this";
-        }
-        targetBuffer += "->" + builtinTypesTranslator(attribute);
-    }
+    transpiler->genAttributeAccess(
+        (currentToken->kind == TokenKind::TRIPLE_DOT),
+        udttable->hasUDT(udtname), udtname, attribute);
 
     // check if type exists
     if (!st->hasVariable(attribute))
@@ -1490,21 +1454,19 @@ sailfishc::parseMethodAccess(const std::string& udtname,
     auto methodName = parseIdentifier();
 
     if (udtname == "own")
-        methodAccessStack.push_back(std::make_tuple("this", methodName));
+        transpiler->pushMethod("this", methodName);
     else
-        methodAccessStack.push_back(std::make_tuple(udtname, methodName));
+        transpiler->pushMethod(udtname, methodName);
 
-    targetBuffer += methodName + "(";
+    transpiler->append(methodName);
 
-    inGrouping = true;
+    transpiler->genLeftParen();
 
     auto output = checkFunctionCall(methodName, st);
 
-    this->targetBuffer += ")";
+    transpiler->genRightParen();
 
-    inGrouping = false;
-
-    methodAccessStack.pop_back();
+    transpiler->popMethod();
 
     return output;
 }
@@ -1521,7 +1483,7 @@ sailfishc::parseFunctionCall()
     int nonVoidInputs = 0;
     recursiveParse(true, TokenKind::RPAREN, [&nonVoidInputs, &types, this]() {
         if (nonVoidInputs)
-            targetBuffer += ", ";
+            transpiler->genComma();
 
         auto type = parseE0();
 
@@ -1534,44 +1496,7 @@ sailfishc::parseFunctionCall()
         types += "_" + type;
     });
 
-    if (methodAccessStack.size() != 0)
-    {
-        if (nonVoidInputs == 0)
-        {
-            if (attributeAccessStack.size() != 0 && isUdt)
-            {
-                targetBuffer +=
-                    "this->" + std::get<1>(attributeAccessStack.at(
-                                   attributeAccessStack.size() - 1));
-                attributeAccessStack.pop_back();
-            }
-            else if (attributeAccessStack.size() != 0 && !isUdt)
-            {
-                targetBuffer += std::get<0>(attributeAccessStack.at(
-                                    attributeAccessStack.size() - 1)) +
-                                "->" +
-                                std::get<1>(attributeAccessStack.at(
-                                    attributeAccessStack.size() - 1));
-                attributeAccessStack.pop_back();
-            }
-            else
-                targetBuffer += std::get<1>(
-                    methodAccessStack.at(methodAccessStack.size() - 1));
-        }
-        else
-        {
-            if (attributeAccessStack.size() != 0)
-            {
-                targetBuffer += ", this->" + std::get<1>(methodAccessStack.at(
-                                                 methodAccessStack.size() - 1));
-                attributeAccessStack.pop_back();
-            }
-            else
-                targetBuffer += ',' + std::get<1>(methodAccessStack.at(
-                                          methodAccessStack.size() - 1));
-            ;
-        }
-    }
+    transpiler->genFinalFunctionCallArg((nonVoidInputs == 0), isUdt);
 
     types += ")";
 
@@ -1613,8 +1538,7 @@ sailfishc::parseUDTDec()
 {
     auto udtName = parseIdentifier();
 
-    targetBuffer +=
-        "(struct " + udtName + "*)malloc(sizeof(struct " + udtName + "));\n";
+    transpiler->genUDTDecInit(udtName);
 
     checkExists(udtName);
     checkUDTExists(udtName);
@@ -1628,25 +1552,25 @@ sailfishc::parseUDTDec()
             // capture key
             auto attributeName = parseIdentifier();
 
-            this->targetBuffer +=
-                getTabs() + decName + "->" + attributeName + " = ";
+            transpiler->genUDTDecItem(attributeName);
 
             advanceAndCheckToken(TokenKind::COLON); // consume ':'
 
-            std::string temp = decName;
+            std::string temp = transpiler->getDecName();
             if (currentToken->value.at(0) == '[')
             {
-                decName = decName + "->" + attributeName;
-                decType = st->getSymbolType(attributeName);
+                transpiler->setDecName(transpiler->getDecName() + "->" +
+                                       attributeName);
+                transpiler->setDecType(st->getSymbolType(attributeName));
             }
 
             // capture value
             auto type = parsePrimary();
 
-            decName = temp;
+            transpiler->setDecName(temp);
 
             if (attributes.size() != 1)
-                this->targetBuffer += ";\n";
+                transpiler->genSemiColonAndNewline();
 
             // determine if key exists for udt
             std::vector<std::string>::iterator it =
@@ -1686,10 +1610,10 @@ sailfishc::parseT()
     if (currentToken->kind == TokenKind::LPAREN)
     {
         advanceAndCheckToken(TokenKind::LPAREN); // consume l paren
-        targetBuffer += "(";
+        transpiler->genLeftParen();
         auto type = parseE0();
         advanceAndCheckToken(TokenKind::RPAREN); // consume r paren
-        targetBuffer += ")";
+        transpiler->genRightParen();
         return type;
     }
 
@@ -1737,16 +1661,9 @@ sailfishc::parsePrimary()
 
         auto type = parseIdentifier();
 
-        if (methodAccessStack.size() == 0 ||
-            (methodAccessStack.size() != 0 && type != "void"))
-            if ((currentToken->kind != TokenKind::TRIPLE_DOT) &&
-                (currentToken->kind != TokenKind::DOT))
-            {
-                if (udttable->hasUDT(type))
-                    targetBuffer += "struct " + type + "*";
-                else
-                    targetBuffer += builtinTypesTranslator(type);
-            }
+        transpiler->genPrimary(((currentToken->kind != TokenKind::TRIPLE_DOT) &&
+                                (currentToken->kind != TokenKind::DOT)),
+                               udttable->hasUDT(type), type);
 
         return type;
     }
@@ -1801,12 +1718,12 @@ sailfishc::parseNumber()
     if (k == TokenKind::INTEGER)
     {
         advanceAndCheckToken(TokenKind::INTEGER); // eat integer
-        targetBuffer += v;
+        transpiler->genLiteral(v);
         return v;
     }
 
     advanceAndCheckToken(TokenKind::FLOAT); // eat float
-    targetBuffer += v;
+    transpiler->genLiteral(v);
     return v;
 }
 
@@ -1829,8 +1746,7 @@ sailfishc::parseBoolean()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::BOOL); // eat identifier
-    targetBuffer += (v == "true" ? "1" : "0");
-
+    transpiler->genLiteral(v == "true" ? "1" : "0");
     return v;
 }
 
@@ -1842,7 +1758,7 @@ sailfishc::parseString()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::STRING); // true eat string
-    targetBuffer += v;
+    transpiler->genLiteral(v);
     return v;
 }
 
@@ -1854,6 +1770,8 @@ sailfishc::parseOwnAccessor()
 {
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::OWN_ACCESSOR); // eat own accessor
+
+    // transpiler->genLiteral("this");
 
     if (isUdt)
         return extractUDTName(filename);
@@ -1873,7 +1791,7 @@ sailfishc::parseEmpty()
     auto v = currentToken->value;
     advanceAndCheckToken(TokenKind::EMPTY); // eat own accessor
 
-    targetBuffer += "NULL";
+    transpiler->genLiteral("NULL");
 
     return v; // will not ever reach here
 }
@@ -1941,7 +1859,7 @@ sailfishc::parseList()
     advanceAndCheckToken(TokenKind::LIST); // eat list
     auto listVals = determineTypes(parseListValues(v));
 
-    std::string type = decType;
+    std::string type = transpiler->getDecType();
 
     std::deque<std::string> vals;
     if (listVals.size() != 0)
@@ -1961,32 +1879,14 @@ sailfishc::parseList()
         }
     }
 
-    std::string buf = "(" + builtinTypesTranslator(type) + "*)malloc(sizeof(" +
-                      builtinTypesTranslator(type) + ") * " +
-                      std::to_string(listVals.size()) + ");\n";
+    transpiler->genListInit(type, std::to_string(listVals.size()));
 
     for (int i = 0; i < vals.size(); i++)
     {
-        auto v = vals.at(i);
-        buf +=
-            getTabs() + decName + "[" + std::to_string(i) + "] = " + v + ";\n";
+        transpiler->genListItem(std::to_string(i), vals.at(i));
     }
 
-    buf = buf.substr(0, buf.size() - 2);
-
-    targetBuffer += buf;
-
     return type;
-}
-
-void
-sailfishc::transpile()
-{
-    if (semanticerrorhandler->getErrors().size() == 0)
-        output.close();
-    else
-        throw "Cannot compile. Please fix semantic errors as described "
-              "above.\n";
 }
 
 std::vector<std::shared_ptr<Error>>

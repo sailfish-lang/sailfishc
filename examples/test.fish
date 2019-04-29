@@ -1,9 +1,16 @@
 import Foo : "../examples/Foo.fish"
 
 start {
-    dec int i = 10
-    dec Foo f = new Foo {i: 10, s: empty}
-    dec Foo b = new Foo {i: 11, s: f}
+    dec int i = 8
+    dec Foo f = new Foo {i: 1, s: empty}
+    dec Foo a = new Foo {i: 2, s: f}
+    dec Foo b = new Foo {i: 3, s: a}
+    dec Foo c = new Foo {i: 4, s: b}
+    dec Foo d = new Foo {i: 5, s: c}
 
-    f.i = b.s.i
+    f = b.s.s
+    printInt(f...bar(f...bar(10)))
+    printInt(b.s...bar(9))
+    printInt(b.s...bar(i))
+    #printInt(b.s...bar(d.s.i))
 }

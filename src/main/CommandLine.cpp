@@ -86,8 +86,6 @@ fullCompilation(const std::string& filename)
                   << filename << "\n"
                   << normal;
 
-        sfc->transpile();
-
         std::cout << green << "Successfully wrote compiled code to: " << normal
                   << blue << " out.c\n"
                   << normal;
