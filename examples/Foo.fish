@@ -4,8 +4,8 @@ Uat {
 }
 
 Ufn {
-    (fun bar(int i)(int) {
-        return (i + own.i)
+    (fun bar(int i, int a)(int) {
+        return (i + own.i + a)
     })
 
     (fun self(void)(Foo) {

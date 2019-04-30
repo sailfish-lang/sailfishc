@@ -1660,9 +1660,8 @@ sailfishc::parsePrimary()
             return parseListType();
 
         auto type = parseIdentifier();
-
-        transpiler->genPrimary(((currentToken->kind != TokenKind::TRIPLE_DOT) &&
-                                (currentToken->kind != TokenKind::DOT)),
+        transpiler->genPrimary((currentToken->kind != TokenKind::TRIPLE_DOT),
+                               (currentToken->kind != TokenKind::DOT),
                                udttable->hasUDT(type), type);
 
         return type;

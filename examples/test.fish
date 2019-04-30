@@ -9,8 +9,5 @@ start {
     dec Foo d = new Foo {i: 5, s: c}
 
     f = b.s.s
-    printInt(f...bar(f...bar(10)))
-    printInt(b.s...bar(9))
-    printInt(b.s...bar(i))
-    #printInt(b.s...bar(d.s.i))
+    printInt(b.s...bar(d.s.i))
 }

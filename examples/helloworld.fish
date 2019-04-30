@@ -1,0 +1,3 @@
+start {
+    printStr("Hello World!")
+}

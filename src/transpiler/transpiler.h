@@ -5,6 +5,7 @@
 #pragma once
 #include "../stdlib_c/stdlib_c.h"
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -20,6 +21,7 @@ class Transpiler
     std::string decType;
     int currentTabs;
     std::ofstream output;
+    int bufferToAdd;
 
     // methods
     std::string getTabs();
@@ -100,6 +102,6 @@ class Transpiler
     void genLiteral(const std::string&);
     void genListInit(const std::string& type, const std::string size);
     void genListItem(const std::string&, const std::string&);
-    void genPrimary(bool, bool, const std::string&);
+    void genPrimary(bool, bool, bool, const std::string&);
     void genFinalFunctionCallArg(bool noVoids, bool isUdt);
 };

@@ -81,6 +81,7 @@ Transpiler::Transpiler()
     currentTabs = 0;
     decName = "";
     decType = "";
+    bufferToAdd = 0;
 }
 
 std::string
@@ -328,6 +329,9 @@ Transpiler::genAttributeAccess(bool nextIsTripleDot, bool udtNameIsUDT,
             attributeAccessStack.push_back(std::make_tuple(
                 std::get<0>(top) + "->" + extractChainAAType(std::get<1>(top)),
                 attribute));
+
+            attributeAccessStack.erase(attributeAccessStack.begin() +
+                                       attributeAccessStack.size() - 2);
         }
         else
             attributeAccessStack.push_back(std::make_tuple(udtname, attribute));
@@ -367,13 +371,13 @@ Transpiler::genListItem(const std::string& index, const std::string& value)
 }
 
 void
-Transpiler::genPrimary(bool isNotBeforeMemberAccessor, bool isNotUdtName,
-                       const std::string& type)
+Transpiler::genPrimary(bool nextIsNotTripleDot, bool nextIsNotSingleDot,
+                       bool isNotUdtName, const std::string& type)
 {
     if (methodAccessStack.size() == 0 ||
         (methodAccessStack.size() != 0 && type != "void"))
     {
-        if (isNotBeforeMemberAccessor)
+        if (nextIsNotTripleDot && nextIsNotSingleDot)
         {
             if (isNotUdtName)
             {
@@ -384,14 +388,9 @@ Transpiler::genPrimary(bool isNotBeforeMemberAccessor, bool isNotUdtName,
                 buffer += builtinTypesTranslator(type);
             }
         }
-        else
+        else if (nextIsNotSingleDot)
         {
-            if (attributeAccessStack.size() != 0)
-            {
-                buffer += std::get<0>(
-                    attributeAccessStack.at(attributeAccessStack.size() - 1));
-                attributeAccessStack.pop_back();
-            }
+            ++bufferToAdd;
         }
     }
 }
@@ -399,50 +398,65 @@ Transpiler::genPrimary(bool isNotBeforeMemberAccessor, bool isNotUdtName,
 void
 Transpiler::genFinalFunctionCallArg(bool noVoids, bool isUdt)
 {
-    if (noVoids)
+    for (int i = 0; i < bufferToAdd + 1 && attributeAccessStack.size() > 0; i++)
     {
-        if (attributeAccessStack.size() != 0 && isUdt)
-        {
-            buffer += std::get<1>(
-                attributeAccessStack.at(attributeAccessStack.size() - 1));
-            attributeAccessStack.pop_back();
-        }
-        else if (attributeAccessStack.size() != 0 && !isUdt)
-        {
-            buffer +=
-                std::get<0>(
-                    attributeAccessStack.at(attributeAccessStack.size() - 1)) +
-                "->" +
-                std::get<1>(
-                    attributeAccessStack.at(attributeAccessStack.size() - 1));
-            attributeAccessStack.pop_back();
-        }
-        else if (methodAccessStack.size() != 0)
-            buffer +=
-                std::get<0>(methodAccessStack.at(methodAccessStack.size() - 1));
+        if (i != 0)
+            buffer += ",";
+        buffer += std::get<0>(attributeAccessStack.at(
+                      attributeAccessStack.size() - 1)) +
+                  "->" +
+                  std::get<1>(
+                      attributeAccessStack.at(attributeAccessStack.size() - 1));
+        attributeAccessStack.erase(attributeAccessStack.begin() +
+                                   attributeAccessStack.size() - 1);
     }
-    else
+    bufferToAdd = 0;
+
+    if (methodAccessStack.size() != 0)
     {
-        if (attributeAccessStack.size() != 0 && isUdt)
+        if (noVoids)
         {
-            buffer += ", " + std::get<1>(attributeAccessStack.at(
-                                 attributeAccessStack.size() - 1));
-            attributeAccessStack.pop_back();
-        }
-        else if (attributeAccessStack.size() != 0 && !isUdt)
-        {
-            buffer +=
-                ", " +
-                std::get<0>(
-                    attributeAccessStack.at(attributeAccessStack.size() - 1)) +
-                "->" +
-                std::get<1>(
+            if (attributeAccessStack.size() != 0 && isUdt)
+            {
+                buffer += std::get<1>(
                     attributeAccessStack.at(attributeAccessStack.size() - 1));
-            attributeAccessStack.pop_back();
+                attributeAccessStack.erase(attributeAccessStack.begin() +
+                                           attributeAccessStack.size() - 1);
+            }
+            else if (attributeAccessStack.size() != 0 && !isUdt)
+            {
+                buffer += std::get<0>(attributeAccessStack.at(
+                              attributeAccessStack.size() - 1)) +
+                          "->" +
+                          std::get<1>(attributeAccessStack.at(
+                              attributeAccessStack.size() - 1));
+                // attributeAccessStack.pop_back();
+                attributeAccessStack.erase(attributeAccessStack.begin() +
+                                           attributeAccessStack.size() - 1);
+            }
+            else
+                buffer += std::get<0>(
+                    methodAccessStack.at(methodAccessStack.size() - 1));
         }
-        else if (methodAccessStack.size() != 0)
-            buffer +=
-                ", " +
-                std::get<0>(methodAccessStack.at(methodAccessStack.size() - 1));
+        else
+        {
+            if (attributeAccessStack.size() != 0 && isUdt)
+            {
+                buffer += ", " + std::get<1>(attributeAccessStack.at(
+                                     attributeAccessStack.size() - 1));
+                attributeAccessStack.erase(attributeAccessStack.begin() +
+                                           attributeAccessStack.size() - 1);
+            }
+            else if (attributeAccessStack.size() != 0 && !isUdt)
+            {
+                buffer += ", " + std::get<0>(attributeAccessStack.at(0)) +
+                          "->" + std::get<1>(attributeAccessStack.at(0));
+                // attributeAccessStack.;
+                attributeAccessStack.erase(attributeAccessStack.begin());
+            }
+            else
+                buffer += ", " + std::get<0>(methodAccessStack.at(
+                                     methodAccessStack.size() - 1));
+        }
     }
 }
