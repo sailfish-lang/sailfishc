@@ -71,6 +71,9 @@ Transpiler::builtinTypesTranslator(const std::string& type)
     if (type == "own")
         return "this";
 
+    if (type == "void")
+        return "";
+
     else
         return type;
 }
