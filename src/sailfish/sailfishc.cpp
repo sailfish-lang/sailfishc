@@ -525,7 +525,10 @@ sailfishc::parseSourcePart()
         break;
     default:
         parseScript();
-        transpiler->write(semanticerrorhandler->getErrors().size() == 0);
+
+        // don't write to out.c if we are testing, aka we don' care about errors
+        if (shouldDisplayErrors)
+            transpiler->write(semanticerrorhandler->getErrors().size() == 0);
     }
 }
 

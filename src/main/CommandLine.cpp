@@ -133,62 +133,15 @@ handleCommandLine(int argc, char* const* argv)
     {
         if (std::string("--test").compare(argv[1]) == 0)
         {
-            try
-            {
-                std::vector<std::string> expected = {
-                    "Mismatched types. Expected/LeftHand is: int.",
-                    "Mismatched types. Expected/LeftHand is: i.",
-                    "Mismatched types. Expected/LeftHand is: flt.",
-                    "Mismatched types. Expected/LeftHand is: int or flt.",
-                    "Mismatched types. Expected/LeftHand is: int.",
-                    "Mismatched types. Expected/LeftHand is: int or flt.",
-                    "Mismatched types. Expected/LeftHand is: int.",
-                    "Mismatched types. Expected/LeftHand is: int.",
-                    "Mismatched types. Expected/LeftHand is: int.",
-                    "Mismatched types. Expected/LeftHand is: int or flt.",
-                    "Mismatched types. Expected/LeftHand is: int or flt.",
-                    "Mismatched types. Expected/LeftHand is: bool.",
-                    "Mismatched types. Expected/LeftHand is: bool.",
-                    "Mismatched types. Expected/LeftHand is: int or flt.",
-                    "Mismatched types. Expected/LeftHand is: int or flt.",
-                    "Mismatched types. Expected/LeftHand is: bool.",
-                    "Mismatched types. Expected/LeftHand is: int.",
-                    "Unexpected redeclaration of f, originally defined as type "
-                    "flt.",
-                    "Missing keys in udt initialization for type: Foo",
-                    "Nonexistent member function.",
-                    "Mismatched types. Expected/LeftHand is: flt.",
-                    "Mismatched types. Expected/LeftHand is: int.",
-                    "Mismatched types. Expected/LeftHand is: flt.",
-                    "Nonexistent attribute.",
-                    "Mismatched types. Expected/LeftHand is: int.",
-                    "Function input parameter type mismatch in function call "
-                    "soFun",
-                    "Mismatched types. Expected/LeftHand is: flt.",
-                    "Mismatched list types. Expected is: [int].",
-                    "Mismatched types. Expected/LeftHand is: bool.",
-                };
+            Prettify::Formatter red(Prettify::FG_RED);
+            Prettify::Formatter green(Prettify::FG_GREEN);
+            Prettify::Formatter normal(Prettify::RESET);
 
-                sailfishc* sfc = new sailfishc(argv[2], false);
-                sfc->parse();
-                auto errors = sfc->getErrors();
-
-                int i = 0;
-                for (auto const& e : errors)
-                {
-                    // std::cout << e->getMsg() << " " << expected[i] <<
-                    // std::endl; assert(e->getMsg() == expected[i++]);
-                    std::cout << e->getMsg() << std::endl;
-                }
-            }
-            catch (const std::string msg)
-            {
-                std::cerr << msg;
-            }
-            catch (char const* msg)
-            {
-                std::cerr << msg;
-            }
+            bool result = SEMANTIC_ANALYSIS_TEST(argv[2]);
+            if (result)
+                std::cout << green << "SUCCESSFUL TEST!" << '\n' << normal;
+            else
+                std::cout << red << "TEST FAILED!" << '\n' << normal;
         }
         else if (std::string("--compile_c").compare(argv[1]) == 0)
         {

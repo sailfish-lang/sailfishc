@@ -15,6 +15,7 @@ ADD_LIBRARY(SailfishcLibs
     ./src/semantics/SymbolTable.cpp
     ./src/stdlib_c/stdlib_c.cpp
     ./src/stdlib_c/Lists.cpp
+    ./src/tests/SemanticAnalysisTest.cpp
 )
 
 add_executable(sailfishc ./src/main/main.cpp ${DirSOURCES})
