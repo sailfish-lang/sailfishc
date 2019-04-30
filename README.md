@@ -30,7 +30,8 @@ There exist a number of known issues with the Sailfishc compiler. Some of these 
 6. double dispatch does not transpile properly
 7. functions are not first class
 8. declaring more than one attribute accessor within function call params does not transpile correctly
-
+9. io
+10. string comparisons
 
 ***
 
