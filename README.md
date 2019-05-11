@@ -18,19 +18,6 @@ Or use the install script [here](https://github.com/sailfish-lang/sailfish-lang-
 
 ***
 
-## Language Limitations
+## The Manual
 
-There exist a number of known issues with the Sailfishc compiler. Some of these issues are limitations of the languages, others are simply results of incorrect implementation. 
-
-1. mutual recursion
-2. importing udt's within udt's impossible
-3. name collisions if udt's/script have similarly named attributes/methods/variables
-4. No udt constructors
-5. no udt static methods
-6. double dispatch does not transpile properly
-7. functions are not first class
-8. declaring more than one attribute accessor within function call params does not transpile correctly
-9. io
-10. string comparisons
-
-***
+To get started and learn more about Sailfish and Sailfishc, I would reccomend checking out the [Manual](https://github.com/sailfish-lang/sailfishc/blob/master/Sailfish.pdf).
