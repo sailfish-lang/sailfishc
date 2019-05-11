@@ -34,6 +34,3 @@ There exist a number of known issues with the Sailfishc compiler. Some of these 
 10. string comparisons
 
 ***
-
-## Sailfish Wiki
-I will be regularly updating the wiki with docs, grammar, code snippets, sailfish philosophy, version notes, etc. So travel on over [there](https://github.com/robertDurst/sailfish/wiki) to learn more.
